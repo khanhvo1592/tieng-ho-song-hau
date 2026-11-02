@@ -76,9 +76,10 @@ dl.facts dd{margin:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:28px}
 @media (max-width:480px){.card{padding:20px}}
 form{display:grid;gap:16px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:520px){.row{grid-template-columns:1fr}}
-label{display:grid;gap:6px;font-weight:500;font-size:.92rem}
+label{display:grid;gap:6px;align-content:start;font-weight:500;font-size:.92rem}
+label>span:first-child{line-height:1.35}
 label .opt{font-weight:400;color:var(--muted)}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:4px;padding:11px 12px;width:100%;min-height:46px}
 input:hover,select:hover,textarea:hover{border-color:var(--lacquer)}
@@ -100,7 +101,13 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 22px;min-heig
 .primary:hover{filter:brightness(1.12)}
 button,.cta,.choice,input,select,textarea{transition:background-color .18s ease,border-color .18s ease,filter .18s ease,box-shadow .18s ease}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.ghost{background:transparent;color:var(--ink);border-color:var(--field-line)}
+.ghost:hover{border-color:var(--lacquer);background:color-mix(in srgb,var(--lacquer) 6%,transparent)}
+.danger{background:var(--danger);color:#fff}
+.danger:hover{filter:brightness(1.1)}
+#reg .btns,.ticket .btns,.confirm .btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:4px}
+#reg .btns button,.ticket .btns button{width:100%}
+form .err:empty{display:none}
 button:disabled{opacity:.55;cursor:not-allowed}
 .status{font-size:.92rem;padding:10px 12px;border-radius:4px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--ink)}
 .status.ok{background:color-mix(in srgb,var(--ok) 14%,transparent)}
@@ -259,7 +266,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
           <span class="hint" id="phone-hint">Dùng để đối chiếu khi nhận vé tại quầy.</span>
           <span class="err" id="phone-err" role="alert"></span>
         </label>
-        <label for="email">Email <span class="opt">(không bắt buộc)</span>
+        <label for="email"><span>Email <span class="opt">(không bắt buộc)</span></span>
           <input id="email" name="email" type="email" autocomplete="email" maxlength="120" aria-describedby="email-err">
           <span class="err" id="email-err" role="alert"></span>
         </label>
@@ -270,16 +277,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
         <span class="err" id="show-err" role="alert"></span>
       </fieldset>
       <div class="row">
-        <label for="seats">Số vé
+        <label for="seats"><span>Số vé</span>
           <select id="seats" name="seats">
             <option value="1">1 vé</option><option value="2" selected>2 vé</option><option value="3">3 vé</option><option value="4">4 vé</option>
           </select>
         </label>
-        <label for="org">Đơn vị / địa phương <span class="opt">(không bắt buộc)</span>
+        <label for="org"><span>Đơn vị / địa phương <span class="opt">(không bắt buộc)</span></span>
           <input id="org" name="org" maxlength="100" placeholder="VD: Phường Ninh Kiều">
         </label>
       </div>
-      <label for="msg">Ghi chú
+      <label for="msg"><span>Ghi chú <span class="opt">(không bắt buộc)</span></span>
         <textarea id="msg" name="msg" maxlength="300"></textarea>
       </label>
       <div class="btns">
@@ -304,7 +311,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
       <div class="confirm" id="confirm" hidden>
         <span>Hủy đăng ký và trả lại <strong id="c-seats"></strong> cho người khác?</span>
         <div class="btns">
-          <button class="primary" type="button" id="do-cancel">Hủy đăng ký</button>
+          <button class="danger" type="button" id="do-cancel">Xác nhận hủy</button>
           <button class="ghost" type="button" id="keep">Không, giữ vé</button>
         </div>
       </div>
