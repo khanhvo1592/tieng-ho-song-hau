@@ -79,7 +79,7 @@ form{display:grid;gap:16px}
 .row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:520px){.row{grid-template-columns:1fr}}
 label{display:grid;gap:6px;align-content:start;font-weight:500;font-size:.92rem}
-label>span:first-child{line-height:1.35}
+label>span:first-child{line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 label .opt{font-weight:400;color:var(--muted)}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:4px;padding:11px 12px;width:100%;min-height:46px}
 input:hover,select:hover,textarea:hover{border-color:var(--lacquer)}
@@ -177,7 +177,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 <body>
 
 <header class="hero">
-  <svg class="scene" viewBox="0 0 1200 340" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+  <svg class="scene" viewBox="0 0 1200 340" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
     <defs>
       <g id="palm" fill="none" stroke-linecap="round">
         <path d="M0 0C6-40 2-80 14-120" stroke-width="5"/>
@@ -266,7 +266,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
           <span class="hint" id="phone-hint">Dùng để đối chiếu khi nhận vé tại quầy.</span>
           <span class="err" id="phone-err" role="alert"></span>
         </label>
-        <label for="email"><span>Email <span class="opt">(không bắt buộc)</span></span>
+        <label for="email"><span>Email <span class="opt">(tùy chọn)</span></span>
           <input id="email" name="email" type="email" autocomplete="email" maxlength="120" aria-describedby="email-err">
           <span class="err" id="email-err" role="alert"></span>
         </label>
@@ -282,11 +282,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
             <option value="1">1 vé</option><option value="2" selected>2 vé</option><option value="3">3 vé</option><option value="4">4 vé</option>
           </select>
         </label>
-        <label for="org"><span>Đơn vị / địa phương <span class="opt">(không bắt buộc)</span></span>
+        <label for="org"><span>Đơn vị / địa phương <span class="opt">(tùy chọn)</span></span>
           <input id="org" name="org" maxlength="100" placeholder="VD: Phường Ninh Kiều">
         </label>
       </div>
-      <label for="msg"><span>Ghi chú <span class="opt">(không bắt buộc)</span></span>
+      <label for="msg"><span>Ghi chú <span class="opt">(tùy chọn)</span></span>
         <textarea id="msg" name="msg" maxlength="300"></textarea>
       </label>
       <div class="btns">
