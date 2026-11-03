@@ -8,7 +8,7 @@
     "types": "wrangler types",
     "check": "node scripts/check-api.mjs"
   },
-  "dependencies": {
+  "devDependencies": {
     "wrangler": "^4.45.0"
   }
 }
