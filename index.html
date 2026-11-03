@@ -178,6 +178,40 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 @keyframes stamp{0%{transform:scale(1.25) rotate(-4deg);opacity:.2}60%{transform:scale(.97) rotate(1deg);opacity:1}100%{transform:none}}
 @keyframes dock{from{transform:translateY(100%)}to{transform:none}}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.status.shake{animation:shake .32s var(--ease-out)}
+.seatmap{display:grid;gap:10px;margin:4px 0 16px}
+.seatmap h3{font-family:var(--font-display);font-size:1.15rem;font-weight:600;margin:0}
+.stage{text-align:center;letter-spacing:.16em;text-transform:uppercase;font-size:.75rem;font-weight:700;color:var(--lacquer-ink);background:var(--lacquer);border-radius:4px;padding:8px 12px}
+.seat-scroll{overflow-x:auto;padding:4px 2px 10px;-webkit-overflow-scrolling:touch}
+.seat-row{display:flex;align-items:center;gap:8px;width:max-content;margin-bottom:6px}
+.seat-row .rl{min-width:1.5rem;text-align:right;font-weight:700;color:var(--gold);font-size:.82rem}
+.cluster{display:flex;gap:4px}
+.aisle{width:22px;flex:none}
+button.seat{flex:none;width:40px;height:40px;min-height:40px;padding:0;border-radius:7px 7px 4px 4px;border:1px solid var(--field-line);background:var(--field);color:var(--ink);font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;display:grid;place-items:center;align-content:center;cursor:pointer}
+button.seat.org{width:46px;height:auto;min-height:48px;padding:3px 2px;gap:1px}
+button.seat .nm{display:block;max-width:42px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.6rem;font-weight:600;line-height:1.15}
+button.seat.pick{background:color-mix(in srgb,var(--gold) 30%,white);border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+button.seat.mine{background:var(--lacquer);border-color:var(--lacquer);color:var(--lacquer-ink)}
+button.seat.taken{background:repeating-linear-gradient(-45deg,#E4EBE6,#E4EBE6 4px,#D5E0D9 4px,#D5E0D9 8px);color:var(--muted)}
+button.seat:hover:not(:disabled){border-color:var(--lacquer)}
+button.seat.taken.org:hover{border-color:var(--gold)}
+button.seat:disabled{opacity:1;cursor:not-allowed}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;list-style:none;padding:0;margin:0;font-size:.85rem}
+.legend li{display:flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid var(--field-line);display:inline-block;flex:none}
+.sw.free{background:var(--field)}
+.sw.pick{background:color-mix(in srgb,var(--gold) 30%,white);border-color:var(--gold)}
+.sw.mine{background:var(--lacquer);border-color:var(--lacquer)}
+.sw.taken{background:repeating-linear-gradient(-45deg,#E4EBE6,#E4EBE6 3px,#D5E0D9 3px,#D5E0D9 6px)}
+.cfg{display:grid;gap:14px;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.cfg h2{margin-bottom:0}
+.cfg-block{display:grid;gap:8px}
+.cfg-line{display:grid;gap:8px;align-items:center;margin-top:8px}
+.cfg-line.shows{grid-template-columns:5.6rem minmax(0,1fr) 5.6rem auto}
+.cfg-line.rows{grid-template-columns:7rem 6.2rem auto}
+.cfg-line button{min-height:46px}
+@media(max-width:640px){.cfg-line.shows,.cfg-line.rows{grid-template-columns:1fr 1fr}}
+#draft-bar{margin:0 0 14px}
 </style>
 </head>
 <body>
@@ -229,9 +263,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
     <path d="M650 296q35 4 70 0t70 0" fill="none" stroke="#CFEBDD" stroke-width="2" opacity=".2" stroke-linecap="round"/>
   </svg>
   <div class="wrap">
-    <span class="eyebrow">Đêm diễn cải lương · Đăng ký vé mời</span>
-    <h1>Tiếng Hò<em>Sông Hậu</em></h1>
-    <p>Vở cải lương kinh điển về tình người miền sông nước Hậu Giang, với những lớp ca vọng cổ và điệu hò quen thuộc của Nam Bộ. Vé mời miễn phí, số ghế có hạn, vui lòng đăng ký trước để Ban tổ chức sắp xếp chỗ ngồi.</p>
+    <span class="eyebrow" id="hero-eyebrow">Đêm diễn cải lương · Đăng ký vé mời</span>
+    <h1 id="hero-title"><span id="hero-title-text">Tiếng Hò</span><em id="hero-em">Sông Hậu</em></h1>
+    <p id="hero-lead">Vở cải lương kinh điển về tình người miền sông nước Hậu Giang, với những lớp ca vọng cổ và điệu hò quen thuộc của Nam Bộ. Vé mời miễn phí, số ghế có hạn. Chọn ghế trên sơ đồ rồi điền thông tin để giữ chỗ.</p>
     <div class="hero-cta"><a class="cta" href="#panel">Đăng ký nhận vé</a><span class="hero-meta" id="hero-meta"></span></div>
     <div class="countdown" id="countdown" hidden></div>
   </div>
@@ -244,8 +278,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
       <h2 id="info-h">Thông tin chương trình</h2>
       <dl class="facts">
         <dt>Địa điểm</dt><dd id="f-venue"></dd>
-        <dt>Mở cửa</dt><dd>Trước giờ diễn 45 phút</dd>
-        <dt>Vé</dt><dd>Miễn phí, tối đa 4 vé mỗi lượt đăng ký</dd>
+        <dt>Mở cửa</dt><dd id="f-door">Trước giờ diễn 45 phút</dd>
+        <dt>Vé</dt><dd id="f-ticket">Miễn phí, tối đa 4 ghế mỗi lượt đăng ký</dd>
         <dt>Liên hệ</dt><dd>Ban tổ chức: <span id="f-phone"></span></dd>
       </dl>
     </div>
@@ -253,15 +287,46 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
       <h2 id="shows-h">Thời gian</h2>
       <div class="shows" id="shows"></div>
     </div>
-    <p class="note">Sau khi đăng ký, bạn nhận một mã vé. Đến nơi, đọc mã vé và số điện thoại tại quầy đón khách để nhận vé giấy. Bạn có thể sửa hoặc hủy đăng ký trên trang này.</p>
+    <p class="note" id="f-note">Chọn ghế trên sơ đồ, điền thông tin và gửi. Bạn nhận một mã vé. Đến nơi, đọc mã vé và số điện thoại tại quầy đón khách để nhận vé giấy. Bạn có thể thêm ghế, trả ghế hoặc hủy đăng ký trên trang này.</p>
   </section>
 
   <section class="card" aria-labelledby="form-h" id="panel">
     <h2 id="form-h">Đăng ký tham dự</h2>
-    <p class="hint" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Chỉ mất khoảng 1 phút.</p>
-    <div id="status" class="status" role="status">Đang kết nối với hệ thống đăng ký…</div>
+    <p class="hint" id="form-lead" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Bấm ghế trống trên sơ đồ, rồi điền thông tin.</p>
+    <div id="status" class="status" role="status" tabindex="-1">Đang kết nối với hệ thống đăng ký…</div>
 
-    <form id="reg" novalidate>
+    <fieldset id="book-mode" hidden>
+      <legend>Cách đặt</legend>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="bookmode" value="self" checked><span>Đặt cho tôi</span></label>
+        <label class="choice"><input type="radio" name="bookmode" value="host"><span>Đặt hộ khách</span></label>
+      </div>
+    </fieldset>
+    <p class="hint" id="mode-hint" hidden></p>
+
+    <fieldset id="show-field">
+      <legend>Chọn suất diễn <span class="req" aria-hidden="true">*</span></legend>
+      <div class="choices" id="show-choices"></div>
+      <span class="err" id="show-err" role="alert"></span>
+    </fieldset>
+
+    <div class="seatmap" id="seatmap" role="region" aria-labelledby="map-h">
+      <h3 id="map-h">Sơ đồ chỗ ngồi</h3>
+      <div class="stage">Sân khấu</div>
+      <div class="seat-scroll" id="seat-scroll" role="group" aria-label="Các hàng ghế"></div>
+      <ul class="legend">
+        <li><span class="sw free"></span> Trống</li>
+        <li><span class="sw pick"></span> Đang chọn</li>
+        <li><span class="sw mine"></span> Của bạn</li>
+        <li><span class="sw taken"></span> Đã có người</li>
+      </ul>
+      <p class="hint" id="seat-cap"></p>
+      <p class="note" id="map-warn" hidden></p>
+    </div>
+    <p class="note" id="draft-bar" hidden></p>
+
+    <form id="reg" novalidate hidden>
+      <span class="err" id="seat-err" role="alert"></span>
       <label for="name"><span>Họ và tên <span class="req" aria-hidden="true">*</span></span>
         <input id="name" name="name" autocomplete="name" maxlength="80" required aria-describedby="name-err">
         <span class="err" id="name-err" role="alert"></span>
@@ -277,27 +342,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
           <span class="err" id="email-err" role="alert"></span>
         </label>
       </div>
-      <fieldset id="show-field">
-        <legend>Chọn suất diễn <span class="req" aria-hidden="true">*</span></legend>
-        <div class="choices" id="show-choices"></div>
-        <span class="err" id="show-err" role="alert"></span>
-      </fieldset>
-      <div class="row">
-        <label for="seats"><span>Số vé</span>
-          <select id="seats" name="seats">
-            <option value="1">1 vé</option><option value="2" selected>2 vé</option><option value="3">3 vé</option><option value="4">4 vé</option>
-          </select>
-        </label>
-        <label for="org"><span>Đơn vị <span class="opt">(tùy chọn)</span></span>
-          <input id="org" name="org" maxlength="100" placeholder="VD: Phường Ninh Kiều">
-        </label>
-      </div>
+      <label for="org"><span>Đơn vị <span class="opt">(tùy chọn)</span></span>
+        <input id="org" name="org" maxlength="100" placeholder="VD: Phường Ninh Kiều">
+      </label>
       <label for="msg"><span>Ghi chú <span class="opt">(tùy chọn)</span></span>
         <textarea id="msg" name="msg" maxlength="300"></textarea>
       </label>
       <div class="btns">
         <button class="primary" type="submit" id="submit" disabled>Gửi đăng ký</button>
         <button class="ghost" type="button" id="cancel-edit" hidden>Thôi, giữ như cũ</button>
+        <button class="ghost" type="button" id="release-reg" hidden>Trả hết ghế</button>
+      </div>
+      <div class="confirm" id="release-confirm" hidden>
+        <span id="release-text"></span>
+        <div class="btns">
+          <button class="danger" type="button" id="release-yes">Trả ghế</button>
+          <button class="ghost" type="button" id="release-no">Không, giữ vé</button>
+        </div>
       </div>
     </form>
 
@@ -308,14 +369,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
         <dt>Họ tên</dt><dd id="t-name"></dd>
         <dt>Điện thoại</dt><dd id="t-phone"></dd>
         <dt>Thời gian</dt><dd id="t-show"></dd>
-        <dt>Số vé</dt><dd id="t-seats"></dd>
+        <dt>Ghế</dt><dd id="t-seats"></dd>
       </dl>
       <div class="btns">
         <button class="ghost" type="button" id="edit">Sửa thông tin</button>
         <button class="ghost" type="button" id="ask-cancel">Hủy đăng ký</button>
       </div>
       <div class="confirm" id="confirm" hidden>
-        <span>Hủy đăng ký và trả lại <strong id="c-seats"></strong> cho người khác?</span>
+        <span id="c-text">Hủy đăng ký và trả ghế cho người khác?</span>
         <div class="btns">
           <button class="danger" type="button" id="do-cancel">Xác nhận hủy</button>
           <button class="ghost" type="button" id="keep">Không, giữ vé</button>
@@ -325,6 +386,41 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
   </section>
 
   <section class="admin" id="admin" hidden aria-labelledby="admin-h">
+    <form id="cfg" class="cfg" autocomplete="off" novalidate>
+      <div>
+        <span class="eyebrow">Chỉ Ban tổ chức</span>
+        <h2 id="cfg-h">Tùy chỉnh sự kiện</h2>
+      </div>
+      <p class="hint">Bản lưu hiện cho mọi người đang mở trang. Thu hẹp sơ đồ không xóa đăng ký đã có; ghế nằm ngoài sơ đồ được báo ở danh sách.</p>
+      <div class="row">
+        <label for="cfg-eyebrow"><span>Dòng mày</span><input id="cfg-eyebrow" maxlength="80"></label>
+        <label for="cfg-phone"><span>Điện thoại</span><input id="cfg-phone" maxlength="40"></label>
+      </div>
+      <div class="row">
+        <label for="cfg-title"><span>Tên chương trình</span><input id="cfg-title" maxlength="60" required></label>
+        <label for="cfg-em"><span>Tên in nghiêng</span><input id="cfg-em" maxlength="40"></label>
+      </div>
+      <label for="cfg-desc"><span>Mô tả</span><textarea id="cfg-desc" maxlength="800"></textarea></label>
+      <label for="cfg-venue"><span>Địa điểm</span><input id="cfg-venue" maxlength="160"></label>
+      <div class="row">
+        <label for="cfg-door"><span>Giờ mở cửa</span><input id="cfg-door" maxlength="80"></label>
+        <label for="cfg-max"><span>Số ghế tối đa mỗi lượt</span><input id="cfg-max" type="number" min="1" max="20" step="1"></label>
+      </div>
+      <label for="cfg-ticket"><span>Câu về vé</span><input id="cfg-ticket" maxlength="160"></label>
+      <label class="choice"><input id="cfg-aisle" type="checkbox" checked><span>Có lối đi giữa mỗi hàng</span></label>
+      <div class="cfg-block">
+        <span class="hint">Suất diễn. Ngày dạng 22/11, nhãn có năm, giờ dạng 19:30. Mã suất giữ nguyên để không mất đăng ký.</span>
+        <div id="cfg-shows"></div>
+        <div><button class="ghost" type="button" id="cfg-add-show">Thêm suất</button></div>
+      </div>
+      <div class="cfg-block">
+        <span class="hint">Sơ đồ ghế. Nhãn hàng ngắn, ví dụ A. Ghế được đánh số A1, A2…</span>
+        <div id="cfg-rows"></div>
+        <div><button class="ghost" type="button" id="cfg-add-row">Thêm hàng</button></div>
+      </div>
+      <div class="btns"><button class="primary" type="submit" id="cfg-save">Lưu thông tin sự kiện</button></div>
+      <div id="cfg-status" class="status" hidden role="status"></div>
+    </form>
     <header>
       <div>
         <span class="eyebrow">Chỉ Ban tổ chức nhìn thấy</span>
@@ -333,10 +429,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
       <div class="btns"><button class="ghost" type="button" id="copy-csv">Sao chép bảng (CSV)</button></div>
     </header>
     <div class="totals" id="totals"></div>
+    <p id="orphan-warn" class="note" hidden></p>
     <p id="admin-empty" class="note" style="margin-top:14px">Chưa có ai đăng ký. Các lượt đăng ký mới sẽ hiện ở đây ngay khi được gửi.</p>
     <div class="tablebox" id="tablebox" hidden style="margin-top:14px">
       <table>
-        <thead><tr><th>Mã vé</th><th>Họ tên</th><th>Điện thoại</th><th>Email</th><th class="n">Vé</th><th>Đơn vị</th><th>Ghi chú</th><th>Lúc gửi</th></tr></thead>
+        <thead><tr><th>Mã vé</th><th>Họ tên</th><th>Điện thoại</th><th>Email</th><th>Ghế</th><th class="n">Vé</th><th>Đơn vị</th><th>Ghi chú</th><th>Lúc gửi</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -346,118 +443,438 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 <footer class="wrap"><p style="margin:0 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p><p style="margin:0;font-weight:500;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p></footer>
 
 <script>
-// Thông tin chương trình — sửa tại đây.
-const EVENT = {
+// Mặc định chương trình. Bản ban tổ chức lưu ở cauhinh/sukien sẽ đè lên các giá trị này.
+const EVENT_DEFAULT = {
+  eyebrow: "Đêm diễn cải lương · Đăng ký vé mời",
+  title: "Tiếng Hò",
+  titleEm: "Sông Hậu",
+  description: "Vở cải lương kinh điển về tình người miền sông nước Hậu Giang, với những lớp ca vọng cổ và điệu hò quen thuộc của Nam Bộ. Vé mời miễn phí, số ghế có hạn. Chọn ghế trên sơ đồ rồi điền thông tin để giữ chỗ.",
   venue: "Nhà hát Tây Đô, 22 Hòa Bình, Ninh Kiều, Cần Thơ",
   phone: "0292 3 000 000",
+  door: "Trước giờ diễn 45 phút",
+  ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt đăng ký",
+  maxSeats: 4,
+  aisle: true,
   shows: [
     { id: "s1", day: "22/11", label: "Thứ Bảy, 22/11/2026", time: "19:30" }
-  ]
+  ],
+  rows: ["A", "B", "C", "D", "E", "F", "G", "H"].map(label => ({ label, count: 14 }))
 };
 
 const $ = id => document.getElementById(id);
-const showById = id => EVENT.shows.find(s => s.id === id);
-const showText = id => { const s = showById(id); return s ? `${s.label} · ${s.time}` : id; };
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+};
 
-$("f-venue").textContent = EVENT.venue;
-$("hero-meta").textContent = EVENT.shows.map(x => x.day).join(" & ") + " · " + EVENT.shows[0].time + " · " + EVENT.venue.split(",")[0];
-$("f-phone").textContent = EVENT.phone;
-for (const s of EVENT.shows) {
-  const row = document.createElement("div"); row.className = "show";
-  row.innerHTML = `<span class="d"></span><span><strong></strong><br><small></small></span>`;
-  row.querySelector(".d").textContent = s.day;
-  row.querySelector("strong").textContent = s.label;
-  row.querySelector("small").textContent = "Mở màn " + s.time;
-  $("shows").append(row);
-  const lab = document.createElement("label"); lab.className = "choice";
-  lab.innerHTML = `<input type="radio" name="show" id="show-${s.id}"><span></span>`;
-  lab.querySelector("input").value = s.id;
-  lab.querySelector("span").textContent = `${s.label} · ${s.time}`;
-  $("show-choices").append(lab);
+let eventCfg = normalizeEvent(null);
+let db = null, uid = null, myRef = null, mine = null;
+let canEditUser = false, canWrite = false, viewOnly = false, ready = false, busy = false;
+let seatHolds = {}, adminRows = [], regById = {};
+let editing = false, draftKind = null, draftId = null, draftReg = null, draftSeats = [];
+let activeShow = null, mapSig = "", cfgDirty = false, cfgSilent = false;
+let editShows = [], editRows = [];
+let countdownTimer = null, countdownFor = null, countdownDone = false;
+
+function normalizeEvent(raw) {
+  const base = structuredClone(EVENT_DEFAULT);
+  if (!raw || typeof raw !== "object") return base;
+  for (const k of ["eyebrow", "title", "description", "venue", "phone", "door", "ticketNote"]) {
+    if (typeof raw[k] === "string" && raw[k].trim()) base[k] = raw[k].trim();
+  }
+  if (typeof raw.titleEm === "string") base.titleEm = raw.titleEm.trim().slice(0, 40);
+  base.title = base.title.slice(0, 60);
+  base.description = base.description.slice(0, 800);
+  if (raw.maxSeats != null) base.maxSeats = Math.min(20, Math.max(1, Number(raw.maxSeats) || base.maxSeats));
+  if (typeof raw.aisle === "boolean") base.aisle = raw.aisle;
+  if (Array.isArray(raw.shows) && raw.shows.length) {
+    const seen = new Set();
+    const shows = raw.shows.slice(0, 8).map((s, i) => {
+      let id = String(s.id || ("s" + (i + 1))).replace(/[^\w\-]/g, "").slice(0, 24) || ("s" + (i + 1));
+      while (seen.has(id)) id += "x";
+      seen.add(id);
+      return {
+        id,
+        day: String(s.day || "").trim().slice(0, 16),
+        label: String(s.label || "").trim().slice(0, 80),
+        time: String(s.time || "").trim().slice(0, 8)
+      };
+    }).filter(s => s.day || s.label);
+    if (shows.length) base.shows = shows;
+  }
+  if (Array.isArray(raw.rows) && raw.rows.length) {
+    const rows = raw.rows.slice(0, 30).map(r => ({
+      label: String(r.label || "").trim().replace(/[\s/\\_"']/g, "").slice(0, 8),
+      count: Math.min(40, Math.max(1, Number(r.count) || 1))
+    })).filter(r => r.label);
+    if (rows.length) base.rows = rows;
+  }
+  return base;
 }
 
-// Đếm ngược tới giờ mở màn (giờ Việt Nam), cập nhật mỗi giây.
-{
-  const sh = EVENT.shows[0];
-  const [d, m] = sh.day.split("/");
-  const y = sh.label.slice(-4);
-  const target = new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T${sh.time}:00+07:00`).getTime();
-  const el = $("countdown");
-  el.innerHTML = '<span class="cd-label">Còn lại đến giờ mở màn</span>' +
-    [["d", "Ngày"], ["h", "Giờ"], ["m", "Phút"], ["s", "Giây"]]
-      .map(([k, t], i) => (i ? '<span class="sep" aria-hidden="true">:</span>' : "") + `<div class="unit"><b data-k="${k}">00</b><span>${t}</span></div>`).join("");
-  el.setAttribute("aria-label", "Thời gian còn lại đến giờ mở màn");
-  el.hidden = false;
-  const cells = Object.fromEntries([...el.querySelectorAll("b")].map(b => [b.dataset.k, b]));
+function showById(id) { return eventCfg.shows.find(s => s.id === id); }
+function showText(id) { const s = showById(id); return s ? `${s.label} · ${s.time}` : (id || ""); }
+function sortSeats(ids) { return ids.slice().sort((a, b) => a.localeCompare(b, "vi", { numeric: true })); }
+function seatDocId(show, seat) { return show + "_" + seat; }
+function holdFor(seat) { return seatHolds[seatDocId(activeShow, seat)] || null; }
+function isPersonal(seat) {
+  return !!(mine && mine.show === activeShow && Array.isArray(mine.seatIds) && mine.seatIds.includes(seat));
+}
+function seatsPlain(d) {
+  return Array.isArray(d?.seatIds) && d.seatIds.length ? sortSeats(d.seatIds).join(", ") : "";
+}
+function ticketSeats(d) {
+  const list = seatsPlain(d);
+  if (list) return list;
+  if (d?.seats) return `Chưa xếp ghế (${d.seats} vé)`;
+  return "Chưa xếp ghế";
+}
+function countSeats(d) { return Array.isArray(d.seatIds) ? d.seatIds.length : (Number(d.seats) || 0); }
+function layoutSeatSet(cfg) {
+  const set = new Set();
+  for (const row of cfg.rows) for (let i = 1; i <= row.count; i++) set.add(row.label + i);
+  return set;
+}
+function showInstant(sh) {
+  const m = String(sh.day || "").match(/(\d{1,2})\s*\/\s*(\d{1,2})/);
+  const y = String(sh.label || "").match(/(20\d{2})/);
+  const tm = String(sh.time || "").match(/^(\d{1,2}):(\d{2})/);
+  if (!m || !y || !tm) return null;
+  const ms = new Date(`${y[1]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}T${tm[1].padStart(2, "0")}:${tm[2]}:00+07:00`).getTime();
+  return Number.isFinite(ms) ? ms : null;
+}
+function readHostMode() {
+  const c = document.querySelector('input[name="bookmode"]:checked');
+  return !!(canEditUser && c && c.value === "host");
+}
+function checkShow(id) {
+  const radio = document.getElementById("show-" + id);
+  if (radio) radio.checked = true;
+}
+
+function setupCountdown() {
+  const sh = eventCfg.shows[0];
+  const target = sh ? showInstant(sh) : null;
+  if (target && target === countdownFor && (countdownTimer || countdownDone)) return;
+  countdownFor = target || null;
+  countdownDone = false;
+  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+  const box = $("countdown");
+  box.textContent = "";
+  if (!target) { box.hidden = true; return; }
+  box.hidden = false;
+  box.setAttribute("aria-label", "Thời gian còn lại đến giờ mở màn");
+  box.append(el("span", "cd-label", "Còn lại đến giờ mở màn"));
+  const cells = {};
+  [["d", "Ngày"], ["h", "Giờ"], ["m", "Phút"], ["s", "Giây"]].forEach(([k, t], i) => {
+    if (i) {
+      const sep = el("span", "sep", ":");
+      sep.setAttribute("aria-hidden", "true");
+      box.append(sep);
+    }
+    const unit = el("div", "unit");
+    const b = el("b", "", "00");
+    b.dataset.k = k;
+    unit.append(b, el("span", "", t));
+    box.append(unit);
+    cells[k] = b;
+  });
   const pad = n => String(n).padStart(2, "0");
   const tick = () => {
     const left = target - Date.now();
     if (left <= 0) {
-      el.innerHTML = '<span class="live">' + (left > -4 * 3600000 ? "Chương trình đang diễn ra" : "Chương trình đã diễn ra") + "</span>";
-      clearInterval(timer); return;
+      box.textContent = "";
+      box.append(el("span", "live", left > -4 * 3600000 ? "Chương trình đang diễn ra" : "Chương trình đã diễn ra"));
+      countdownDone = true;
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      return;
     }
-    const t = Math.floor(left / 1000);
-    cells.d.textContent = Math.floor(t / 86400);
-    cells.h.textContent = pad(Math.floor(t / 3600) % 24);
-    cells.m.textContent = pad(Math.floor(t / 60) % 60);
-    cells.s.textContent = pad(t % 60);
+    const sec = Math.floor(left / 1000);
+    cells.d.textContent = Math.floor(sec / 86400);
+    cells.h.textContent = pad(Math.floor(sec / 3600) % 24);
+    cells.m.textContent = pad(Math.floor(sec / 60) % 60);
+    cells.s.textContent = pad(sec % 60);
   };
-  const timer = setInterval(tick, 1000);
+  countdownTimer = setInterval(tick, 1000);
   tick();
 }
 
-// Thanh "Đăng ký" dính đáy màn hình điện thoại, ẩn khi form đã hiện.
-if ("IntersectionObserver" in window) {
-  const seen = new Set();
-  const io = new IntersectionObserver(es => {
-    for (const e of es) e.isIntersecting ? seen.add(e.target) : seen.delete(e.target);
-    $("dock").classList.toggle("show", seen.size === 0);
-  });
-  io.observe(document.querySelector(".hero-cta")); io.observe($("panel"));
-}
+function applyEvent() {
+  const e = eventCfg;
+  document.title = (e.title + " " + e.titleEm).trim();
+  $("hero-eyebrow").textContent = e.eyebrow;
+  $("hero-title-text").textContent = e.title;
+  $("hero-em").textContent = e.titleEm;
+  $("hero-lead").textContent = e.description;
+  $("f-venue").textContent = e.venue;
+  $("f-door").textContent = e.door;
+  $("f-ticket").textContent = e.ticketNote;
+  $("f-phone").textContent = e.phone;
+  const days = e.shows.map(s => s.day).filter(Boolean).join(" & ");
+  const place = (e.venue || "").split(",")[0];
+  $("hero-meta").textContent = [days, e.shows[0]?.time, place].filter(Boolean).join(" · ");
 
-// Chỉ một suất: chọn sẵn và ẩn phần chọn suất.
-if (EVENT.shows.length === 1) {
-  document.querySelector('input[name="show"]').checked = true;
-  $("show-field").hidden = true;
-  $("shows-h").textContent = "Thời gian";
+  const shows = $("shows");
+  shows.textContent = "";
+  for (const s of e.shows) {
+    const row = el("div", "show");
+    const text = el("span");
+    text.append(el("strong", "", s.label), document.createElement("br"), el("small", "", "Mở màn " + s.time));
+    row.append(el("span", "d", s.day), text);
+    shows.append(row);
+  }
+  const prev = activeShow;
+  const choices = $("show-choices");
+  choices.textContent = "";
+  for (const s of e.shows) {
+    const lab = el("label", "choice");
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "show";
+    input.id = "show-" + s.id;
+    input.value = s.id;
+    lab.append(input, el("span", "", `${s.label} · ${s.time}`));
+    choices.append(lab);
+  }
+  activeShow = e.shows.some(s => s.id === prev) ? prev : (e.shows[0]?.id || null);
+  checkShow(activeShow);
+  $("show-field").hidden = e.shows.length <= 1;
+  $("shows-h").textContent = e.shows.length > 1 ? "Các suất diễn" : "Thời gian";
+  setupCountdown();
+  if (!cfgDirty) fillCfgForm();
+  if (editing) {
+    const known = layoutSeatSet(eventCfg);
+    draftSeats = draftSeats.filter(s => known.has(s));
+  }
+  mapSig = "";
+  render();
+  if (canEditUser) renderAdmin();
 }
-
-let db = null, uid = null, myRef = null, mine = null, editing = false, canWrite = true, busy = false;
 
 function setStatus(text, ok) {
-  const el = $("status");
-  el.hidden = !text; el.textContent = text || ""; el.classList.toggle("ok", !!ok);
+  const node = $("status");
+  node.hidden = !text;
+  node.textContent = text || "";
+  node.classList.toggle("ok", !!ok);
+  node.classList.remove("shake");
+}
+function nudgeStatus() {
+  const node = $("status");
+  node.classList.remove("shake");
+  void node.offsetWidth;
+  node.classList.add("shake");
 }
 function lockForm(locked) {
-  for (const el of $("reg").elements) el.disabled = locked;
+  for (const field of $("reg").elements) field.disabled = locked;
+}
+function isTransientStatus() {
+  const t = $("status").textContent;
+  return t.startsWith("Đang kết nối") || t.startsWith("Chưa kết nối được");
+}
+
+function seatVisual(seat) {
+  const hold = holdFor(seat);
+  const owner = hold?.registrationId || "";
+  const personal = isPersonal(seat);
+  const inDraft = editing && draftSeats.includes(seat);
+  const ownDraft = editing && draftId === uid;
+  if (inDraft) return [(ownDraft && (personal || owner === uid)) ? "mine" : "pick", ""];
+  if (ownDraft && (personal || owner === uid)) return ["free", "sẽ trả khi lưu"];
+  if (editing && draftKind === "existing" && owner && owner === draftId) return ["free", "sẽ trả khi lưu"];
+  if (personal || owner === uid) return ["mine", ""];
+  if (owner) return ["taken", ""];
+  return ["free", ""];
+}
+function seatName(owner, personal) {
+  if (!canEditUser) return "";
+  if (personal || owner === uid) return mine?.name || "";
+  return owner ? (regById[owner]?.name || "") : "";
+}
+function mapSignature() {
+  return [
+    eventCfg.rows.map(r => r.label + ":" + r.count).join(","),
+    eventCfg.aisle ? "1" : "0",
+    activeShow || "",
+    editing ? "e" : "v",
+    draftId || "",
+    draftSeats.join(","),
+    (mine?.seatIds || []).join(","),
+    mine?.show || "",
+    mine?.name || "",
+    canEditUser ? "a" : "g",
+    busy ? "b" : "",
+    Object.keys(seatHolds).sort().map(k => k + "=" + (seatHolds[k].registrationId || "")).join(";"),
+    canEditUser ? adminRows.map(d => (d.regId || "") + ":" + (d.name || "")).join("|") : ""
+  ].join("~");
+}
+function clusters(count, aisle) {
+  const n = Math.max(0, count | 0);
+  if (!aisle || n < 2) return [[1, n]];
+  const left = Math.ceil(n / 2);
+  return [[1, left], [left + 1, n]];
+}
+function renderMap() {
+  const sig = mapSignature();
+  const scroll = $("seat-scroll");
+  if (sig === mapSig) return;
+  mapSig = sig;
+  const active = document.activeElement;
+  const keep = active && active.dataset ? (active.dataset.seat || "") : "";
+  scroll.textContent = "";
+  for (const row of eventCfg.rows) {
+    const line = el("div", "seat-row");
+    line.setAttribute("role", "group");
+    line.setAttribute("aria-label", "Hàng " + row.label);
+    line.append(el("span", "rl", row.label));
+    clusters(row.count, eventCfg.aisle).forEach((range, idx) => {
+      if (idx) line.append(el("span", "aisle"));
+      const cluster = el("div", "cluster");
+      for (let n = range[0]; n <= range[1]; n++) cluster.append(makeSeat(row.label + n, n));
+      line.append(cluster);
+    });
+    scroll.append(line);
+  }
+  if (keep) {
+    const again = scroll.querySelector('[data-seat="' + keep.replace(/"/g, "") + '"]');
+    if (again) again.focus();
+  }
+}
+function makeSeat(seat, num) {
+  const hold = holdFor(seat);
+  const owner = hold?.registrationId || "";
+  const personal = isPersonal(seat);
+  const [state, extra] = seatVisual(seat);
+  const locked = !!(owner && owner !== uid && !(editing && owner === draftId) && !(canEditUser && !editing));
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "seat " + state + (canEditUser ? " org" : "");
+  btn.dataset.seat = seat;
+  btn.setAttribute("aria-pressed", editing && draftSeats.includes(seat) ? "true" : "false");
+  btn.disabled = busy || locked;
+  const name = seatName(owner, personal || owner === uid);
+  const words = { free: "trống", pick: "đang chọn", mine: "của bạn", taken: "đã có người" };
+  let label = "Ghế " + seat + ", " + (extra || words[state]);
+  if (state === "taken" && name) label += ", " + name;
+  btn.setAttribute("aria-label", label);
+  btn.title = label;
+  btn.append(el("span", "num", String(num)));
+  if (canEditUser) btn.append(el("span", "nm", name || "\u00a0"));
+  btn.addEventListener("click", () => onSeatClick(seat));
+  return btn;
 }
 
 function render() {
+  const showForm = editing;
   const showTicket = !!mine && !editing;
-  $("reg").hidden = showTicket;
+  $("reg").hidden = !showForm;
   $("ticket").hidden = !showTicket;
-  $("cancel-edit").hidden = !(mine && editing);
-  $("submit").textContent = mine ? "Lưu thay đổi" : "Gửi đăng ký";
-  if (showTicket) {
-    $("t-code").textContent = mine.code;
-    $("t-name").textContent = mine.name;
-    $("t-phone").textContent = mine.phone;
-    $("t-show").textContent = showText(mine.show);
-    $("t-seats").textContent = mine.seats + " vé";
-    $("c-seats").textContent = mine.seats + " vé";
+  $("cancel-edit").hidden = !editing;
+  $("cancel-edit").textContent = draftKind === "existing" ? "Thôi, giữ như cũ" : "Bỏ chọn";
+  $("release-reg").hidden = !(editing && draftKind === "existing");
+  $("book-mode").hidden = !canEditUser;
+  $("mode-hint").hidden = !canEditUser;
+  for (const r of document.querySelectorAll('input[name="bookmode"]')) r.disabled = editing || busy || !canWrite;
+  if (canWrite) { lockForm(busy); $("submit").disabled = busy; }
+  else lockForm(true);
+  for (const r of document.querySelectorAll('input[name="show"]')) r.disabled = !!busy;
+
+  const ids = editing ? sortSeats(draftSeats) : [];
+  const label = ids.join(", ");
+  if (editing) {
+    let who = "Đặt ghế";
+    if (draftKind === "host") who = "Đặt hộ";
+    else if (draftKind === "existing" && draftId !== uid) who = "Sửa chỗ";
+    else if (draftKind === "existing") who = "Sửa đăng ký";
+    $("form-h").textContent = label ? `${who} · ghế ${label}` : `${who} · chọn ghế trên sơ đồ`;
+    const verb = draftKind === "existing" ? "Lưu ghế" : "Giữ ghế";
+    $("submit").textContent = busy ? "Đang gửi…" : (label ? `${verb} ${label}` : "Chọn ghế");
+    $("draft-bar").hidden = false;
+    const cap = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt.`;
+    if (draftKind === "existing" && draftId !== uid) {
+      const name = draftReg?.name || regById[draftId]?.name || "khách";
+      $("draft-bar").textContent = label
+        ? `Đang sửa đăng ký của ${name}. Các ghế sẽ giữ: ${label}. ${cap}`
+        : `Đang sửa đăng ký của ${name}. Chọn ít nhất một ghế hoặc trả hết ghế. ${cap}`;
+    } else {
+      $("draft-bar").textContent = label ? `Các ghế sẽ giữ: ${label}. ${cap}` : `Bấm ghế trống trên sơ đồ. ${cap}`;
+    }
+  } else {
+    $("form-h").textContent = "Đăng ký tham dự";
+    $("draft-bar").hidden = true;
+    if (!busy) $("submit").textContent = "Gửi đăng ký";
   }
+  if (canEditUser) {
+    $("mode-hint").textContent = editing
+      ? "Bấm ghế trống để thêm vào lượt này. Bấm ghế đang chọn để bỏ."
+      : (readHostMode()
+        ? "Bấm ghế trống, điền thông tin khách rồi gửi. Ghế đó không vào đăng ký của bạn."
+        : "Bấm ghế trống để giữ vào đăng ký của bạn. Bấm ghế của bạn để trả ghế.");
+  }
+  if (showTicket && mine) {
+    $("t-code").textContent = mine.code || "";
+    $("t-name").textContent = mine.name || "";
+    $("t-phone").textContent = mine.phone || "";
+    $("t-show").textContent = showText(mine.show);
+    $("t-seats").textContent = ticketSeats(mine);
+    const list = seatsPlain(mine);
+    $("c-text").textContent = list ? `Hủy đăng ký và trả ghế ${list} cho người khác?` : "Hủy đăng ký này?";
+  }
+  const multi = eventCfg.shows.length > 1;
+  $("map-h").textContent = multi && activeShow ? "Sơ đồ chỗ ngồi · " + showText(activeShow) : "Sơ đồ chỗ ngồi";
+  $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt đăng ký.`;
+  renderMap();
 }
 
 function fillForm(d) {
-  $("name").value = d.name || ""; $("phone").value = d.phone || ""; $("email").value = d.email || "";
-  $("seats").value = String(d.seats || 2); $("org").value = d.org || ""; $("msg").value = d.msg || "";
-  const r = document.getElementById("show-" + d.show); if (r) r.checked = true;
+  $("name").value = d.name || "";
+  $("phone").value = d.phone || "";
+  $("email").value = d.email || "";
+  $("org").value = d.org || "";
+  $("msg").value = d.msg || "";
+  if (d.show) checkShow(d.show);
+  for (const id of ["name", "phone", "email"]) {
+    $(id + "-err").textContent = "";
+    $(id).setAttribute("aria-invalid", "false");
+  }
+  $("show-err").textContent = "";
+  $("seat-err").textContent = "";
 }
-
+function clearForm() {
+  $("reg").reset();
+  checkShow(activeShow);
+  for (const id of ["name", "phone", "email"]) {
+    $(id + "-err").textContent = "";
+    $(id).setAttribute("aria-invalid", "false");
+  }
+  $("show-err").textContent = "";
+  $("seat-err").textContent = "";
+}
+function closeDraft() {
+  editing = false;
+  draftKind = null;
+  draftId = null;
+  draftReg = null;
+  draftSeats = [];
+  $("release-confirm").hidden = true;
+  $("seat-err").textContent = "";
+}
+function openForm() {
+  render();
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  $("form-h").scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  $("name").focus();
+}
 function validate() {
   let ok = true;
-  const set = (id, msg) => { $(id + "-err").textContent = msg; const i = $(id); if (i) i.setAttribute("aria-invalid", msg ? "true" : "false"); if (msg) ok = false; };
+  const set = (id, msg) => {
+    $(id + "-err").textContent = msg;
+    const field = $(id);
+    if (field) field.setAttribute("aria-invalid", msg ? "true" : "false");
+    if (msg) ok = false;
+  };
   const name = $("name").value.trim();
   set("name", name.length < 2 ? "Vui lòng nhập họ và tên." : "");
   const phone = $("phone").value.replace(/[\s.\-]/g, "");
@@ -465,9 +882,13 @@ function validate() {
   const email = $("email").value.trim();
   set("email", email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Email chưa đúng định dạng." : "");
   const show = document.querySelector('input[name="show"]:checked');
-  $("show-err").textContent = show ? "" : "Vui lòng chọn một suất diễn."; if (!show) ok = false;
-  if (!ok) { const first = document.querySelector('[aria-invalid="true"]') || (show ? null : document.querySelector('input[name="show"]')); first?.focus(); }
-  return ok ? { name, phone, email, show: show.value, seats: Number($("seats").value), org: $("org").value.trim(), msg: $("msg").value.trim() } : null;
+  $("show-err").textContent = show ? "" : "Vui lòng chọn một suất diễn.";
+  if (!show) ok = false;
+  if (!ok) {
+    const first = document.querySelector('[aria-invalid="true"]') || (show ? null : document.querySelector('input[name="show"]'));
+    first?.focus();
+  }
+  return ok ? { name, phone, email, show: show.value, org: $("org").value.trim(), msg: $("msg").value.trim() } : null;
 }
 
 function newCode() {
@@ -476,103 +897,617 @@ function newCode() {
   for (const b of r) c += a[b % a.length];
   return "THSH-" + c;
 }
+function explain(err) {
+  const msg = String(err && err.message || "");
+  if (msg.startsWith("taken:")) return "Ghế " + msg.slice(6) + " vừa có người giữ. Chọn ghế khác.";
+  if (err && err.code === "invalid_argument") {
+    viewOnly = true; canWrite = false; lockForm(true);
+    return `Tài khoản của bạn chỉ có quyền xem trang này nên chưa gửi được đăng ký. Vui lòng gọi Ban tổ chức: ${eventCfg.phone}.`;
+  }
+  if (err && err.code === "quota_exceeded") return `Hệ thống đã đủ số lượt đăng ký. Vui lòng gọi Ban tổ chức: ${eventCfg.phone}.`;
+  return "Chưa gửi được do lỗi kết nối. Kiểm tra mạng rồi bấm gửi lại.";
+}
+function snapData(snap) {
+  if (!snap || snap.exists === false) return null;
+  const data = typeof snap.data === "function" ? snap.data() : snap.data;
+  return data || null;
+}
+async function readDoc(ref) {
+  if (!ref || typeof ref.get !== "function") return undefined;
+  const snap = await ref.get();
+  if (!snap || snap.exists === false) return null;
+  return snapData(snap);
+}
+async function releaseSeats(show, seatIds, registrationId) {
+  for (const seat of seatIds) {
+    const id = seatDocId(show, seat);
+    const ref = db.doc("ghe/" + id);
+    const cur = await readDoc(ref);
+    if (cur === undefined) {
+      if (seatHolds[id]?.registrationId === registrationId) {
+        await ref.delete();
+        delete seatHolds[id];
+      }
+      continue;
+    }
+    if (!cur) {
+      if (seatHolds[id]?.registrationId === registrationId) delete seatHolds[id];
+      continue;
+    }
+    if (cur.registrationId === registrationId) {
+      await ref.delete();
+      if (seatHolds[id]?.registrationId === registrationId) delete seatHolds[id];
+    }
+  }
+}
+async function claimSeats(show, seatIds, registrationId, ownerUid) {
+  const claimed = [];
+  try {
+    for (const seat of seatIds) {
+      const id = seatDocId(show, seat);
+      const ref = db.doc("ghe/" + id);
+      const cur = await readDoc(ref);
+      const holder = cur === undefined ? seatHolds[id]?.registrationId : cur?.registrationId;
+      if (holder && holder !== registrationId) throw Object.assign(new Error("taken:" + seat), { code: "taken" });
+      const body = { registrationId, show, seat, ownerUid: ownerUid || "" };
+      await ref.set(body);
+      const again = await readDoc(ref);
+      if (again && again.registrationId !== registrationId) throw Object.assign(new Error("taken:" + seat), { code: "taken" });
+      if (again === null) throw new Error("write");
+      seatHolds[id] = body;
+      claimed.push(seat);
+    }
+  } catch (err) {
+    await releaseSeats(show, claimed, registrationId);
+    throw err;
+  }
+}
+async function applySeatDiff(regId, ownerUid, nextShow, prevShow, prevIds, nextIds, body) {
+  const ref = db.doc("dangky/" + regId);
+  const prev = prevIds || [];
+  const next = nextIds || [];
+  if (prevShow && prevShow !== nextShow) {
+    await claimSeats(nextShow, next, regId, ownerUid);
+    try { await ref.set(body); }
+    catch (err) { await releaseSeats(nextShow, next, regId); throw err; }
+    await releaseSeats(prevShow, prev, regId);
+    return;
+  }
+  const add = next.filter(s => !prev.includes(s));
+  const rem = prev.filter(s => !next.includes(s));
+  await claimSeats(nextShow, add, regId, ownerUid);
+  try { await ref.set(body); }
+  catch (err) { await releaseSeats(nextShow, add, regId); throw err; }
+  await releaseSeats(nextShow, rem, regId);
+}
+function rememberReg(body) {
+  if (!body?.regId) return;
+  const i = adminRows.findIndex(d => d.regId === body.regId);
+  if (i >= 0) adminRows[i] = { ...adminRows[i], ...body };
+  else adminRows.unshift(body);
+  regById[body.regId] = i >= 0 ? adminRows[i] : body;
+}
+async function deleteRegistration(regId, data) {
+  const seats = Array.isArray(data?.seatIds) ? data.seatIds : [];
+  if (data?.show && seats.length) await releaseSeats(data.show, seats, regId);
+  await db.doc("dangky/" + regId).delete();
+  adminRows = adminRows.filter(d => d.regId !== regId);
+  regById = {};
+  for (const d of adminRows) if (d.regId) regById[d.regId] = d;
+}
+async function persistSelf(nextIds) {
+  if (!mine || busy || !canWrite) return;
+  const show = mine.show || activeShow;
+  const prev = mine.seatIds.slice();
+  const body = {
+    ...mine, regId: uid, source: mine.source || "guest", show,
+    seatIds: sortSeats(nextIds), seats: nextIds.length, updatedAt: new Date().toISOString()
+  };
+  busy = true;
+  render();
+  try {
+    await applySeatDiff(uid, uid, show, show, prev, body.seatIds, body);
+    mine = body;
+    rememberReg(body);
+    if (canEditUser) renderAdmin();
+    setStatus(nextIds.length < prev.length ? "Đã trả ghế." : "Đã giữ ghế " + body.seatIds.join(", ") + ".", true);
+  } catch (err) { setStatus(explain(err)); }
+  finally { busy = false; mapSig = ""; render(); }
+}
+async function addOwn(seat) {
+  if (busy || !mine || !Array.isArray(mine.seatIds)) return;
+  if (mine.show && mine.show !== activeShow) {
+    setStatus("Đăng ký của bạn thuộc suất khác. Bấm Sửa thông tin nếu muốn đổi suất.");
+    return;
+  }
+  const prev = mine.seatIds.slice();
+  if (prev.includes(seat)) return;
+  if (prev.length >= eventCfg.maxSeats) {
+    setStatus(`Mỗi lượt giữ tối đa ${eventCfg.maxSeats} ghế.`);
+    return;
+  }
+  await persistSelf(prev.concat(seat));
+}
+async function removeOwn(seat) {
+  if (busy || !mine) return;
+  if (mine.show && mine.show !== activeShow) {
+    setStatus("Đăng ký của bạn thuộc suất khác. Bấm Sửa thông tin nếu muốn đổi suất.");
+    return;
+  }
+  if (!Array.isArray(mine.seatIds) || !mine.seatIds.includes(seat)) {
+    if (holdFor(seat)?.registrationId === uid) {
+      busy = true; render();
+      try { await releaseSeats(mine.show || activeShow, [seat], uid); }
+      finally { busy = false; mapSig = ""; render(); }
+    }
+    return;
+  }
+  if (mine.seatIds.length <= 1) {
+    const list = seatsPlain(mine);
+    $("c-text").textContent = list ? `Hủy đăng ký và trả ghế ${list} cho người khác?` : "Hủy đăng ký này?";
+    $("confirm").hidden = false;
+    $("do-cancel").focus();
+    return;
+  }
+  await persistSelf(mine.seatIds.filter(s => s !== seat));
+}
+function startHostDraft(seat) {
+  draftKind = "host"; draftId = null; draftReg = null; draftSeats = [seat]; editing = true;
+  clearForm(); checkShow(activeShow); setStatus(""); openForm();
+}
+function startSelfDraft(seat) {
+  draftKind = "self"; draftId = uid; draftReg = null; draftSeats = [seat]; editing = true;
+  clearForm(); checkShow(activeShow); setStatus(""); openForm();
+}
+function startAssignDraft(seat) {
+  draftKind = "existing"; draftId = uid; draftReg = mine; draftSeats = [seat]; editing = true;
+  fillForm(mine || {});
+  checkShow(activeShow);
+  setStatus("Chọn ghế trên sơ đồ rồi lưu để xếp chỗ.", true);
+  openForm();
+}
+function openExisting(regId) {
+  const reg = regId === uid ? (mine || regById[uid]) : regById[regId];
+  if (!reg) { setStatus("Chưa tải được đăng ký của ghế này. Thử lại sau giây lát."); return; }
+  draftKind = "existing"; draftId = regId; draftReg = reg;
+  draftSeats = Array.isArray(reg.seatIds) ? reg.seatIds.slice() : [];
+  editing = true;
+  if (reg.show && eventCfg.shows.some(s => s.id === reg.show)) activeShow = reg.show;
+  fillForm(reg); checkShow(activeShow); $("confirm").hidden = true;
+  if (!Array.isArray(reg.seatIds)) setStatus("Chọn ghế trên sơ đồ rồi lưu để xếp chỗ.", true);
+  else setStatus("");
+  openForm();
+}
+async function onSeatClick(seat) {
+  if (busy) return;
+  if (!ready || !canWrite) { nudgeStatus(); return; }
+  const hold = holdFor(seat);
+  const owner = hold?.registrationId || "";
+  if (editing) {
+    if (owner && owner !== draftId && owner !== uid) {
+      setStatus("Ghế này đã có người. Lưu hoặc thôi sửa trước khi đổi sang ghế đó.");
+      return;
+    }
+    if ((owner === uid || isPersonal(seat)) && draftId !== uid) {
+      setStatus("Ghế này thuộc đăng ký của bạn.");
+      return;
+    }
+    if (draftKind === "host" && (owner === uid || isPersonal(seat))) {
+      setStatus("Ghế này thuộc đăng ký của bạn, không gộp vào lượt đặt hộ.");
+      return;
+    }
+    if (draftSeats.includes(seat)) draftSeats = draftSeats.filter(s => s !== seat);
+    else if (draftSeats.length >= eventCfg.maxSeats) {
+      setStatus(`Mỗi lượt giữ tối đa ${eventCfg.maxSeats} ghế.`);
+      return;
+    } else draftSeats = draftSeats.concat(seat);
+    $("seat-err").textContent = "";
+    render();
+    return;
+  }
+  if (owner && owner !== uid) {
+    if (canEditUser) openExisting(owner);
+    return;
+  }
+  if (readHostMode()) {
+    if (owner === uid || isPersonal(seat)) {
+      setStatus("Ghế này thuộc đăng ký của bạn. Chọn Đặt cho tôi để trả hoặc thêm ghế.");
+      return;
+    }
+    startHostDraft(seat);
+    return;
+  }
+  if (owner === uid || isPersonal(seat)) { await removeOwn(seat); return; }
+  if (mine && !Array.isArray(mine.seatIds)) { startAssignDraft(seat); return; }
+  if (mine && Array.isArray(mine.seatIds)) { await addOwn(seat); return; }
+  startSelfDraft(seat);
+}
 
 $("reg").addEventListener("submit", async e => {
   e.preventDefault();
-  if (!myRef || busy || !canWrite) return;
+  if (busy || !canWrite || !ready) return;
   const data = validate(); if (!data) return;
-  busy = true; $("submit").disabled = true; $("submit").textContent = "Đang gửi…"; $("reg").setAttribute("aria-busy", "true"); setStatus("");
+  const seatIds = sortSeats(draftSeats);
+  if (!seatIds.length || seatIds.length > eventCfg.maxSeats) {
+    $("seat-err").textContent = seatIds.length ? `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt.` : "Chọn ít nhất một ghế trên sơ đồ.";
+    $("seat-scroll").querySelector("button.seat:not(:disabled)")?.focus();
+    return;
+  }
   const now = new Date().toISOString();
-  const body = { ...data, code: mine?.code || newCode(), createdAt: mine?.createdAt || now, updatedAt: now };
+  let regId, source, prev, prevShow, code, createdAt;
+  if (draftKind === "host") {
+    code = newCode(); regId = "btc-" + code; source = "btc"; prev = []; prevShow = data.show; createdAt = now;
+  } else if (draftKind === "existing") {
+    const base = draftId === uid ? (mine || draftReg || {}) : (regById[draftId] || draftReg || {});
+    regId = draftId; code = base.code || newCode();
+    source = base.source || (regId === uid ? "guest" : "btc");
+    prev = Array.isArray(base.seatIds) ? base.seatIds.slice() : [];
+    prevShow = base.show || data.show; createdAt = base.createdAt || now;
+  } else {
+    regId = uid; code = mine?.code || newCode(); source = "guest";
+    prev = Array.isArray(mine?.seatIds) ? mine.seatIds.slice() : [];
+    prevShow = mine?.show || data.show; createdAt = mine?.createdAt || now;
+  }
+  for (const s of seatIds) {
+    const h = seatHolds[seatDocId(data.show, s)];
+    if (h && h.registrationId !== regId) { setStatus("Ghế " + s + " vừa có người giữ. Chọn ghế khác."); return; }
+  }
+  const body = { ...data, seatIds, seats: seatIds.length, code, source, regId, createdAt, updatedAt: now };
+  busy = true; $("submit").disabled = true; $("submit").textContent = "Đang gửi…"; $("reg").setAttribute("aria-busy", "true");
   try {
-    await myRef.set(body);
-    mine = body; editing = false; setStatus(""); render(); $("t-ok").focus();
-  } catch (err) {
-    if (err?.code === "invalid_argument") {
-      canWrite = false; lockForm(true);
-      setStatus(`Tài khoản của bạn chỉ có quyền xem trang này nên chưa gửi được đăng ký. Vui lòng gọi Ban tổ chức: ${EVENT.phone}.`);
-    } else if (err?.code === "quota_exceeded") {
-      setStatus(`Hệ thống đã đủ số lượt đăng ký. Vui lòng gọi Ban tổ chức: ${EVENT.phone}.`);
-    } else {
-      setStatus("Chưa gửi được do lỗi kết nối. Kiểm tra mạng rồi bấm gửi lại.");
-    }
-  } finally { busy = false; $("reg").removeAttribute("aria-busy"); render(); if (canWrite) $("submit").disabled = false; }
+    await applySeatDiff(regId, uid, data.show, prevShow, prev, seatIds, body);
+    if (regId === uid) mine = body;
+    rememberReg(body);
+    if (canEditUser) renderAdmin();
+    const kind = draftKind;
+    closeDraft();
+    const lead = kind === "host" ? "Đã đặt hộ khách, ghế " : (kind === "existing" ? "Đã lưu ghế " : "Đã giữ ghế ");
+    setStatus(lead + seatIds.join(", ") + ".", true);
+    render();
+    if (regId === uid) $("t-ok").focus(); else $("status").focus();
+  } catch (err) { setStatus(explain(err)); }
+  finally { busy = false; $("reg").removeAttribute("aria-busy"); mapSig = ""; render(); }
 });
 
-for (const id of ["name", "phone", "email"]) $(id).addEventListener("input", () => { $(id + "-err").textContent = ""; $(id).setAttribute("aria-invalid", "false"); });
-$("show-choices").addEventListener("change", () => { $("show-err").textContent = ""; });
-$("edit").onclick = () => { editing = true; fillForm(mine); render(); $("name").focus(); };
-$("cancel-edit").onclick = () => { editing = false; render(); };
-$("ask-cancel").onclick = () => { $("confirm").hidden = false; $("do-cancel").focus(); };
-$("keep").onclick = () => { $("confirm").hidden = true; };
-$("do-cancel").onclick = async () => {
-  if (busy) return; busy = true; $("do-cancel").disabled = true;
-  try {
-    await myRef.delete();
-    mine = null; editing = false; $("confirm").hidden = true; $("reg").reset(); if (EVENT.shows.length === 1) document.querySelector('input[name="show"]').checked = true;
-    setStatus("Đã hủy đăng ký. Bạn có thể đăng ký lại bất cứ lúc nào.", true); render();
-  } catch { setStatus("Chưa hủy được do lỗi kết nối. Thử lại sau ít phút."); }
-  finally { busy = false; $("do-cancel").disabled = false; }
-};
-
-// Ban tổ chức
-let adminRows = [];
 function csvCell(v) { const s = String(v ?? ""); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
-function renderAdmin() {
-  const tb = $("rows"); tb.textContent = "";
-  const by = {}; let total = 0;
+function whenText(v) {
+  if (!v) return "";
+  const dt = new Date(v);
+  return Number.isFinite(dt.getTime()) ? dt.toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" }) : "";
+}
+function seatCell(d) {
+  const seats = Array.isArray(d.seatIds) && d.seatIds.length ? sortSeats(d.seatIds).join(", ") : "";
+  const show = eventCfg.shows.length > 1 && d.show ? showText(d.show) : "";
+  if (!seats) return "chưa xếp ghế";
+  return show ? seats + " · " + show : seats;
+}
+function orphanText() {
+  const known = layoutSeatSet(eventCfg);
+  const showIds = new Set(eventCfg.shows.map(s => s.id));
+  const bits = [];
+  const seen = new Set();
   for (const d of adminRows) {
-    by[d.show] = (by[d.show] || 0) + (d.seats || 0); total += d.seats || 0;
+    const who = d.code || d.name || d.regId || "đăng ký";
+    for (const s of (Array.isArray(d.seatIds) ? d.seatIds : [])) {
+      const key = who + ":" + s;
+      if (!known.has(s) && !seen.has(key)) { seen.add(key); bits.push(s + " (" + who + ")"); }
+    }
+    if (d.show && !showIds.has(d.show)) bits.push("suất " + d.show + " (" + who + ")");
+  }
+  if (!bits.length) return "";
+  return "Ghế ngoài sơ đồ hoặc suất không còn trong chương trình: " + bits.slice(0, 12).join(", ") + (bits.length > 12 ? "…" : "") + ". Các đăng ký này không bị xóa.";
+}
+function renderAdmin() {
+  const list = adminRows.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+  const tb = $("rows"); tb.textContent = "";
+  let total = 0;
+  for (const d of list) {
+    total += countSeats(d);
     const tr = document.createElement("tr");
-    const cells = [d.code, d.name, d.phone, d.email, d.seats, d.org, d.msg,
-      d.createdAt ? new Date(d.createdAt).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" }) : ""];
-    cells.forEach((v, i) => { const td = document.createElement("td"); td.textContent = v ?? ""; if (i === 4) td.className = "n"; tr.append(td); });
+    const cells = [d.code, d.name, d.phone, d.email, seatCell(d), countSeats(d), d.org, d.msg, whenText(d.createdAt)];
+    cells.forEach((v, i) => {
+      const td = document.createElement("td");
+      td.textContent = v ?? "";
+      if (i === 5) td.className = "n";
+      tr.append(td);
+    });
     tb.append(tr);
   }
   const t = $("totals"); t.textContent = "";
   const pill = txt => { const p = document.createElement("span"); p.className = "pill"; p.textContent = txt; t.append(p); };
-  pill(`${adminRows.length} lượt · ${total} vé`);
-  $("admin-empty").hidden = adminRows.length > 0;
-  $("tablebox").hidden = adminRows.length === 0;
+  pill(`${list.length} lượt · ${total} ghế`);
+  const warn = orphanText();
+  $("orphan-warn").hidden = !warn;
+  $("orphan-warn").textContent = warn;
+  $("admin-empty").hidden = list.length > 0;
+  $("tablebox").hidden = list.length === 0;
 }
+function setAdminRows(rows) {
+  adminRows = rows.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+  regById = {};
+  for (const d of adminRows) if (d.regId) regById[d.regId] = d;
+  renderAdmin();
+  mapSig = "";
+  renderMap();
+}
+
+function setCfgStatus(text, ok) {
+  const node = $("cfg-status");
+  node.hidden = !text; node.textContent = text || ""; node.classList.toggle("ok", !!ok);
+}
+function markCfg() { if (!cfgSilent) cfgDirty = true; }
+function readShows() {
+  return [...$("cfg-shows").querySelectorAll(".cfg-line")].map(row => ({
+    id: row.dataset.id,
+    day: row.querySelector('[data-k="day"]').value.trim(),
+    label: row.querySelector('[data-k="label"]').value.trim(),
+    time: row.querySelector('[data-k="time"]').value.trim()
+  }));
+}
+function readRows() {
+  return [...$("cfg-rows").querySelectorAll(".cfg-line")].map(row => ({
+    label: row.querySelector('[data-k="label"]').value.trim(),
+    count: Number(row.querySelector('[data-k="count"]').value)
+  }));
+}
+function nextRowLabel(rows) {
+  const used = new Set(rows.map(r => String(r.label || "").toUpperCase()));
+  for (let i = 0; i < 26; i++) {
+    const L = String.fromCharCode(65 + i);
+    if (!used.has(L)) return L;
+  }
+  return "H" + (rows.length + 1);
+}
+function renderCfgEditors() {
+  const shows = $("cfg-shows");
+  const rows = $("cfg-rows");
+  shows.textContent = "";
+  rows.textContent = "";
+  editShows.forEach((s, i) => {
+    const line = el("div", "cfg-line shows");
+    line.dataset.id = s.id;
+    const day = document.createElement("input");
+    day.dataset.k = "day"; day.value = s.day || ""; day.maxLength = 16; day.placeholder = "22/11";
+    day.setAttribute("aria-label", "Ngày suất " + (i + 1));
+    const label = document.createElement("input");
+    label.dataset.k = "label"; label.value = s.label || ""; label.maxLength = 80; label.placeholder = "Thứ Bảy, 22/11/2026";
+    label.setAttribute("aria-label", "Nhãn suất " + (i + 1));
+    const time = document.createElement("input");
+    time.dataset.k = "time"; time.value = s.time || ""; time.maxLength = 8; time.placeholder = "19:30";
+    time.setAttribute("aria-label", "Giờ suất " + (i + 1));
+    const del = document.createElement("button");
+    del.type = "button"; del.className = "ghost"; del.textContent = "Xóa";
+    del.setAttribute("aria-label", "Xóa suất " + (i + 1));
+    del.addEventListener("click", () => {
+      const cur = readShows();
+      if (cur.length <= 1) return;
+      editShows = cur.filter(item => item.id !== s.id);
+      cfgDirty = true; renderCfgEditors();
+    });
+    for (const input of [day, label, time]) input.addEventListener("input", markCfg);
+    line.append(day, label, time, del);
+    shows.append(line);
+  });
+  editRows.forEach((r, i) => {
+    const line = el("div", "cfg-line rows");
+    const label = document.createElement("input");
+    label.dataset.k = "label"; label.value = r.label || ""; label.maxLength = 8; label.placeholder = "A";
+    label.setAttribute("aria-label", "Nhãn hàng " + (i + 1));
+    const count = document.createElement("input");
+    count.dataset.k = "count"; count.type = "number"; count.min = "1"; count.max = "40"; count.value = String(r.count || 1);
+    count.setAttribute("aria-label", "Số ghế hàng " + (i + 1));
+    const del = document.createElement("button");
+    del.type = "button"; del.className = "ghost"; del.textContent = "Xóa";
+    del.setAttribute("aria-label", "Xóa hàng " + (r.label || i + 1));
+    del.addEventListener("click", () => {
+      const cur = readRows();
+      if (cur.length <= 1) return;
+      cur.splice(i, 1); editRows = cur; cfgDirty = true; renderCfgEditors();
+    });
+    label.addEventListener("input", markCfg);
+    count.addEventListener("input", markCfg);
+    line.append(label, count, del);
+    rows.append(line);
+  });
+}
+function fillCfgForm() {
+  if (!$("cfg-title")) return;
+  cfgSilent = true;
+  $("cfg-eyebrow").value = eventCfg.eyebrow || "";
+  $("cfg-phone").value = eventCfg.phone || "";
+  $("cfg-title").value = eventCfg.title || "";
+  $("cfg-em").value = eventCfg.titleEm || "";
+  $("cfg-desc").value = eventCfg.description || "";
+  $("cfg-venue").value = eventCfg.venue || "";
+  $("cfg-door").value = eventCfg.door || "";
+  $("cfg-max").value = String(eventCfg.maxSeats || 4);
+  $("cfg-ticket").value = eventCfg.ticketNote || "";
+  $("cfg-aisle").checked = !!eventCfg.aisle;
+  editShows = eventCfg.shows.map(s => ({ ...s }));
+  editRows = eventCfg.rows.map(r => ({ ...r }));
+  renderCfgEditors();
+  cfgSilent = false;
+}
+async function saveCfg(e) {
+  e.preventDefault();
+  if (!db || !canEditUser) { setCfgStatus("Chưa kết nối kho lưu trữ nên chưa lưu được."); return; }
+  const shows = readShows();
+  const rows = readRows();
+  if (!$("cfg-title").value.trim()) { setCfgStatus("Cần tên chương trình."); return; }
+  if (!shows.length || shows.some(s => !s.day || !s.label || !s.time)) { setCfgStatus("Mỗi suất cần ngày, nhãn và giờ."); return; }
+  if (!rows.length || rows.some(r => !r.label || !(Number(r.count) >= 1))) { setCfgStatus("Mỗi hàng cần nhãn và số ghế từ 1 trở lên."); return; }
+  if (new Set(rows.map(r => r.label.toUpperCase())).size !== rows.length) { setCfgStatus("Mỗi hàng một nhãn khác nhau."); return; }
+  if (shows.some(s => !s.id) || new Set(shows.map(s => s.id)).size !== shows.length) { setCfgStatus("Mỗi suất cần một mã riêng."); return; }
+  const payload = normalizeEvent({
+    eyebrow: $("cfg-eyebrow").value, title: $("cfg-title").value, titleEm: $("cfg-em").value,
+    description: $("cfg-desc").value, venue: $("cfg-venue").value, phone: $("cfg-phone").value,
+    door: $("cfg-door").value, ticketNote: $("cfg-ticket").value, maxSeats: Number($("cfg-max").value),
+    aisle: $("cfg-aisle").checked, shows, rows
+  });
+  $("cfg-save").disabled = true;
+  cfgDirty = false;
+  try {
+    await db.doc("cauhinh/sukien").set(structuredClone(payload));
+    setCfgStatus("Đã lưu. Mọi người đang mở trang sẽ thấy bản mới.", true);
+  } catch {
+    cfgDirty = true;
+    setCfgStatus("Chưa lưu được thông tin sự kiện. Kiểm tra mạng rồi thử lại.");
+  } finally { $("cfg-save").disabled = false; }
+}
+
+function offline() {
+  ready = false; canWrite = false; lockForm(true);
+  setStatus(`Đăng ký trực tuyến tạm thời chưa mở. Vui lòng gọi Ban tổ chức để đăng ký: ${eventCfg.phone}.`);
+  render();
+}
+async function start() {
+  try {
+    const cl = window.claude;
+    if (!cl?.use) { offline(); return; }
+    const [store, user] = await Promise.all([cl.use("db"), cl.use("user")]);
+    db = store; uid = user ? await user.id() : null;
+    if (!db || !uid) { offline(); return; }
+    myRef = db.doc("dangky/" + uid);
+    if (typeof db.doc === "function") {
+      db.doc("cauhinh/sukien").onSnapshot(snap => {
+        const data = snap && snap.exists ? snapData(snap) : null;
+        if (!data) return;
+        eventCfg = normalizeEvent(data);
+        if (cfgDirty) setCfgStatus("Có bản mới vừa được lưu. Nếu bạn lưu tiếp, bản của bạn sẽ đè lên.");
+        applyEvent();
+      }, () => {});
+    }
+    if (typeof db.collection === "function") {
+      db.collection("ghe").onSnapshot(s => {
+        const next = {};
+        for (const d of s.docs || []) {
+          const data = typeof d.data === "function" ? (d.data() || {}) : {};
+          next[d.id] = data;
+        }
+        seatHolds = next; mapSig = ""; renderMap();
+        $("map-warn").hidden = true;
+      }, () => {
+        $("map-warn").hidden = false;
+        $("map-warn").textContent = "Chưa tải được ghế đã có người. Nếu ghế bạn chọn vừa được giữ, hệ thống sẽ báo khi gửi.";
+      });
+    }
+    const timer = setTimeout(() => setStatus("Chưa kết nối được hệ thống đăng ký. Kiểm tra mạng của bạn."), 10000);
+    myRef.onSnapshot(snap => {
+      if (!(snap.metadata && snap.metadata.fromCache)) clearTimeout(timer);
+      const data = snapData(snap);
+      mine = data;
+      if (mine) mine.regId = uid;
+      ready = true;
+      if (!viewOnly) canWrite = true;
+      if (!editing && !busy && canWrite && isTransientStatus()) setStatus("");
+      render();
+    }, () => {
+      clearTimeout(timer);
+      if (!ready) setStatus(`Hệ thống đăng ký tạm gián đoạn. Vui lòng gọi Ban tổ chức: ${eventCfg.phone}.`);
+    });
+    try { canEditUser = !!(user && typeof user.canEdit === "function" && await user.canEdit()); }
+    catch { canEditUser = false; }
+    if (canEditUser) {
+      $("admin").hidden = false;
+      fillCfgForm();
+      renderAdmin();
+      render();
+      db.collection("dangky").orderBy("createdAt", "desc").onSnapshot(s => {
+        setAdminRows((s.docs || []).map(x => {
+          const data = typeof x.data === "function" ? (x.data() || {}) : {};
+          return { ...data, regId: x.id || data.regId };
+        }));
+      }, () => {
+        $("admin-empty").hidden = false;
+        $("admin-empty").textContent = "Không tải được danh sách. Tải lại trang để thử lại.";
+      });
+    }
+  } catch { offline(); }
+}
+
+if ("IntersectionObserver" in window) {
+  const seen = new Set();
+  const io = new IntersectionObserver(es => {
+    for (const e of es) e.isIntersecting ? seen.add(e.target) : seen.delete(e.target);
+    $("dock").classList.toggle("show", seen.size === 0);
+  });
+  io.observe(document.querySelector(".hero-cta")); io.observe($("panel"));
+}
+$("draft-bar").setAttribute("aria-live", "polite");
+for (const id of ["name", "phone", "email"]) $(id).addEventListener("input", () => { $(id + "-err").textContent = ""; $(id).setAttribute("aria-invalid", "false"); });
+$("show-choices").addEventListener("change", () => {
+  const picked = document.querySelector('input[name="show"]:checked');
+  if (picked) activeShow = picked.value;
+  $("show-err").textContent = "";
+  mapSig = "";
+  render();
+});
+$("book-mode").addEventListener("change", () => { if (!editing) render(); });
+$("edit").onclick = () => { if (mine) openExisting(uid); };
+$("cancel-edit").onclick = () => { closeDraft(); setStatus(""); render(); };
+$("ask-cancel").onclick = () => { $("confirm").hidden = false; $("do-cancel").focus(); };
+$("keep").onclick = () => { $("confirm").hidden = true; };
+$("do-cancel").onclick = async () => {
+  if (busy || !mine) return;
+  busy = true; $("do-cancel").disabled = true; render();
+  try {
+    await deleteRegistration(uid, mine);
+    mine = null; closeDraft(); $("confirm").hidden = true; clearForm();
+    setStatus("Đã hủy đăng ký. Bạn có thể đăng ký lại bất cứ lúc nào.", true);
+    if (canEditUser) renderAdmin();
+  } catch { setStatus("Chưa hủy được do lỗi kết nối. Thử lại sau ít phút."); }
+  finally { busy = false; $("do-cancel").disabled = false; mapSig = ""; render(); }
+};
+$("release-reg").onclick = () => {
+  const who = draftReg?.name || regById[draftId]?.name || "";
+  const list = sortSeats(draftSeats).join(", ") || seatsPlain(draftReg);
+  $("release-text").textContent = list
+    ? `Trả ghế ${list}${who ? " của " + who : ""} và xóa đăng ký này?`
+    : "Xóa đăng ký này?";
+  $("release-confirm").hidden = false;
+  $("release-yes").focus();
+};
+$("release-no").onclick = () => { $("release-confirm").hidden = true; };
+$("release-yes").onclick = async () => {
+  if (busy || !draftId) return;
+  const data = draftId === uid ? (mine || draftReg) : (regById[draftId] || draftReg);
+  busy = true; $("release-yes").disabled = true; render();
+  try {
+    await deleteRegistration(draftId, data);
+    if (draftId === uid) mine = null;
+    closeDraft(); clearForm();
+    setStatus("Đã trả ghế.", true);
+    if (canEditUser) renderAdmin();
+  } catch { setStatus("Chưa trả được ghế. Thử lại sau ít phút."); }
+  finally { busy = false; $("release-yes").disabled = false; mapSig = ""; render(); }
+};
 $("copy-csv").onclick = async () => {
-  const head = ["Mã vé","Họ tên","Điện thoại","Email","Số vé","Đơn vị","Ghi chú","Lúc gửi"];
+  const head = ["Mã vé", "Họ tên", "Điện thoại", "Email", "Ghế", "Số vé", "Đơn vị", "Ghi chú", "Lúc gửi"];
   const lines = [head.join(",")].concat(adminRows.map(d =>
-    [d.code, d.name, d.phone, d.email, d.seats, d.org, d.msg, d.createdAt].map(csvCell).join(",")));
+    [d.code, d.name, d.phone, d.email, seatCell(d), countSeats(d), d.org, d.msg, d.createdAt].map(csvCell).join(",")));
   const btn = $("copy-csv");
   try { await navigator.clipboard.writeText(lines.join("\n")); btn.textContent = "Đã sao chép"; }
   catch { btn.textContent = "Không sao chép được"; }
   setTimeout(() => { btn.textContent = "Sao chép bảng (CSV)"; }, 2000);
 };
-
-async function start() {
-  const cl = window.claude;
-  if (!cl?.use) { offline(); return; }
-  const [d, user] = await Promise.all([cl.use("db"), cl.use("user")]);
-  db = d; uid = user ? await user.id() : null;
-  if (!db || !uid) { offline(); return; }
-  myRef = db.doc("dangky/" + uid);
-
-  const timer = setTimeout(() => setStatus("Chưa kết nối được hệ thống đăng ký. Kiểm tra mạng của bạn."), 10000);
-  myRef.onSnapshot(snap => {
-    if (!snap.metadata.fromCache) clearTimeout(timer);
-    mine = snap.exists ? snap.data() : null;
-    if (!editing) { setStatus(""); lockForm(false); $("submit").disabled = false; }
-    render();
-  }, () => { clearTimeout(timer); setStatus(`Hệ thống đăng ký tạm gián đoạn. Vui lòng gọi Ban tổ chức: ${EVENT.phone}.`); });
-
-  if (await user.canEdit()) {
-    $("admin").hidden = false; renderAdmin();
-    db.collection("dangky").orderBy("createdAt", "desc").onSnapshot(s => {
-      adminRows = s.docs.map(x => x.data()); renderAdmin();
-    }, () => { $("admin-empty").textContent = "Không tải được danh sách. Tải lại trang để thử lại."; });
-  }
+for (const id of ["cfg-eyebrow", "cfg-phone", "cfg-title", "cfg-em", "cfg-desc", "cfg-venue", "cfg-door", "cfg-max", "cfg-ticket"]) {
+  $(id).addEventListener("input", markCfg);
 }
-function offline() {
-  lockForm(true);
-  setStatus(`Đăng ký trực tuyến tạm thời chưa mở. Vui lòng gọi Ban tổ chức để đăng ký: ${EVENT.phone}.`);
-}
-lockForm(true);
+$("cfg-aisle").addEventListener("change", markCfg);
+$("cfg-add-show").onclick = () => {
+  editShows = readShows();
+  editShows.push({ id: "s" + Date.now().toString(36), day: "", label: "", time: "19:30" });
+  cfgDirty = true; renderCfgEditors();
+};
+$("cfg-add-row").onclick = () => {
+  editRows = readRows();
+  editRows.push({ label: nextRowLabel(editRows), count: 14 });
+  cfgDirty = true; renderCfgEditors();
+};
+$("cfg").addEventListener("submit", saveCfg);
+
+applyEvent();
+setStatus("Đang kết nối với hệ thống đăng ký…");
 start();
 </script>
 </body>
