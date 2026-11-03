@@ -220,6 +220,20 @@ button.seat.blocked{background:var(--bg);color:var(--muted);border-style:dashed;
 .cfg-line button{min-height:46px}
 @media(max-width:640px){.cfg-line.shows,.cfg-line.rows{grid-template-columns:1fr 1fr}}
 #draft-bar{margin:0 0 14px}
+.bookbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:25;margin-top:4px;padding:10px 0 4px;background:color-mix(in srgb,var(--surface) 94%,transparent)}
+.bookbar p{margin:0;font-weight:600}
+@media (max-width:820px){.bookbar{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+.book-modal{border:0;padding:0;margin:auto;background:transparent;color:var(--ink);width:min(640px,calc(100vw - 20px));max-width:calc(100vw - 20px);max-height:calc(100vh - 20px)}
+.book-modal:has(#modal-pass:not([hidden])){width:min(400px,calc(100vw - 20px))}
+.book-modal::backdrop{background:rgba(8,24,18,.62)}
+.modal-sheet{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:0 24px 60px -24px rgba(0,0,0,.55);max-height:calc(100vh - 32px);overflow:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.modal-head h2{margin:0}
+.pass{display:grid;gap:8px;margin:0;justify-items:center}
+.pass img{width:min(100%,280px);max-height:42vh;height:auto;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff}
+a.primary{display:inline-flex;justify-content:center;align-items:center;min-height:46px;padding:12px 22px;border-radius:4px;background:var(--lacquer);color:var(--lacquer-ink);font-weight:700;text-decoration:none;text-align:center}
+a.primary:hover{filter:brightness(1.12)}
+@media (max-width:480px){.modal-sheet{padding:16px}}
 </style>
 </head>
 <body>
@@ -295,7 +309,7 @@ button.seat.blocked{background:var(--bg);color:var(--muted);border-style:dashed;
       <h2 id="shows-h">Thời gian</h2>
       <div class="shows" id="shows"></div>
     </div>
-    <p class="note" id="f-note">Chọn ghế trên sơ đồ, điền thông tin và gửi. Bạn nhận một mã vé. Đến nơi, đọc mã vé và số điện thoại tại quầy đón khách để nhận vé giấy. Bạn có thể thêm ghế, trả ghế hoặc hủy đăng ký trên trang này.</p>
+    <p class="note" id="f-note">Chọn ghế trên sơ đồ, bấm Đặt và xác nhận. Bạn nhận một mã vé cùng ảnh chỗ ngồi để tải về. Đến nơi, đọc mã vé và số điện thoại tại quầy đón khách. Bạn có thể thêm ghế, trả ghế hoặc hủy đăng ký trên trang này.</p>
   </section>
 
   <div class="seatband">
@@ -317,13 +331,20 @@ button.seat.blocked{background:var(--bg);color:var(--muted);border-style:dashed;
         <li><span class="sw blocked"></span> Không mở</li>
       </ul>
       <p class="hint" id="seat-cap"></p>
+      <div class="bookbar" id="bookbar" hidden>
+        <p id="bookbar-text"></p>
+        <div class="btns">
+          <button class="primary" type="button" id="open-book">Đặt</button>
+          <button class="ghost" type="button" id="drop-pick">Bỏ chọn</button>
+        </div>
+      </div>
       <p class="note" id="map-warn" hidden></p>
     </div>
   </div>
 
-  <section class="card" aria-labelledby="form-h" id="panel">
-    <h2 id="form-h">Đăng ký tham dự</h2>
-    <p class="hint" id="form-lead" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Bấm ghế trống trên sơ đồ, rồi điền thông tin.</p>
+  <section class="card" aria-labelledby="panel-h" id="panel">
+    <h2 id="panel-h">Đăng ký tham dự</h2>
+    <p class="hint" id="form-lead" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Chọn ghế trên sơ đồ, bấm Đặt, rồi xác nhận trong cửa sổ.</p>
     <div id="status" class="status" role="status" tabindex="-1">Đang kết nối với hệ thống đăng ký…</div>
 
     <fieldset id="book-mode" hidden>
@@ -336,52 +357,11 @@ button.seat.blocked{background:var(--bg);color:var(--muted);border-style:dashed;
     <p class="hint" id="mode-hint" hidden></p>
     <p class="note" id="draft-bar" hidden></p>
 
-    <form id="reg" novalidate hidden>
-      <span class="err" id="seat-err" role="alert"></span>
-      <label for="name"><span>Họ và tên <span class="req" aria-hidden="true">*</span></span>
-        <input id="name" name="name" autocomplete="name" maxlength="80" required aria-describedby="name-err">
-        <span class="err" id="name-err" role="alert"></span>
-      </label>
-      <div class="row">
-        <label for="phone"><span>Số điện thoại <span class="req" aria-hidden="true">*</span></span>
-          <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="09xx xxx xxx" required aria-describedby="phone-hint phone-err">
-          <span class="hint" id="phone-hint">Dùng để đối chiếu khi nhận vé tại quầy.</span>
-          <span class="err" id="phone-err" role="alert"></span>
-        </label>
-        <label for="email"><span>Email <span class="opt">(tùy chọn)</span></span>
-          <input id="email" name="email" type="email" autocomplete="email" maxlength="120" aria-describedby="email-err">
-          <span class="err" id="email-err" role="alert"></span>
-        </label>
-      </div>
-      <label for="org"><span>Đơn vị <span class="opt">(tùy chọn)</span></span>
-        <input id="org" name="org" maxlength="100" placeholder="VD: Phường Ninh Kiều">
-      </label>
-      <label for="msg"><span>Ghi chú <span class="opt">(tùy chọn)</span></span>
-        <textarea id="msg" name="msg" maxlength="300"></textarea>
-      </label>
-      <div class="btns">
-        <button class="primary" type="submit" id="submit" disabled>Gửi đăng ký</button>
-        <button class="ghost" type="button" id="cancel-edit" hidden>Thôi, giữ như cũ</button>
-        <button class="ghost" type="button" id="release-reg" hidden>Trả hết ghế</button>
-      </div>
-      <div class="confirm" id="release-confirm" hidden>
-        <span id="release-text"></span>
-        <div class="btns">
-          <button class="danger" type="button" id="release-yes">Trả ghế</button>
-          <button class="ghost" type="button" id="release-no">Không, giữ vé</button>
-        </div>
-      </div>
-    </form>
-
     <div class="ticket" id="ticket" hidden>
-      <div class="status ok" id="t-ok" tabindex="-1">Đăng ký của bạn đã được ghi nhận.</div>
-      <div><span class="eyebrow">Mã vé</span><div class="code" id="t-code"></div><p class="hint" style="margin:4px 0 0">Chụp màn hình mã vé này. Tại quầy đón khách, đọc mã vé và số điện thoại để nhận vé giấy.</p></div>
-      <dl>
-        <dt>Họ tên</dt><dd id="t-name"></dd>
-        <dt>Điện thoại</dt><dd id="t-phone"></dd>
-        <dt>Thời gian</dt><dd id="t-show"></dd>
-        <dt>Ghế</dt><dd id="t-seats"></dd>
-      </dl>
+      <figure class="pass">
+        <img id="t-pass" alt="Ảnh vé có mã QR" width="460" height="640" hidden>
+        <a id="t-pass-dl" class="primary" download>Tải vé</a>
+      </figure>
       <div class="btns">
         <button class="ghost" type="button" id="edit">Sửa thông tin</button>
         <button class="ghost" type="button" id="ask-cancel">Hủy đăng ký</button>
@@ -393,6 +373,12 @@ button.seat.blocked{background:var(--bg);color:var(--muted);border-style:dashed;
           <button class="ghost" type="button" id="keep">Không, giữ vé</button>
         </div>
       </div>
+    </div>
+    <div id="issued" hidden>
+      <figure class="pass">
+        <img id="issued-img" alt="Ảnh vé có mã QR" width="460" height="640" hidden>
+        <a id="issued-dl" class="primary" download>Tải vé</a>
+      </figure>
     </div>
   </section>
 
@@ -450,6 +436,63 @@ button.seat.blocked{background:var(--bg);color:var(--muted);border-style:dashed;
     </div>
   </section>
 </main>
+<dialog class="book-modal" id="book-modal" aria-labelledby="form-h">
+  <div class="modal-sheet">
+    <div id="modal-form">
+      <div class="modal-head">
+        <h2 id="form-h">Đặt ghế</h2>
+        <button class="ghost" type="button" id="modal-x">Đóng</button>
+      </div>
+      <form id="reg" novalidate hidden>
+        <p class="hint">Đóng cửa sổ nếu muốn chọn thêm hoặc bỏ bớt ghế trên sơ đồ.</p>
+        <span class="err" id="seat-err" role="alert"></span>
+        <label for="name"><span>Họ và tên <span class="req" aria-hidden="true">*</span></span>
+          <input id="name" name="name" autocomplete="name" maxlength="80" required aria-describedby="name-err">
+          <span class="err" id="name-err" role="alert"></span>
+        </label>
+        <div class="row">
+          <label for="phone"><span>Số điện thoại <span class="req" aria-hidden="true">*</span></span>
+            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="09xx xxx xxx" required aria-describedby="phone-hint phone-err">
+            <span class="hint" id="phone-hint">Dùng để đối chiếu khi nhận vé tại quầy.</span>
+            <span class="err" id="phone-err" role="alert"></span>
+          </label>
+          <label for="email"><span>Email <span class="opt">(tùy chọn)</span></span>
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="120" aria-describedby="email-err">
+            <span class="err" id="email-err" role="alert"></span>
+          </label>
+        </div>
+        <label for="org"><span>Đơn vị <span class="opt">(tùy chọn)</span></span>
+          <input id="org" name="org" maxlength="100" placeholder="VD: Phường Ninh Kiều">
+        </label>
+        <label for="msg"><span>Ghi chú <span class="opt">(tùy chọn)</span></span>
+          <textarea id="msg" name="msg" maxlength="300"></textarea>
+        </label>
+        <div class="btns">
+          <button class="primary" type="submit" id="submit" disabled>Xác nhận đặt</button>
+          <button class="ghost" type="button" id="cancel-edit" hidden>Bỏ chọn</button>
+          <button class="ghost" type="button" id="release-reg" hidden>Trả hết ghế</button>
+        </div>
+        <div class="confirm" id="release-confirm" hidden>
+          <span id="release-text"></span>
+          <div class="btns">
+            <button class="danger" type="button" id="release-yes">Trả ghế</button>
+            <button class="ghost" type="button" id="release-no">Không, giữ vé</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div id="modal-pass" hidden>
+      <div class="modal-head">
+        <h2 id="pass-h">Vé của bạn</h2>
+        <button class="ghost" type="button" id="pass-x">Đóng</button>
+      </div>
+      <figure class="pass">
+        <img id="pass-img" alt="Ảnh vé có mã QR" width="460" height="640" hidden>
+        <a id="pass-dl" class="primary" download>Tải vé</a>
+      </figure>
+    </div>
+  </div>
+</dialog>
 <div class="dock" id="dock"><a href="#panel">Đăng ký nhận vé</a></div>
 <footer class="wrap"><p style="margin:0 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p><p style="margin:0;font-weight:500;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p></footer>
 
@@ -503,6 +546,7 @@ let activeShow = null, mapSig = "", cfgDirty = false, cfgSilent = false;
 let editShows = [], editRows = [];
 let countdownTimer = null, countdownFor = null, countdownDone = false;
 let trial = false;
+let showingPass = false, issued = null;
 
 function normalizeEvent(raw) {
   const base = structuredClone(EVENT_DEFAULT);
@@ -550,12 +594,6 @@ function isPersonal(seat) {
 }
 function seatsPlain(d) {
   return Array.isArray(d?.seatIds) && d.seatIds.length ? sortSeats(d.seatIds).join(", ") : "";
-}
-function ticketSeats(d) {
-  const list = seatsPlain(d);
-  if (list) return list;
-  if (d?.seats) return `Chưa xếp ghế (${d.seats} vé)`;
-  return "Chưa xếp ghế";
 }
 function countSeats(d) { return Array.isArray(d.seatIds) ? d.seatIds.length : (Number(d.seats) || 0); }
 function layoutSeatSet(cfg) {
@@ -794,10 +832,370 @@ function makeSeat(seat, num) {
   return btn;
 }
 
+function roundPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") { ctx.roundRect(x, y, w, h, r); return; }
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function wrapLines(ctx, text, maxW) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = "";
+  for (const w of words) {
+    const next = line ? line + " " + w : w;
+    if (line && ctx.measureText(next).width > maxW) { lines.push(line); line = w; }
+    else line = next;
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
+}
+function maskPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (digits.length <= 5) return digits || String(phone || "");
+  return digits.slice(0, 2) + "\u2022".repeat(digits.length - 5) + digits.slice(-3);
+}
+function drawQr(ctx, matrix, x, y, mod, quiet) {
+  const n = matrix.length;
+  const size = (n + quiet * 2) * mod;
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(x, y, size, size);
+  ctx.fillStyle = "#12261F";
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    if (!matrix[r][c]) continue;
+    ctx.fillRect(x + (c + quiet) * mod, y + (r + quiet) * mod, mod, mod);
+  }
+}
+const GF_EXP = new Uint8Array(512);
+const GF_LOG = new Uint8Array(256);
+(() => {
+  let x = 1;
+  for (let i = 0; i < 255; i++) {
+    GF_EXP[i] = x;
+    GF_LOG[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
+})();
+function gfMul(a, b) {
+  if (!a || !b) return 0;
+  return GF_EXP[GF_LOG[a] + GF_LOG[b]];
+}
+function rsGenerator(ecLen) {
+  let poly = [1];
+  for (let i = 0; i < ecLen; i++) {
+    const next = new Array(poly.length + 1).fill(0);
+    for (let j = 0; j < poly.length; j++) {
+      next[j] ^= poly[j];
+      next[j + 1] ^= gfMul(poly[j], GF_EXP[i]);
+    }
+    poly = next;
+  }
+  return poly;
+}
+function rsRemainder(data, ecLen) {
+  const gen = rsGenerator(ecLen);
+  const res = new Uint8Array(ecLen);
+  for (const b of data) {
+    const factor = b ^ res[0];
+    res.copyWithin(0, 1);
+    res[ecLen - 1] = 0;
+    if (!factor) continue;
+    for (let i = 0; i < ecLen; i++) res[i] ^= gfMul(gen[i + 1], factor);
+  }
+  return res;
+}
+const ECC_M = {
+  1: { data: 16, ecc: 10, align: [] },
+  2: { data: 28, ecc: 16, align: [6, 18] },
+  3: { data: 44, ecc: 26, align: [6, 22] }
+};
+function bytesOf(text) {
+  const bytes = Array.from(new TextEncoder().encode(String(text ?? "")));
+  return bytes.length ? bytes : [32];
+}
+function pickVersion(len) {
+  for (const v of [1, 2, 3]) {
+    if (len <= ECC_M[v].data - 2) return v;
+  }
+  return 3;
+}
+function pushBits(bits, val, len) {
+  for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1);
+}
+function dataCodewords(bytes, version) {
+  const spec = ECC_M[version];
+  const bits = [];
+  const payload = bytes.slice(0, spec.data - 2);
+  pushBits(bits, 0b0100, 4);
+  pushBits(bits, payload.length, 8);
+  for (const b of payload) pushBits(bits, b, 8);
+  const cap = spec.data * 8;
+  const term = Math.min(4, Math.max(0, cap - bits.length));
+  for (let i = 0; i < term; i++) bits.push(0);
+  while (bits.length % 8) bits.push(0);
+  const pads = [0xec, 0x11];
+  let p = 0;
+  while (bits.length < cap) { pushBits(bits, pads[p], 8); p ^= 1; }
+  const out = [];
+  for (let i = 0; i < bits.length; i += 8) {
+    let v = 0;
+    for (let j = 0; j < 8; j++) v = (v << 1) | bits[i + j];
+    out.push(v);
+  }
+  return out;
+}
+function maskBit(mask, x, y) {
+  switch (mask) {
+    case 0: return ((x + y) & 1) === 0;
+    case 1: return (y & 1) === 0;
+    case 2: return x % 3 === 0;
+    case 3: return (x + y) % 3 === 0;
+    case 4: return (Math.floor(y / 2) + Math.floor(x / 3)) % 2 === 0;
+    case 5: return ((x * y) % 2) + ((x * y) % 3) === 0;
+    case 6: return (((x * y) % 2) + ((x * y) % 3)) % 2 === 0;
+    default: return (((x + y) % 2) + ((x * y) % 3)) % 2 === 0;
+  }
+}
+function formatBits(mask) {
+  const data = mask;
+  let rem = data << 10;
+  for (let i = 14; i >= 10; i--) if ((rem >>> i) & 1) rem ^= 0x537 << (i - 10);
+  return ((data << 10) | (rem & 0x3ff)) ^ 0x5412;
+}
+function blankMatrix(version) {
+  const size = 17 + 4 * version;
+  const m = Array.from({ length: size }, () => Array(size).fill(null));
+  const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < size && y < size) m[y][x] = v; };
+  const finder = (x0, y0) => {
+    for (let y = -1; y <= 7; y++) for (let x = -1; x <= 7; x++) {
+      const xx = x0 + x, yy = y0 + y;
+      if (xx < 0 || yy < 0 || xx >= size || yy >= size) continue;
+      const on = (x >= 0 && x <= 6 && (y === 0 || y === 6)) || (y >= 0 && y <= 6 && (x === 0 || x === 6)) || (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+      m[yy][xx] = on ? 1 : 0;
+    }
+  };
+  finder(0, 0); finder(size - 7, 0); finder(0, size - 7);
+  for (let i = 0; i < size; i++) {
+    if (m[6][i] == null) m[6][i] = (i & 1) === 0 ? 1 : 0;
+    if (m[i][6] == null) m[i][6] = (i & 1) === 0 ? 1 : 0;
+  }
+  const centers = ECC_M[version].align;
+  for (const cy of centers) for (const cx of centers) {
+    if (m[cy][cx] != null) continue;
+    for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) {
+      const edge = Math.max(Math.abs(x), Math.abs(y)) === 2 || (x === 0 && y === 0);
+      set(cx + x, cy + y, edge ? 1 : 0);
+    }
+  }
+  m[size - 8][8] = 1;
+  for (let i = 0; i < 9; i++) { if (m[8][i] == null) m[8][i] = -1; if (m[i][8] == null) m[i][8] = -1; }
+  for (let i = 0; i < 8; i++) { m[8][size - 1 - i] = -1; m[size - 1 - i][8] = -1; }
+  return m;
+}
+function placeData(base, bits, mask) {
+  const size = base.length;
+  const m = base.map(row => row.slice());
+  let i = 0;
+  let upward = true;
+  for (let x = size - 1; x > 0; x -= 2) {
+    if (x === 6) x--;
+    for (let dy = 0; dy < size; dy++) {
+      const y = upward ? size - 1 - dy : dy;
+      for (let dx = 0; dx < 2; dx++) {
+        const xx = x - dx;
+        if (m[y][xx] != null) continue;
+        let bit = i < bits.length ? bits[i] : 0;
+        i++;
+        if (maskBit(mask, xx, y)) bit ^= 1;
+        m[y][xx] = bit;
+      }
+    }
+    upward = !upward;
+  }
+  return m;
+}
+function placeFormat(m, mask) {
+  const size = m.length;
+  const bits = formatBits(mask);
+  for (let i = 0; i < 15; i++) {
+    const mod = (bits >>> i) & 1;
+    let row, col;
+    if (i < 6) { row = i; col = 8; }
+    else if (i < 8) { row = i + 1; col = 8; }
+    else { row = size - 15 + i; col = 8; }
+    m[row][col] = mod;
+    if (i < 8) { row = 8; col = size - i - 1; }
+    else if (i < 9) { row = 8; col = 7; }
+    else { row = 8; col = 14 - i; }
+    m[row][col] = mod;
+  }
+  m[size - 8][8] = 1;
+}
+function penalty(m) {
+  const n = m.length;
+  let score = 0;
+  const runScore = line => {
+    let run = 1, s = 0;
+    for (let i = 1; i < line.length; i++) {
+      if (line[i] === line[i - 1]) run++;
+      else { if (run >= 5) s += run - 2; run = 1; }
+    }
+    if (run >= 5) s += run - 2;
+    return s;
+  };
+  for (let y = 0; y < n; y++) score += runScore(m[y]);
+  for (let x = 0; x < n; x++) score += runScore(m.map(row => row[x]));
+  for (let y = 0; y < n - 1; y++) for (let x = 0; x < n - 1; x++) {
+    const v = m[y][x];
+    if (v === m[y][x + 1] && v === m[y + 1][x] && v === m[y + 1][x + 1]) score += 3;
+  }
+  const finder = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0];
+  const finderR = finder.slice().reverse();
+  const hit = line => {
+    let s = 0;
+    for (let i = 0; i + 11 <= line.length; i++) {
+      let a = true, b = true;
+      for (let k = 0; k < 11; k++) {
+        if (line[i + k] !== finder[k]) a = false;
+        if (line[i + k] !== finderR[k]) b = false;
+      }
+      if (a || b) s += 40;
+    }
+    return s;
+  };
+  for (let y = 0; y < n; y++) score += hit(m[y]);
+  for (let x = 0; x < n; x++) score += hit(m.map(row => row[x]));
+  let dark = 0;
+  for (const row of m) for (const v of row) if (v) dark++;
+  score += Math.floor(Math.abs(dark * 100 / (n * n) - 50) / 5) * 10;
+  return score;
+}
+function qrMatrix(text) {
+  const bytes = bytesOf(text);
+  const version = pickVersion(bytes.length);
+  const data = dataCodewords(bytes, version);
+  const ecc = rsRemainder(data, ECC_M[version].ecc);
+  const bits = [];
+  for (const b of data.concat(Array.from(ecc))) pushBits(bits, b, 8);
+  const base = blankMatrix(version);
+  let best = null, bestScore = Infinity;
+  for (let mask = 0; mask < 8; mask++) {
+    const m = placeData(base, bits, mask);
+    placeFormat(m, mask);
+    const score = penalty(m);
+    if (score < bestScore) { bestScore = score; best = m; }
+  }
+  return best;
+}
+
+async function drawPass(reg) {
+  try { await document.fonts.load("800 40px Montserrat"); await document.fonts.load("600 16px Montserrat"); }
+  catch { /* vẫn vẽ bằng phông dự phòng */ }
+  const pad = 28;
+  const W = 460;
+  const seats = sortSeats(reg.seatIds || []);
+  const info = [
+    ["Mã vé", reg.code || ""],
+    ["Họ tên", reg.name || ""],
+    ["Điện thoại", maskPhone(reg.phone)],
+    ["Suất", showText(reg.show)],
+    ["Ghế", seats.join(", ") || ""]
+  ];
+  const matrix = qrMatrix(reg.code || "");
+  const mod = 6, quiet = 4;
+  const qrSize = (matrix.length + quiet * 2) * mod;
+  const band = 118;
+  const H = band + 16 + info.length * 28 + 20 + qrSize + 48;
+  const canvas = document.createElement("canvas");
+  const dpr = 2;
+  canvas.width = Math.ceil(W * dpr);
+  canvas.height = Math.ceil(H * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = "#F7FBF7";
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#1E5C43";
+  ctx.fillRect(0, 0, W, band);
+  ctx.fillStyle = "#F1C977";
+  ctx.font = "600 13px Montserrat, sans-serif";
+  ctx.fillText("VÉ MỜI", pad, 32);
+  const title = [eventCfg.title, eventCfg.titleEm].filter(Boolean).join(" ");
+  let size = 32;
+  do { ctx.font = "800 " + size + "px Montserrat, sans-serif"; size -= 2; }
+  while (size >= 20 && ctx.measureText(title).width > W - pad * 2);
+  ctx.fillStyle = "#F1FAF4";
+  ctx.fillText(title, pad, 70);
+  ctx.font = "500 14px Montserrat, sans-serif";
+  ctx.fillStyle = "#CFE6D8";
+  ctx.fillText(wrapLines(ctx, eventCfg.venue || "", W - pad * 2)[0], pad, 98);
+  let y = band + 32;
+  for (const pair of info) {
+    ctx.font = "600 13px Montserrat, sans-serif";
+    ctx.fillStyle = "#4A6157";
+    ctx.fillText(pair[0], pad, y);
+    ctx.font = "700 16px Montserrat, sans-serif";
+    ctx.fillStyle = "#12261F";
+    ctx.fillText(wrapLines(ctx, pair[1], W - pad - 150)[0], pad + 124, y);
+    y += 28;
+  }
+  const qx = Math.round((W - qrSize) / 2);
+  const qy = y + 8;
+  drawQr(ctx, matrix, qx, qy, mod, quiet);
+  ctx.fillStyle = "#4A6157";
+  ctx.font = "500 13px Montserrat, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Quét mã QR để đọc mã vé.", W / 2, qy + qrSize + 26);
+  ctx.textAlign = "left";
+  return canvas;
+}
+async function renderPassImage(reg, img, link) {
+  if (!reg || !img || !link) return;
+  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title].join("|");
+  const file = "ve-" + (reg.code || "ghe") + ".png";
+  if (img.dataset.sig === sig && img.getAttribute("src")) {
+    link.href = img.src;
+    link.download = file;
+    img.hidden = false;
+    return;
+  }
+  img.dataset.sig = sig;
+  const canvas = await drawPass(reg);
+  if (img.dataset.sig !== sig) return;
+  const url = canvas.toDataURL("image/png");
+  img.src = url;
+  img.hidden = false;
+  img.alt = "Ảnh vé, mã QR của " + (reg.code || "mã vé");
+  link.href = url;
+  link.download = file;
+}
+async function presentPass(reg) {
+  const dlg = $("book-modal");
+  if (!dlg.open) dlg.showModal();
+  try { await renderPassImage(reg, $("pass-img"), $("pass-dl")); }
+  catch { /* cửa sổ vẫn mở khi ảnh không vẽ được */ }
+  $("pass-dl").focus();
+}
+function abandonDraft() {
+  closeDraft();
+  showingPass = false;
+  setStatus("");
+  const dlg = $("book-modal");
+  if (dlg.open) dlg.close();
+  render();
+}
 function render() {
-  const showForm = editing;
+  const showForm = editing && !showingPass;
   const showTicket = !!mine && !editing;
+  $("modal-form").hidden = !showForm;
   $("reg").hidden = !showForm;
+  $("modal-pass").hidden = !showingPass;
+  $("book-modal").setAttribute("aria-labelledby", showingPass ? "pass-h" : "form-h");
   $("ticket").hidden = !showTicket;
   $("cancel-edit").hidden = !editing;
   $("cancel-edit").textContent = draftKind === "existing" ? "Thôi, giữ như cũ" : "Bỏ chọn";
@@ -817,39 +1215,44 @@ function render() {
     else if (draftKind === "existing" && draftId !== uid) who = "Sửa chỗ";
     else if (draftKind === "existing") who = "Sửa đăng ký";
     $("form-h").textContent = label ? `${who} · ghế ${label}` : `${who} · chọn ghế trên sơ đồ`;
-    const verb = draftKind === "existing" ? "Lưu ghế" : "Giữ ghế";
-    $("submit").textContent = busy ? "Đang gửi…" : (label ? `${verb} ${label}` : "Chọn ghế");
+    const verb = draftKind === "existing" ? "Xác nhận lưu" : "Xác nhận đặt";
+    $("submit").textContent = busy ? "Đang gửi…" : verb;
     $("draft-bar").hidden = false;
     const cap = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt.`;
+    const go = draftKind === "existing" ? "Xác nhận" : "Đặt";
     if (draftKind === "existing" && draftId !== uid) {
       const name = draftReg?.name || regById[draftId]?.name || "khách";
       $("draft-bar").textContent = label
-        ? `Đang sửa đăng ký của ${name}. Các ghế sẽ giữ: ${label}. ${cap}`
+        ? `Đang sửa đăng ký của ${name}. Các ghế sẽ giữ: ${label}. Bấm ${go}. ${cap}`
         : `Đang sửa đăng ký của ${name}. Chọn ít nhất một ghế hoặc trả hết ghế. ${cap}`;
     } else {
-      $("draft-bar").textContent = label ? `Các ghế sẽ giữ: ${label}. ${cap}` : `Bấm ghế trống trên sơ đồ. ${cap}`;
+      $("draft-bar").textContent = label ? `Các ghế sẽ giữ: ${label}. Bấm ${go} để xác nhận. ${cap}` : `Bấm ghế trống trên sơ đồ. ${cap}`;
     }
   } else {
-    $("form-h").textContent = "Đăng ký tham dự";
+    $("form-h").textContent = "Đặt ghế";
     $("draft-bar").hidden = true;
-    if (!busy) $("submit").textContent = "Gửi đăng ký";
+    if (!busy) $("submit").textContent = "Xác nhận đặt";
   }
+  $("bookbar").hidden = !editing;
+  $("bookbar-text").textContent = label ? `Đang chọn: ${label}` : "Bấm ghế trống trên sơ đồ.";
+  $("open-book").disabled = !label || busy || !canWrite;
+  $("open-book").textContent = draftKind === "existing" ? "Xác nhận" : "Đặt";
+  $("drop-pick").textContent = draftKind === "existing" ? "Thôi, giữ như cũ" : "Bỏ chọn";
   if (canEditUser) {
     $("mode-hint").textContent = editing
-      ? "Bấm ghế trống để thêm vào lượt này. Bấm ghế đang chọn để bỏ."
+      ? "Bấm ghế trống để thêm vào lượt này. Bấm ghế đang chọn để bỏ. Rồi bấm Đặt."
       : (readHostMode()
-        ? "Bấm ghế trống, điền thông tin khách rồi gửi. Ghế đó không vào đăng ký của bạn."
-        : "Bấm ghế trống để giữ vào đăng ký của bạn. Bấm ghế của bạn để trả ghế.");
+        ? "Bấm ghế trống, rồi bấm Đặt và điền thông tin khách. Ghế đó không vào đăng ký của bạn."
+        : "Bấm ghế trống để chọn, rồi bấm Đặt. Bấm ghế của bạn để trả ghế.");
   }
   if (showTicket && mine) {
-    $("t-code").textContent = mine.code || "";
-    $("t-name").textContent = mine.name || "";
-    $("t-phone").textContent = mine.phone || "";
-    $("t-show").textContent = showText(mine.show);
-    $("t-seats").textContent = ticketSeats(mine);
     const list = seatsPlain(mine);
     $("c-text").textContent = list ? `Hủy đăng ký và trả ghế ${list} cho người khác?` : "Hủy đăng ký này?";
+    renderPassImage(mine, $("t-pass"), $("t-pass-dl"));
   }
+  const showIssued = !!(issued && (!showTicket || issued.regId !== uid));
+  $("issued").hidden = !showIssued;
+  if (showIssued) renderPassImage(issued, $("issued-img"), $("issued-dl"));
   const multi = eventCfg.shows.length > 1;
   $("map-h").textContent = multi && activeShow ? "Sơ đồ chỗ ngồi · " + showText(activeShow) : "Sơ đồ chỗ ngồi";
   $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt đăng ký.`;
@@ -890,9 +1293,10 @@ function closeDraft() {
   $("seat-err").textContent = "";
 }
 function openForm() {
+  showingPass = false;
   render();
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  $("form-h").scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  const dlg = $("book-modal");
+  if (!dlg.open) dlg.showModal();
   $("name").focus();
 }
 function validate() {
@@ -1083,19 +1487,22 @@ async function removeOwn(seat) {
   await persistSelf(mine.seatIds.filter(s => s !== seat));
 }
 function startHostDraft(seat) {
+  showingPass = false;
   draftKind = "host"; draftId = null; draftReg = null; draftSeats = [seat]; editing = true;
-  clearForm(); checkShow(activeShow); setStatus(""); openForm();
+  clearForm(); checkShow(activeShow); setStatus(""); render();
 }
 function startSelfDraft(seat) {
+  showingPass = false;
   draftKind = "self"; draftId = uid; draftReg = null; draftSeats = [seat]; editing = true;
-  clearForm(); checkShow(activeShow); setStatus(""); openForm();
+  clearForm(); checkShow(activeShow); setStatus(""); render();
 }
 function startAssignDraft(seat) {
+  showingPass = false;
   draftKind = "existing"; draftId = uid; draftReg = mine; draftSeats = [seat]; editing = true;
   fillForm(mine || {});
   checkShow(activeShow);
-  setStatus("Chọn ghế trên sơ đồ rồi lưu để xếp chỗ.", true);
-  openForm();
+  setStatus("Chọn ghế trên sơ đồ, rồi bấm Xác nhận.", true);
+  render();
 }
 function openExisting(regId) {
   const reg = regId === uid ? (mine || regById[uid]) : regById[regId];
@@ -1151,7 +1558,21 @@ async function onSeatClick(seat) {
   }
   if (owner === uid || isPersonal(seat)) { await removeOwn(seat); return; }
   if (mine && !Array.isArray(mine.seatIds)) { startAssignDraft(seat); return; }
-  if (mine && Array.isArray(mine.seatIds)) { await addOwn(seat); return; }
+  if (mine && Array.isArray(mine.seatIds)) {
+    if (mine.show && mine.show !== activeShow) {
+      setStatus("Đăng ký của bạn thuộc suất khác. Bấm Sửa thông tin nếu muốn đổi suất.");
+      return;
+    }
+    if (mine.seatIds.length >= eventCfg.maxSeats) {
+      setStatus(`Mỗi lượt giữ tối đa ${eventCfg.maxSeats} ghế.`);
+      return;
+    }
+    showingPass = false;
+    draftKind = "existing"; draftId = uid; draftReg = mine;
+    draftSeats = mine.seatIds.concat(seat); editing = true;
+    fillForm(mine); checkShow(activeShow); setStatus(""); render();
+    return;
+  }
   startSelfDraft(seat);
 }
 
@@ -1193,10 +1614,12 @@ $("reg").addEventListener("submit", async e => {
     if (canEditUser) renderAdmin();
     const kind = draftKind;
     closeDraft();
+    issued = body.regId === uid ? null : body;
+    showingPass = true;
     const lead = kind === "host" ? "Đã đặt hộ khách, ghế " : (kind === "existing" ? "Đã lưu ghế " : "Đã giữ ghế ");
     setStatus(lead + seatIds.join(", ") + ".", true);
     render();
-    if (regId === uid) $("t-ok").focus(); else $("status").focus();
+    await presentPass(body);
   } catch (err) { setStatus(explain(err)); }
   finally { busy = false; $("reg").removeAttribute("aria-busy"); mapSig = ""; render(); }
 });
@@ -1489,7 +1912,7 @@ function seedTrial(store) {
 }
 function showTrialNote() {
   $("map-warn").hidden = false;
-  $("map-warn").textContent = "Bản thử giao diện trên máy này. Bấm ghế trống để đăng ký. Ghế đã có người và ghế không mở không đặt được.";
+  $("map-warn").textContent = "Bản thử giao diện trên máy này. Bấm ghế trống, rồi bấm Đặt. Ghế đã có người và ghế không mở không đặt được.";
 }
 async function start() {
   try {
@@ -1592,7 +2015,16 @@ $("edit").onclick = () => {
   if (!canWrite) { nudgeStatus(); return; }
   if (mine) openExisting(uid);
 };
-$("cancel-edit").onclick = () => { closeDraft(); setStatus(""); render(); };
+$("cancel-edit").onclick = () => abandonDraft();
+$("drop-pick").onclick = () => abandonDraft();
+$("open-book").onclick = () => { if (editing && draftSeats.length && !busy) openForm(); };
+$("modal-x").onclick = () => $("book-modal").close();
+$("pass-x").onclick = () => $("book-modal").close();
+$("book-modal").addEventListener("close", () => {
+  if (!showingPass) return;
+  showingPass = false;
+  render();
+});
 $("ask-cancel").onclick = () => { $("confirm").hidden = false; $("do-cancel").focus(); };
 $("keep").onclick = () => { $("confirm").hidden = true; };
 $("do-cancel").onclick = async () => {
@@ -1629,6 +2061,8 @@ $("release-yes").onclick = async () => {
     await deleteRegistration(draftId, data);
     if (draftId === uid) mine = null;
     closeDraft(); clearForm();
+    showingPass = false;
+    if ($("book-modal").open) $("book-modal").close();
     setStatus("Đã trả ghế.", true);
     if (canEditUser) renderAdmin();
   } catch { setStatus("Chưa trả được ghế. Thử lại sau ít phút."); }
