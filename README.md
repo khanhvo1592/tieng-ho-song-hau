@@ -1,10 +1,52 @@
-# Tiếng Hò Sông Hậu
+# Vé mời sự kiện
 
-Trang đăng ký vé mời tham dự đêm diễn cải lương **Tiếng Hò Sông Hậu**.
+Trang đăng ký vé mời. Tên chương trình, suất diễn và sơ đồ ghế sửa được trên trang, nên cùng một hệ thống dùng lại cho sự kiện sau.
 
-- Trang: https://khanhvo1592.github.io/tieng-ho-song-hau/
-- Thông tin chương trình (địa điểm, ngày giờ, số điện thoại) sửa trong đối tượng `EVENT` ở đầu thẻ `<script>` trong `index.html`.
+Đăng ký và ghế nằm trong **một Durable Object SQLite** của Cloudflare Worker. Mọi lượt giữ ghế đi qua một chỗ, nên hai người không giữ được cùng một ghế.
 
-Lưu ý: phần lưu đăng ký dùng kho dữ liệu của Claude Artifact, nên chỉ hoạt động khi trang mở trên claude.ai. Trên GitHub Pages, form hiển thị nhưng không lưu được đăng ký; cần nối với một dịch vụ lưu trữ (ví dụ Google Sheets qua Apps Script) để dùng thật.
+## Chạy trên máy
 
-Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.
+```sh
+cp .dev.vars.example .dev.vars
+npm install
+npm run dev
+```
+
+Mở http://127.0.0.1:8787. Mật khẩu trong `.dev.vars` dùng cho nút **Ban tổ chức**.
+
+Khi trang đang chạy, kiểm tra giữ ghế, ghế trùng và đăng nhập ban tổ chức:
+
+```sh
+npm run check
+```
+
+## Đưa ra internet bằng Docker và Cloudflare Tunnel
+
+1. Trong Cloudflare Zero Trust, tạo tunnel kiểu Docker và thêm một public hostname. **Service URL** phải là `http://web:8787`.
+2. Sao chép token của tunnel.
+3. Trên máy chủ:
+
+```sh
+cp .env.example .env
+```
+
+Điền `STAFF_PASSWORD`, `STAFF_SECRET` và `TUNNEL_TOKEN`, rồi chạy:
+
+```sh
+docker compose up -d --build
+```
+
+SQLite của Worker được giữ trong volume `venue-data`. Đổi sự kiện không cần tạo tên miền mới.
+
+## Đưa Worker lên Cloudflare
+
+Khi muốn SQLite nằm trên mạng Cloudflare thay vì trong volume Docker:
+
+```sh
+npx wrangler login
+npx wrangler secret put STAFF_PASSWORD
+npx wrangler secret put STAFF_SECRET
+npm run deploy
+```
+
+Trang và API cùng một địa chỉ Worker. Tunnel không cần nữa.

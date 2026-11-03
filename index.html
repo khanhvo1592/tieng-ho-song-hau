@@ -346,6 +346,17 @@ a.primary:hover{filter:brightness(1.12)}
     <h2 id="panel-h">Đăng ký tham dự</h2>
     <p class="hint" id="form-lead" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Chọn ghế trên sơ đồ, bấm Đặt, rồi xác nhận trong cửa sổ.</p>
     <div id="status" class="status" role="status" tabindex="-1">Đang kết nối với hệ thống đăng ký…</div>
+    <p><button class="ghost" type="button" id="staff-open" hidden>Ban tổ chức</button></p>
+    <form id="staff-login" hidden>
+      <label for="staff-pass"><span>Mật khẩu ban tổ chức</span>
+        <input id="staff-pass" type="password" autocomplete="current-password" maxlength="80">
+      </label>
+      <div class="btns">
+        <button class="primary" type="submit">Vào</button>
+        <button class="ghost" type="button" id="staff-cancel">Đóng</button>
+      </div>
+      <p class="hint" id="staff-msg"></p>
+    </form>
 
     <fieldset id="book-mode" hidden>
       <legend>Cách đặt</legend>
@@ -404,6 +415,7 @@ a.primary:hover{filter:brightness(1.12)}
         <label for="cfg-max"><span>Số ghế tối đa mỗi lượt</span><input id="cfg-max" type="number" min="1" max="20" step="1"></label>
       </div>
       <label for="cfg-ticket"><span>Câu về vé</span><input id="cfg-ticket" maxlength="160"></label>
+      <label for="cfg-blocked"><span>Ghế không mở</span><input id="cfg-blocked" maxlength="400" placeholder="A1, A14, B7"></label>
       <label class="choice"><input id="cfg-aisle" type="checkbox" checked><span>Có lối đi giữa mỗi hàng</span></label>
       <div class="cfg-block">
         <span class="hint">Suất diễn. Ngày dạng 22/11, nhãn có năm, giờ dạng 19:30. Mã suất giữ nguyên để không mất đăng ký.</span>
@@ -507,8 +519,10 @@ const EVENT_DEFAULT = {
   phone: "0292 3 000 000",
   door: "Trước giờ diễn 45 phút",
   ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt đăng ký",
+  codePrefix: "VE",
   maxSeats: 4,
   aisle: true,
+  blocked: [],
   shows: [
     { id: "s1", day: "22/11", label: "Thứ Bảy, 22/11/2026", time: "19:30" }
   ],
@@ -545,8 +559,9 @@ let editing = false, draftKind = null, draftId = null, draftReg = null, draftSea
 let activeShow = null, mapSig = "", cfgDirty = false, cfgSilent = false;
 let editShows = [], editRows = [];
 let countdownTimer = null, countdownFor = null, countdownDone = false;
-let trial = false;
+let trial = false, live = false;
 let showingPass = false, issued = null;
+let remoteSig = "";
 
 function normalizeEvent(raw) {
   const base = structuredClone(EVENT_DEFAULT);
@@ -559,6 +574,21 @@ function normalizeEvent(raw) {
   base.description = base.description.slice(0, 800);
   if (raw.maxSeats != null) base.maxSeats = Math.min(20, Math.max(1, Number(raw.maxSeats) || base.maxSeats));
   if (typeof raw.aisle === "boolean") base.aisle = raw.aisle;
+  if (typeof raw.codePrefix === "string") {
+    const prefix = raw.codePrefix.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+    if (prefix) base.codePrefix = prefix;
+  }
+  base.blocked = [];
+  if (Array.isArray(raw.blocked)) {
+    const seen = new Set();
+    for (const item of raw.blocked) {
+      const seat = String(item || "").replace(/\s/g, "");
+      if (!seat || seen.has(seat)) continue;
+      seen.add(seat);
+      base.blocked.push(seat);
+      if (base.blocked.length >= 200) break;
+    }
+  }
   if (Array.isArray(raw.shows) && raw.shows.length) {
     const seen = new Set();
     const shows = raw.shows.slice(0, 8).map((s, i) => {
@@ -1324,15 +1354,74 @@ function validate() {
 }
 
 function newCode() {
+  const prefix = String(eventCfg.codePrefix || "VE").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "VE";
   const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let c = "";
   const r = crypto.getRandomValues(new Uint8Array(5));
   for (const b of r) c += a[b % a.length];
-  return "THSH-" + c;
+  return prefix + "-" + c;
+}
+async function api(path, options) {
+  const response = await fetch(path, {
+    credentials: "same-origin",
+    headers: { "content-type": "application/json" },
+    ...options
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "write");
+  return data;
+}
+function applyRemote(data) {
+  if (data.uid) uid = data.uid;
+  if (typeof data.staff === "boolean") {
+    canEditUser = data.staff;
+    $("admin").hidden = !canEditUser;
+    const open = $("staff-open");
+    if (open) {
+      open.hidden = false;
+      open.textContent = canEditUser ? "Thoát ban tổ chức" : "Ban tổ chức";
+    }
+  }
+  if (data.event) {
+    const next = normalizeEvent(data.event);
+    const changed = JSON.stringify(next) !== JSON.stringify(eventCfg);
+    eventCfg = next;
+    if (changed && cfgDirty) setCfgStatus("Có bản mới vừa được lưu. Nếu bạn lưu tiếp, bản của bạn sẽ đè lên.");
+    if (changed && !cfgDirty) applyEvent();
+  }
+  const holds = {};
+  for (const seat of data.seats || []) holds[seat.id] = seat;
+  seatHolds = holds;
+  if (Object.prototype.hasOwnProperty.call(data, "mine") && !editing) mine = data.mine || null;
+  if (Array.isArray(data.registrations) && data.staff) {
+    adminRows = data.registrations;
+    regById = {};
+    for (const row of adminRows) if (row.regId) regById[row.regId] = row;
+    renderAdmin();
+  }
+  const sig = JSON.stringify({ seats: data.seats || [], mine: data.mine || null, staff: !!data.staff });
+  if (sig === remoteSig) return;
+  remoteSig = sig;
+  mapSig = "";
+  if (!cfgDirty) render();
+  else renderMap();
+}
+async function putRegistration(body) {
+  const data = await api("/api/registrations", { method: "PUT", body: JSON.stringify(body) });
+  applyRemote(data);
+  return data.registration || body;
+}
+async function refreshLive() {
+  if (!live || document.hidden || editing || busy) return;
+  try { applyRemote(await api("/api/bootstrap")); }
+  catch { /* giữ số liệu đang hiện */ }
 }
 function explain(err) {
   const msg = String(err && err.message || "");
   if (msg.startsWith("taken:")) return "Ghế " + msg.slice(6) + " vừa có người giữ. Chọn ghế khác.";
   if (msg.startsWith("blocked:")) return "Ghế " + msg.slice(8) + " không mở để đặt.";
+  if (msg === "forbidden") return "Bạn không sửa được đăng ký này.";
+  if (msg === "full") return `Mỗi lượt giữ tối đa ${eventCfg.maxSeats} ghế.`;
+  if (msg === "invalid") return "Thông tin chưa đúng. Kiểm tra lại rồi gửi.";
   if (err && err.code === "invalid_argument") {
     viewOnly = true; canWrite = false; lockForm(true);
     return `Tài khoản của bạn chỉ có quyền xem trang này nên chưa gửi được đăng ký. Vui lòng gọi Ban tổ chức: ${eventCfg.phone}.`;
@@ -1398,6 +1487,7 @@ async function claimSeats(show, seatIds, registrationId, ownerUid) {
   }
 }
 async function applySeatDiff(regId, ownerUid, nextShow, prevShow, prevIds, nextIds, body) {
+  if (live) return putRegistration(body);
   const ref = db.doc("dangky/" + regId);
   const prev = prevIds || [];
   const next = nextIds || [];
@@ -1423,6 +1513,14 @@ function rememberReg(body) {
   regById[body.regId] = i >= 0 ? adminRows[i] : body;
 }
 async function deleteRegistration(regId, data) {
+  if (live) {
+    applyRemote(await api("/api/registrations/" + encodeURIComponent(regId), { method: "DELETE" }));
+    if (!editing && regId === uid) mine = null;
+    adminRows = adminRows.filter(row => row.regId !== regId);
+    regById = {};
+    for (const row of adminRows) if (row.regId) regById[row.regId] = row;
+    return;
+  }
   const seats = Array.isArray(data?.seatIds) ? data.seatIds : [];
   if (data?.show && seats.length) await releaseSeats(data.show, seats, regId);
   await db.doc("dangky/" + regId).delete();
@@ -1608,18 +1706,19 @@ $("reg").addEventListener("submit", async e => {
   const body = { ...data, seatIds, seats: seatIds.length, code, source, regId, createdAt, updatedAt: now };
   busy = true; $("submit").disabled = true; $("submit").textContent = "Đang gửi…"; $("reg").setAttribute("aria-busy", "true");
   try {
-    await applySeatDiff(regId, uid, data.show, prevShow, prev, seatIds, body);
-    if (regId === uid) mine = body;
-    rememberReg(body);
+    const saved = await applySeatDiff(regId, uid, data.show, prevShow, prev, seatIds, body);
+    const record = saved && saved.regId ? saved : body;
+    if (record.regId === uid) mine = record;
+    rememberReg(record);
     if (canEditUser) renderAdmin();
     const kind = draftKind;
     closeDraft();
-    issued = body.regId === uid ? null : body;
+    issued = record.regId === uid ? null : record;
     showingPass = true;
     const lead = kind === "host" ? "Đã đặt hộ khách, ghế " : (kind === "existing" ? "Đã lưu ghế " : "Đã giữ ghế ");
-    setStatus(lead + seatIds.join(", ") + ".", true);
+    setStatus(lead + (record.seatIds || seatIds).join(", ") + ".", true);
     render();
-    await presentPass(body);
+    await presentPass(record);
   } catch (err) { setStatus(explain(err)); }
   finally { busy = false; $("reg").removeAttribute("aria-busy"); mapSig = ""; render(); }
 });
@@ -1777,6 +1876,7 @@ function fillCfgForm() {
   $("cfg-door").value = eventCfg.door || "";
   $("cfg-max").value = String(eventCfg.maxSeats || 4);
   $("cfg-ticket").value = eventCfg.ticketNote || "";
+  if ($("cfg-blocked")) $("cfg-blocked").value = (eventCfg.blocked || []).join(", ");
   $("cfg-aisle").checked = !!eventCfg.aisle;
   editShows = eventCfg.shows.map(s => ({ ...s }));
   editRows = eventCfg.rows.map(r => ({ ...r }));
@@ -1785,7 +1885,7 @@ function fillCfgForm() {
 }
 async function saveCfg(e) {
   e.preventDefault();
-  if (!db || !canEditUser) { setCfgStatus("Chưa kết nối kho lưu trữ nên chưa lưu được."); return; }
+  if ((!db && !live) || !canEditUser) { setCfgStatus("Chưa kết nối kho lưu trữ nên chưa lưu được."); return; }
   const shows = readShows();
   const rows = readRows();
   if (!$("cfg-title").value.trim()) { setCfgStatus("Cần tên chương trình."); return; }
@@ -1797,16 +1897,18 @@ async function saveCfg(e) {
     eyebrow: $("cfg-eyebrow").value, title: $("cfg-title").value, titleEm: $("cfg-em").value,
     description: $("cfg-desc").value, venue: $("cfg-venue").value, phone: $("cfg-phone").value,
     door: $("cfg-door").value, ticketNote: $("cfg-ticket").value, maxSeats: Number($("cfg-max").value),
-    aisle: $("cfg-aisle").checked, shows, rows
+    aisle: $("cfg-aisle").checked, codePrefix: eventCfg.codePrefix, shows, rows,
+    blocked: $("cfg-blocked").value.split(/[\s,;]+/)
   });
   $("cfg-save").disabled = true;
   cfgDirty = false;
   try {
-    await db.doc("cauhinh/sukien").set(structuredClone(payload));
+    if (live) applyRemote(await api("/api/event", { method: "PUT", body: JSON.stringify(payload) }));
+    else await db.doc("cauhinh/sukien").set(structuredClone(payload));
     setCfgStatus("Đã lưu. Mọi người đang mở trang sẽ thấy bản mới.", true);
-  } catch {
+  } catch (err) {
     cfgDirty = true;
-    setCfgStatus("Chưa lưu được thông tin sự kiện. Kiểm tra mạng rồi thử lại.");
+    setCfgStatus(explain(err));
   } finally { $("cfg-save").disabled = false; }
 }
 
@@ -1916,6 +2018,21 @@ function showTrialNote() {
 }
 async function start() {
   try {
+    const forceTrial = /(?:\?|&)thu=1(?:&|$)/.test(location.search);
+    if (!forceTrial) {
+      try {
+        const boot = await api("/api/bootstrap");
+        live = true;
+        db = { live: true };
+        ready = true;
+        canWrite = true;
+        applyRemote(boot);
+        if (isTransientStatus()) setStatus("");
+        setInterval(refreshLive, 4000);
+        document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshLive(); });
+        return;
+      } catch { /* trang tĩnh không có API thì dùng bản thử hoặc báo gọi điện */ }
+    }
     const cl = window.claude;
     let user = null;
     if (cl?.use) {
@@ -2077,9 +2194,38 @@ $("copy-csv").onclick = async () => {
   catch { btn.textContent = "Không sao chép được"; }
   setTimeout(() => { btn.textContent = "Sao chép bảng (CSV)"; }, 2000);
 };
-for (const id of ["cfg-eyebrow", "cfg-phone", "cfg-title", "cfg-em", "cfg-desc", "cfg-venue", "cfg-door", "cfg-max", "cfg-ticket"]) {
+for (const id of ["cfg-eyebrow", "cfg-phone", "cfg-title", "cfg-em", "cfg-desc", "cfg-venue", "cfg-door", "cfg-max", "cfg-ticket", "cfg-blocked"]) {
   $(id).addEventListener("input", markCfg);
 }
+$("staff-open").onclick = async () => {
+  if (!live) return;
+  if (canEditUser) {
+    try { applyRemote(await api("/api/staff/logout", { method: "POST", body: "{}" })); }
+    catch { /* vẫn đóng phiên trên giao diện */ }
+    canEditUser = false;
+    $("admin").hidden = true;
+    $("staff-open").textContent = "Ban tổ chức";
+    render();
+    return;
+  }
+  $("staff-msg").textContent = "";
+  $("staff-login").hidden = !$("staff-login").hidden;
+  if (!$("staff-login").hidden) $("staff-pass").focus();
+};
+$("staff-cancel").onclick = () => { $("staff-login").hidden = true; };
+$("staff-login").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("staff-msg").textContent = "";
+  try {
+    applyRemote(await api("/api/staff/login", { method: "POST", body: JSON.stringify({ password: $("staff-pass").value }) }));
+    $("staff-pass").value = "";
+    $("staff-login").hidden = true;
+    fillCfgForm();
+    render();
+  } catch {
+    $("staff-msg").textContent = "Mật khẩu chưa đúng.";
+  }
+});
 $("cfg-aisle").addEventListener("change", markCfg);
 $("cfg-add-show").onclick = () => {
   editShows = readShows();

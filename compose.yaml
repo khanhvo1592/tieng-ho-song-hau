@@ -1,0 +1,29 @@
+# Đưa trang ra internet bằng Cloudflare Tunnel. Trong dashboard của tunnel,
+# trỏ hostname công khai tới http://web:8787.
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      STAFF_PASSWORD: ${STAFF_PASSWORD:?Đặt STAFF_PASSWORD trong file .env}
+      STAFF_SECRET: ${STAFF_SECRET:?Đặt STAFF_SECRET trong file .env}
+    volumes:
+      - venue-data:/data
+    expose:
+      - "8787"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN:?Đặt TUNNEL_TOKEN trong file .env}
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  venue-data:
