@@ -121,6 +121,25 @@ function fail(message) {
   throw error;
 }
 
+function foldName(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase("vi");
+}
+
+function foldPhone(value) {
+  let digits = String(value || "").replace(/\D/g, "");
+  if (digits.startsWith("84") && digits.length >= 11) digits = "0" + digits.slice(2);
+  return digits;
+}
+
+function identityFromBody(body) {
+  const name = String(body?.name || "").trim().slice(0, 80);
+  const phone = String(body?.phone || "").trim().slice(0, 16);
+  const nameKey = foldName(name);
+  const phoneKey = foldPhone(phone);
+  if (nameKey.length < 2 || phoneKey.length < 8 || phoneKey.length > 15) fail("invalid");
+  return { name, phone, nameKey, phoneKey };
+}
+
 export class Venue extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
@@ -186,11 +205,26 @@ export class Venue extends DurableObject {
         this.saveEvent(event);
         return Response.json(this.snapshot(actor, staff));
       }
+      if (request.method === "POST" && url.pathname === "/api/lookup") {
+        const body = await request.json();
+        const identity = identityFromBody(body);
+        return Response.json({ registrations: this.findByIdentity(identity) });
+      }
+      if (request.method === "POST" && url.pathname === "/api/lookup/cancel") {
+        const body = await request.json();
+        const identity = identityFromBody(body);
+        const id = String(body?.regId || "");
+        if (!/^[A-Za-z0-9-]{4,48}$/.test(id)) fail("invalid");
+        this.deleteByIdentity(identity, id);
+        return Response.json({ ...this.snapshot(actor, staff), cancelled: id });
+      }
       return Response.json({ error: "invalid" }, { status: 404 });
     } catch (error) {
       const message = error && error.expose ? error.message : "invalid";
       if (!error?.expose) console.log(JSON.stringify({ level: "error", path: url.pathname, message: String(error) }));
-      const status = message === "forbidden" ? 403 : message === "invalid" ? 400 : 409;
+      const status = message === "forbidden" || message === "notfound"
+        ? (message === "notfound" ? 404 : 403)
+        : message === "invalid" ? 400 : 409;
       return Response.json({ error: message }, { status });
     }
   }
@@ -381,24 +415,46 @@ export class Venue extends DurableObject {
     }
   }
 
+  findByIdentity(identity) {
+    return this.ctx.storage.sql.exec("SELECT * FROM registrations ORDER BY created_at DESC").toArray()
+      .filter(row => foldName(row.name) === identity.nameKey && foldPhone(row.phone) === identity.phoneKey)
+      .map(regFromRow);
+  }
+
+  matchesIdentity(row, identity) {
+    return !!row && foldName(row.name) === identity.nameKey && foldPhone(row.phone) === identity.phoneKey;
+  }
+
   deleteRegistration(actor, staff, id) {
     this.ctx.storage.transactionSync(() => {
       const current = this.ctx.storage.sql.exec("SELECT * FROM registrations WHERE id = ?", id).toArray()[0];
       if (!current) return;
       if (!staff && current.owner_uid !== actor && current.id !== actor) fail("forbidden");
-      const seats = JSON.parse(current.seat_ids);
-      for (const seat of seats) {
-        const seatKey = seatId(current.show_id, seat);
-        const row = this.ctx.storage.sql.exec("SELECT blocked FROM seats WHERE id = ?", seatKey).toArray()[0];
-        if (!row) continue;
-        if (row.blocked === 1) {
-          this.ctx.storage.sql.exec("UPDATE seats SET registration_id = '', owner_uid = '' WHERE id = ?", seatKey);
-        } else {
-          this.ctx.storage.sql.exec("DELETE FROM seats WHERE id = ?", seatKey);
-        }
-      }
-      this.ctx.storage.sql.exec("DELETE FROM registrations WHERE id = ?", id);
+      this.releaseRegistrationRow(current);
     });
+  }
+
+  deleteByIdentity(identity, id) {
+    this.ctx.storage.transactionSync(() => {
+      const current = this.ctx.storage.sql.exec("SELECT * FROM registrations WHERE id = ?", id).toArray()[0];
+      if (!this.matchesIdentity(current, identity)) fail("notfound");
+      this.releaseRegistrationRow(current);
+    });
+  }
+
+  releaseRegistrationRow(current) {
+    const seats = JSON.parse(current.seat_ids);
+    for (const seat of seats) {
+      const seatKey = seatId(current.show_id, seat);
+      const row = this.ctx.storage.sql.exec("SELECT blocked FROM seats WHERE id = ?", seatKey).toArray()[0];
+      if (!row) continue;
+      if (row.blocked === 1) {
+        this.ctx.storage.sql.exec("UPDATE seats SET registration_id = '', owner_uid = '' WHERE id = ?", seatKey);
+      } else {
+        this.ctx.storage.sql.exec("DELETE FROM seats WHERE id = ?", seatKey);
+      }
+    }
+    this.ctx.storage.sql.exec("DELETE FROM registrations WHERE id = ?", current.id);
   }
 }
 
@@ -471,6 +527,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
+    if (request.method === "GET" && url.pathname === "/api/version") {
+      return Response.json({ name: "ve-moi", features: ["lookup"] });
+    }
     const secure = secureRequest(request);
     if (request.method === "PUT" || request.method === "POST") {
       const text = await request.text();
