@@ -8,7 +8,11 @@
     "types": "wrangler types",
     "check": "node scripts/check-api.mjs"
   },
-  "dependencies": {
+  "devDependencies": {
     "wrangler": "^4.45.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261102.1": true
   }
 }

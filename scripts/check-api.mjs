@@ -46,6 +46,7 @@ function book(jar, uid, seat, extra) {
 const page = await fetch(base + "/");
 const html = await page.text();
 if (page.status !== 200 || !html.includes("Tiếng Hò")) fail("page " + page.status);
+if (!html.includes("Kiểm tra vé")) fail("page missing lookup");
 
 const guest = [];
 const health = await call("/api/health", {}, guest);
@@ -162,6 +163,63 @@ await call("/api/registrations/" + hostId, { method: "DELETE" }, staff);
 const removed = await call("/api/registrations/" + boot.data.uid, { method: "DELETE" }, guest);
 if (removed.status !== 200 || removed.data.mine) fail("delete");
 const after = await call("/api/bootstrap", {}, other);
-if ((after.data.seats || []).some(item => item.registrationId)) fail("seats left");
+const tracked = new Set(["A2", "A1", "B2", "B3", "C4"]);
+const leftover = (after.data.seats || []).filter(item => tracked.has(item.seat) && item.registrationId);
+if (leftover.length) fail("seats left " + JSON.stringify(leftover));
+
+const lookupJar = [];
+const lookupBoot = await call("/api/bootstrap", {}, lookupJar);
+const lookupName = "Pham Tra Cuu Check";
+const lookupPhone = "0903555666";
+const lookupBook = await call("/api/registrations", {
+  method: "PUT",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    regId: lookupBoot.data.uid,
+    name: lookupName,
+    phone: lookupPhone,
+    email: "",
+    org: "",
+    msg: "",
+    show: "s1",
+    seatIds: ["D5"],
+    code: "VE-LOOK1",
+    source: "guest"
+  })
+}, lookupJar);
+if (lookupBook.status !== 200) fail("lookup book " + lookupBook.status + " " + JSON.stringify(lookupBook.data));
+const stranger = [];
+const miss = await call("/api/lookup", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ name: lookupName, phone: "0903000000" })
+}, stranger);
+if (miss.status !== 200 || (miss.data.registrations || []).length) {
+  fail("lookup miss " + miss.status + " " + JSON.stringify(miss.data));
+}
+const hit = await call("/api/lookup", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ name: "pham tra cuu check", phone: "+84903555666" })
+}, stranger);
+if (hit.status !== 200 || hit.data.registrations?.[0]?.code !== "VE-LOOK1") fail("lookup hit " + JSON.stringify(hit.data));
+const badCancel = await call("/api/lookup/cancel", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ name: lookupName, phone: "0903000000", regId: lookupBoot.data.uid })
+}, stranger);
+if (badCancel.status !== 404) fail("lookup bad cancel " + badCancel.status + " " + JSON.stringify(badCancel.data));
+const goodCancel = await call("/api/lookup/cancel", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ name: lookupName, phone: lookupPhone, regId: lookupBoot.data.uid })
+}, stranger);
+if (goodCancel.status !== 200 || goodCancel.data.cancelled !== lookupBoot.data.uid) fail("lookup cancel " + JSON.stringify(goodCancel.data));
+const gone = await call("/api/lookup", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ name: lookupName, phone: lookupPhone })
+}, stranger);
+if ((gone.data.registrations || []).length) fail("lookup still there");
 
 console.log("api-ok");

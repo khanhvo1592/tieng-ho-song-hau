@@ -49,6 +49,8 @@ h1 em{font-style:italic;font-weight:600;display:block;font-size:.62em;margin-top
 .cta{display:inline-flex;align-items:center;min-height:48px;padding:12px 26px;border-radius:999px;background:#F1C977;color:#12261F;font-weight:700;text-decoration:none}
 .cta:hover{background:#F6D894}
 .cta:focus-visible{outline:2px solid #F1FAF4;outline-offset:3px}
+.cta.ghost{background:transparent;color:#F1FAF4;border:1px solid rgba(241,250,244,.55)}
+.cta.ghost:hover{background:rgba(241,250,244,.12);border-color:#F1FAF4}
 .hero-meta{font-size:.92rem;opacity:.9}
 .countdown{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
 .countdown .cd-label{width:100%;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:#F1C977}
@@ -58,9 +60,6 @@ h1 em{font-style:italic;font-weight:600;display:block;font-size:.62em;margin-top
 .countdown .sep{font-size:1.4rem;font-weight:800;color:#F1C977;opacity:.8}
 .countdown .live{font-size:1.1rem;font-weight:700;color:#F1C977}
 @media (max-width:420px){.countdown .unit{min-width:56px;padding:6px 8px}.countdown .unit b{font-size:1.35rem}}
-.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;display:none;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--surface) 94%,transparent);border-top:1px solid var(--line);backdrop-filter:blur(6px)}
-.dock a{display:flex;justify-content:center;align-items:center;width:100%;min-height:48px;padding:12px 22px;border-radius:999px;background:var(--lacquer);color:var(--lacquer-ink);font-weight:700;line-height:1.2;text-align:center;text-decoration:none;white-space:nowrap}
-@media (max-width:820px){.dock.show{display:block}footer{padding-bottom:96px}}
 @media (max-width:600px){.hero .wrap{padding-block:44px 96px}}
 .wave{display:block;width:100%;height:28px;color:var(--lacquer);background:var(--bg)}
 
@@ -138,7 +137,7 @@ tr:last-child td{border-bottom:0}
 footer{color:var(--muted);font-size:.85rem;padding-block:0 40px}
 /* Chuyển động: vào trang một lần, cảnh sông nước chuyển động rất chậm, phản hồi nhanh khi tương tác. */
 :root{--ease-out:cubic-bezier(.22,1,.36,1);--ease-io:cubic-bezier(.45,0,.55,1);--dur-fast:.18s;--dur-enter:.7s}
-#panel{scroll-margin-top:16px}
+#seatmap,#panel,#check{scroll-margin-top:16px}
 .card{box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
 .cta{position:relative;overflow:hidden;box-shadow:0 8px 22px -10px rgba(0,0,0,.45);transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),background-color var(--dur-fast) ease}
 .cta::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%)}
@@ -166,7 +165,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
   .scene .glow{animation:glow 9s var(--ease-io) infinite alternate}
   .ticket:not([hidden]){animation:pop .55s var(--ease-out) both}
   .ticket:not([hidden]) .code{animation:stamp .6s var(--ease-out) .15s both}
-  .dock.show{animation:dock .35s var(--ease-out) both}
   .err:not(:empty){animation:shake .32s var(--ease-out)}
 }
 @keyframes rise{from{transform:translateY(14px);opacity:.25}to{transform:none;opacity:1}}
@@ -176,7 +174,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 @keyframes glow{from{transform:scale(1);opacity:.6}to{transform:scale(1.12);opacity:1}}
 @keyframes pop{from{transform:translateY(10px) scale(.98);opacity:.3}to{transform:none;opacity:1}}
 @keyframes stamp{0%{transform:scale(1.25) rotate(-4deg);opacity:.2}60%{transform:scale(.97) rotate(1deg);opacity:1}100%{transform:none}}
-@keyframes dock{from{transform:translateY(100%)}to{transform:none}}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .status.shake{animation:shake .32s var(--ease-out)}
 .seatband{display:grid;gap:12px;min-width:0}
@@ -191,10 +188,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 button.seat{flex:1 1 0;width:auto;min-width:44px;max-width:72px;height:48px;min-height:48px;padding:0;border-radius:7px 7px 4px 4px;border:1px solid var(--field-line);background:var(--field);color:var(--ink);font-size:.82rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;display:grid;place-items:center;align-content:center;cursor:pointer}
 button.seat.org{width:auto;min-width:48px;max-width:84px;height:auto;min-height:56px;padding:4px 3px;gap:1px}
 button.seat .nm{display:block;width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.68rem;font-weight:600;line-height:1.15;text-align:center}
+#check{grid-column:1/-1;border-color:color-mix(in srgb,var(--lacquer) 28%,var(--line));box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
+#check .check-grid{display:grid;gap:14px}
+@media (min-width:640px){
+  #check .check-grid{grid-template-columns:1fr 1fr auto;align-items:end}
+  #check .check-grid .btns{margin:0 0 2px}
+}
+body.page-staff .public-only{display:none!important}
+body.page-public .staff-only{display:none!important}
+#staff-gate{grid-column:1/-1;max-width:520px}
+#staff-session{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 @media (min-width:821px){
-  .seatband{grid-column:1/-1;grid-row:1}
-  main.wrap>.info{grid-column:1;grid-row:2}
-  #panel{grid-column:2;grid-row:2}
+  #check{grid-column:1/-1;grid-row:1}
+  .seatband{grid-column:1/-1;grid-row:2}
+  main.wrap>.info{grid-column:1;grid-row:3}
+  #panel{grid-column:2;grid-row:3}
+  #admin{grid-column:1/-1}
 }
 button.seat.pick{background:color-mix(in srgb,var(--gold) 30%,white);border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
 button.seat.mine{background:var(--lacquer);border-color:var(--lacquer);color:var(--lacquer-ink)}
@@ -288,14 +297,60 @@ a.primary:hover{filter:brightness(1.12)}
     <span class="eyebrow" id="hero-eyebrow">Đêm diễn cải lương · Đăng ký vé mời</span>
     <h1 id="hero-title"><span id="hero-title-text">Tiếng Hò</span><em id="hero-em">Sông Hậu</em></h1>
     <p id="hero-lead">Vở cải lương kinh điển về tình người miền sông nước Hậu Giang, với những lớp ca vọng cổ và điệu hò quen thuộc của Nam Bộ. Vé mời miễn phí, số ghế có hạn. Chọn ghế trên sơ đồ rồi điền thông tin để giữ chỗ.</p>
-    <div class="hero-cta"><a class="cta" href="#panel">Đăng ký nhận vé</a><span class="hero-meta" id="hero-meta"></span></div>
-    <div class="countdown" id="countdown" hidden></div>
+    <div class="hero-cta public-only"><a class="cta" href="#seatmap">Đăng ký nhận vé</a><a class="cta ghost" href="#check">Kiểm tra vé</a><span class="hero-meta" id="hero-meta"></span></div>
+    <div class="hero-cta staff-only"><a class="cta ghost" href="/">Về trang đăng ký</a><span class="hero-meta">Khu vực ban tổ chức</span></div>
+    <div class="countdown public-only" id="countdown" hidden></div>
   </div>
 </header>
 <svg class="wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 0H1200V10C1100 26 1000 26 900 14S700 2 600 14 400 26 300 14 100 2 0 14Z"/></svg>
 
 <main class="wrap">
-  <section class="info" aria-labelledby="info-h">
+  <section class="card public-only" id="check" aria-labelledby="check-h">
+    <h2 id="check-h">Kiểm tra vé</h2>
+    <p class="hint" style="margin:-4px 0 12px">Đã đăng ký? Điền đúng họ tên và số điện thoại để xem vé hoặc hủy đăng ký.</p>
+    <form id="check-form" novalidate>
+      <div class="check-grid">
+        <label for="check-name"><span>Họ và tên <span class="req" aria-hidden="true">*</span></span>
+          <input id="check-name" name="check-name" autocomplete="name" maxlength="80" required>
+          <span class="err" id="check-name-err" role="alert"></span>
+        </label>
+        <label for="check-phone"><span>Số điện thoại <span class="req" aria-hidden="true">*</span></span>
+          <input id="check-phone" name="check-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="09xx xxx xxx" required>
+          <span class="err" id="check-phone-err" role="alert"></span>
+        </label>
+        <div class="btns">
+          <button class="primary" type="submit" id="check-submit">Tra cứu</button>
+        </div>
+      </div>
+    </form>
+    <div id="check-status" class="status" hidden role="status" style="margin-top:12px"></div>
+    <div id="check-list" hidden style="margin-top:14px"></div>
+  </section>
+
+  <section class="card staff-only" id="staff-gate" aria-labelledby="staff-h">
+    <span class="eyebrow">Nội bộ</span>
+    <h2 id="staff-h">Ban tổ chức</h2>
+    <p class="hint" style="margin:-4px 0 12px">Đăng nhập để sửa sự kiện và xem danh sách đăng ký. Khách dùng trang chủ để đặt vé.</p>
+    <form id="staff-login" novalidate>
+      <label for="staff-pass"><span>Mật khẩu ban tổ chức</span>
+        <input id="staff-pass" type="password" autocomplete="current-password" maxlength="80">
+      </label>
+      <div class="btns">
+        <button class="primary" type="submit">Vào</button>
+        <a class="ghost" href="/" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--field-line);border-radius:4px;padding:12px 22px;font-weight:600;color:var(--ink)">Về trang chủ</a>
+      </div>
+      <p class="hint" id="staff-msg"></p>
+    </form>
+    <div id="staff-session" hidden>
+      <p class="hint" style="margin:0">Bạn đang đăng nhập khu vực ban tổ chức.</p>
+      <div class="btns">
+        <button class="ghost" type="button" id="staff-logout">Thoát</button>
+        <a class="ghost" href="/" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--field-line);border-radius:4px;padding:12px 22px;font-weight:600;color:var(--ink)">Về trang chủ</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="info public-only" aria-labelledby="info-h">
     <div>
       <h2 id="info-h">Thông tin chương trình</h2>
       <dl class="facts">
@@ -312,7 +367,7 @@ a.primary:hover{filter:brightness(1.12)}
     <p class="note" id="f-note">Chọn ghế trên sơ đồ, bấm Đặt và xác nhận. Bạn nhận một mã vé cùng ảnh chỗ ngồi để tải về. Đến nơi, đọc mã vé và số điện thoại tại quầy đón khách. Bạn có thể thêm ghế, trả ghế hoặc hủy đăng ký trên trang này.</p>
   </section>
 
-  <div class="seatband">
+  <div class="seatband public-only">
     <fieldset id="show-field">
       <legend>Chọn suất diễn <span class="req" aria-hidden="true">*</span></legend>
       <div class="choices" id="show-choices"></div>
@@ -342,21 +397,10 @@ a.primary:hover{filter:brightness(1.12)}
     </div>
   </div>
 
-  <section class="card" aria-labelledby="panel-h" id="panel">
+  <section class="card public-only" aria-labelledby="panel-h" id="panel">
     <h2 id="panel-h">Đăng ký tham dự</h2>
     <p class="hint" id="form-lead" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Chọn ghế trên sơ đồ, bấm Đặt, rồi xác nhận trong cửa sổ.</p>
     <div id="status" class="status" role="status" tabindex="-1">Đang kết nối với hệ thống đăng ký…</div>
-    <p><button class="ghost" type="button" id="staff-open" hidden>Ban tổ chức</button></p>
-    <form id="staff-login" hidden>
-      <label for="staff-pass"><span>Mật khẩu ban tổ chức</span>
-        <input id="staff-pass" type="password" autocomplete="current-password" maxlength="80">
-      </label>
-      <div class="btns">
-        <button class="primary" type="submit">Vào</button>
-        <button class="ghost" type="button" id="staff-cancel">Đóng</button>
-      </div>
-      <p class="hint" id="staff-msg"></p>
-    </form>
 
     <fieldset id="book-mode" hidden>
       <legend>Cách đặt</legend>
@@ -393,7 +437,7 @@ a.primary:hover{filter:brightness(1.12)}
     </div>
   </section>
 
-  <section class="admin" id="admin" hidden aria-labelledby="admin-h">
+  <section class="admin staff-only" id="admin" hidden aria-labelledby="admin-h">
     <form id="cfg" class="cfg" autocomplete="off" novalidate>
       <div>
         <span class="eyebrow">Chỉ Ban tổ chức</span>
@@ -505,8 +549,11 @@ a.primary:hover{filter:brightness(1.12)}
     </div>
   </div>
 </dialog>
-<div class="dock" id="dock"><a href="#panel">Đăng ký nhận vé</a></div>
-<footer class="wrap"><p style="margin:0 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p><p style="margin:0;font-weight:500;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p></footer>
+<footer class="wrap">
+  <p style="margin:0 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
+  <p style="margin:0;font-weight:500;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
+  <p class="public-only" style="margin:10px 0 0"><a href="/to-chuc" style="color:var(--muted);font-size:.85rem">Ban tổ chức</a></p>
+</footer>
 
 <script>
 // Mặc định chương trình. Bản ban tổ chức lưu ở cauhinh/sukien sẽ đè lên các giá trị này.
@@ -550,9 +597,39 @@ const el = (tag, cls, text) => {
   if (text != null) n.textContent = text;
   return n;
 };
+function currentPage() {
+  const path = (location.pathname || "/").replace(/\/+$/, "") || "/";
+  return path === "/to-chuc" ? "staff" : "public";
+}
+function applyPageShell() {
+  const staffPage = currentPage() === "staff";
+  document.body.classList.toggle("page-staff", staffPage);
+  document.body.classList.toggle("page-public", !staffPage);
+  if (staffPage) {
+    document.title = "Ban tổ chức · Vé mời";
+    const eye = $("hero-eyebrow");
+    const lead = $("hero-lead");
+    if (eye) eye.textContent = "Khu vực nội bộ";
+    if (lead) lead.textContent = "Đăng nhập để tùy chỉnh sự kiện và theo dõi danh sách đăng ký. Trang này không dùng để khách đặt vé.";
+  }
+  syncStaffShell();
+}
+function syncStaffShell() {
+  if (currentPage() !== "staff") return;
+  const gate = $("staff-gate");
+  const login = $("staff-login");
+  const session = $("staff-session");
+  const admin = $("admin");
+  if (gate) gate.hidden = false;
+  if (login) login.hidden = !!canEditUser;
+  if (session) session.hidden = !canEditUser;
+  if (admin) admin.hidden = !canEditUser;
+}
 
 let eventCfg = normalizeEvent(null);
 let db = null, uid = null, myRef = null, mine = null;
+let lookedUp = [];
+let checkBusy = false;
 let canEditUser = false, canWrite = false, viewOnly = false, ready = false, busy = false;
 let seatHolds = {}, adminRows = [], regById = {};
 let editing = false, draftKind = null, draftId = null, draftReg = null, draftSeats = [];
@@ -698,11 +775,18 @@ function setupCountdown() {
 
 function applyEvent() {
   const e = eventCfg;
-  document.title = (e.title + " " + e.titleEm).trim();
-  $("hero-eyebrow").textContent = e.eyebrow;
+  const staffPage = currentPage() === "staff";
+  document.title = staffPage ? "Ban tổ chức · Vé mời" : (e.title + " " + e.titleEm).trim();
   $("hero-title-text").textContent = e.title;
   $("hero-em").textContent = e.titleEm;
-  $("hero-lead").textContent = e.description;
+  if (staffPage) {
+    $("hero-eyebrow").textContent = "Khu vực nội bộ";
+    $("hero-lead").textContent = "Đăng nhập để tùy chỉnh sự kiện và theo dõi danh sách đăng ký. Trang này không dùng để khách đặt vé.";
+    $("countdown").hidden = true;
+  } else {
+    $("hero-eyebrow").textContent = e.eyebrow;
+    $("hero-lead").textContent = e.description;
+  }
   $("f-venue").textContent = e.venue;
   $("f-door").textContent = e.door;
   $("f-ticket").textContent = e.ticketNote;
@@ -1370,16 +1454,167 @@ async function api(path, options) {
   if (!response.ok) throw new Error(data.error || "write");
   return data;
 }
+function setCheckStatus(text, ok) {
+  const node = $("check-status");
+  if (!node) return;
+  node.hidden = !text;
+  node.textContent = text || "";
+  node.classList.toggle("ok", !!ok);
+}
+function foldNameClient(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase("vi");
+}
+function foldPhoneClient(value) {
+  let digits = String(value || "").replace(/\D/g, "");
+  if (digits.startsWith("84") && digits.length >= 11) digits = "0" + digits.slice(2);
+  return digits;
+}
+function validateCheckForm() {
+  let ok = true;
+  const set = (id, msg) => {
+    $(id + "-err").textContent = msg;
+    const field = $(id);
+    if (field) field.setAttribute("aria-invalid", msg ? "true" : "false");
+    if (msg) ok = false;
+  };
+  const name = $("check-name").value.trim();
+  set("check-name", name.length < 2 ? "Vui lòng nhập họ và tên." : "");
+  const phone = $("check-phone").value.replace(/[\s.\-]/g, "");
+  set("check-phone", /^(0|\+84)\d{9,10}$/.test(phone) ? "" : "Số điện thoại cần 10–11 chữ số, bắt đầu bằng 0 hoặc +84.");
+  return ok ? { name, phone } : null;
+}
+function clearCheckResult() {
+  lookedUp = [];
+  const list = $("check-list");
+  if (list) {
+    list.hidden = true;
+    list.textContent = "";
+  }
+}
+async function renderCheckList(rows) {
+  const list = $("check-list");
+  if (!list) return;
+  list.textContent = "";
+  if (!rows.length) {
+    list.hidden = true;
+    return;
+  }
+  list.hidden = false;
+  for (const reg of rows) {
+    const box = el("div", "ticket");
+    box.dataset.regId = reg.regId;
+    const figure = el("figure", "pass");
+    const img = document.createElement("img");
+    img.alt = "Ảnh vé có mã QR";
+    img.width = 460;
+    img.height = 640;
+    img.hidden = true;
+    const link = el("a", "primary", "Tải vé");
+    link.download = "";
+    figure.append(img, link);
+    const meta = el("p", "hint");
+    meta.textContent = "Mã " + (reg.code || "") + " · ghế " + seatsPlain(reg) + (reg.show ? " · " + showText(reg.show) : "");
+    const btns = el("div", "btns");
+    const ask = el("button", "ghost", "Hủy vé này");
+    ask.type = "button";
+    const confirm = el("div", "confirm");
+    confirm.hidden = true;
+    const cText = el("span", "", "Hủy vé " + (reg.code || "") + " và trả ghế " + seatsPlain(reg) + "?");
+    const cBtns = el("div", "btns");
+    const yes = el("button", "danger", "Xác nhận hủy");
+    yes.type = "button";
+    const no = el("button", "ghost", "Không, giữ vé");
+    no.type = "button";
+    cBtns.append(yes, no);
+    confirm.append(cText, cBtns);
+    ask.onclick = () => { confirm.hidden = false; yes.focus(); };
+    no.onclick = () => { confirm.hidden = true; };
+    yes.onclick = () => cancelLookedUp(reg, box, yes);
+    btns.append(ask);
+    box.append(figure, meta, btns, confirm);
+    list.append(box);
+    await renderPassImage(reg, img, link);
+  }
+}
+async function cancelLookedUp(reg, box, yesBtn) {
+  if (checkBusy || !reg?.regId) return;
+  const data = validateCheckForm();
+  if (!data) return;
+  checkBusy = true;
+  yesBtn.disabled = true;
+  try {
+    if (live) {
+      const result = await api("/api/lookup/cancel", {
+        method: "POST",
+        body: JSON.stringify({ name: data.name, phone: data.phone, regId: reg.regId })
+      });
+      applyRemote(result);
+    } else if (db && typeof db.doc === "function") {
+      await deleteRegistration(reg.regId, reg);
+    } else {
+      throw new Error("write");
+    }
+    lookedUp = lookedUp.filter(row => row.regId !== reg.regId);
+    if (mine && mine.regId === reg.regId) mine = null;
+    box.remove();
+    if (!lookedUp.length) $("check-list").hidden = true;
+    setCheckStatus("Đã hủy vé " + (reg.code || "") + ". Ghế đã trả lại.", true);
+    mapSig = "";
+    render();
+  } catch (err) {
+    const msg = String(err && err.message || "");
+    setCheckStatus(msg === "notfound" ? "Không tìm thấy vé khớp họ tên và số điện thoại." : explain(err));
+  } finally {
+    checkBusy = false;
+    yesBtn.disabled = false;
+  }
+}
+async function lookupTickets(data) {
+  if (live) {
+    const result = await api("/api/lookup", {
+      method: "POST",
+      body: JSON.stringify({ name: data.name, phone: data.phone })
+    });
+    return Array.isArray(result.registrations) ? result.registrations : [];
+  }
+  const nameKey = foldNameClient(data.name);
+  const phoneKey = foldPhoneClient(data.phone);
+  const rows = [];
+  if (mine && foldNameClient(mine.name) === nameKey && foldPhoneClient(mine.phone) === phoneKey) rows.push(mine);
+  for (const row of adminRows) {
+    if (!row?.regId) continue;
+    if (foldNameClient(row.name) === nameKey && foldPhoneClient(row.phone) === phoneKey) {
+      if (!rows.some(item => item.regId === row.regId)) rows.push(row);
+    }
+  }
+  if (trial) {
+    const show = eventCfg.shows[0]?.id || "s1";
+    for (const booking of PREVIEW_BOOKINGS) {
+      if (foldNameClient(booking.name) !== nameKey || foldPhoneClient(booking.phone) !== phoneKey) continue;
+      if (rows.some(item => item.regId === booking.id)) continue;
+      rows.push({
+        regId: booking.id,
+        code: "THSH-MAU",
+        name: booking.name,
+        phone: booking.phone,
+        email: "",
+        org: "",
+        msg: "",
+        show,
+        seatIds: booking.seats.slice(),
+        seats: booking.seats.length,
+        source: "guest",
+        createdAt: ""
+      });
+    }
+  }
+  return rows;
+}
 function applyRemote(data) {
   if (data.uid) uid = data.uid;
   if (typeof data.staff === "boolean") {
     canEditUser = data.staff;
-    $("admin").hidden = !canEditUser;
-    const open = $("staff-open");
-    if (open) {
-      open.hidden = false;
-      open.textContent = canEditUser ? "Thoát ban tổ chức" : "Ban tổ chức";
-    }
+    syncStaffShell();
   }
   if (data.event) {
     const next = normalizeEvent(data.event);
@@ -1420,6 +1655,7 @@ function explain(err) {
   if (msg.startsWith("taken:")) return "Ghế " + msg.slice(6) + " vừa có người giữ. Chọn ghế khác.";
   if (msg.startsWith("blocked:")) return "Ghế " + msg.slice(8) + " không mở để đặt.";
   if (msg === "forbidden") return "Bạn không sửa được đăng ký này.";
+  if (msg === "notfound") return "Không tìm thấy vé khớp họ tên và số điện thoại.";
   if (msg === "full") return `Mỗi lượt giữ tối đa ${eventCfg.maxSeats} ghế.`;
   if (msg === "invalid") return "Thông tin chưa đúng. Kiểm tra lại rồi gửi.";
   if (err && err.code === "invalid_argument") {
@@ -2088,8 +2324,8 @@ async function start() {
     });
     try { canEditUser = !!(user && typeof user.canEdit === "function" && await user.canEdit()); }
     catch { canEditUser = false; }
-    if (canEditUser) {
-      $("admin").hidden = false;
+    if (canEditUser && currentPage() === "staff") {
+      syncStaffShell();
       fillCfgForm();
       renderAdmin();
       render();
@@ -2110,14 +2346,6 @@ async function start() {
   } catch { offline(); }
 }
 
-if ("IntersectionObserver" in window) {
-  const seen = new Set();
-  const io = new IntersectionObserver(es => {
-    for (const e of es) e.isIntersecting ? seen.add(e.target) : seen.delete(e.target);
-    $("dock").classList.toggle("show", seen.size === 0);
-  });
-  io.observe(document.querySelector(".hero-cta")); io.observe($("panel"));
-}
 $("draft-bar").setAttribute("aria-live", "polite");
 for (const id of ["name", "phone", "email"]) $(id).addEventListener("input", () => { $(id + "-err").textContent = ""; $(id).setAttribute("aria-invalid", "false"); });
 $("show-choices").addEventListener("change", () => {
@@ -2197,30 +2425,67 @@ $("copy-csv").onclick = async () => {
 for (const id of ["cfg-eyebrow", "cfg-phone", "cfg-title", "cfg-em", "cfg-desc", "cfg-venue", "cfg-door", "cfg-max", "cfg-ticket", "cfg-blocked"]) {
   $(id).addEventListener("input", markCfg);
 }
-$("staff-open").onclick = async () => {
-  if (!live) return;
-  if (canEditUser) {
-    try { applyRemote(await api("/api/staff/logout", { method: "POST", body: "{}" })); }
-    catch { /* vẫn đóng phiên trên giao diện */ }
+$("staff-logout").onclick = async () => {
+  if (!live) {
     canEditUser = false;
-    $("admin").hidden = true;
-    $("staff-open").textContent = "Ban tổ chức";
+    syncStaffShell();
     render();
     return;
   }
-  $("staff-msg").textContent = "";
-  $("staff-login").hidden = !$("staff-login").hidden;
-  if (!$("staff-login").hidden) $("staff-pass").focus();
+  try { applyRemote(await api("/api/staff/logout", { method: "POST", body: "{}" })); }
+  catch {
+    canEditUser = false;
+    syncStaffShell();
+  }
+  render();
 };
-$("staff-cancel").onclick = () => { $("staff-login").hidden = true; };
+$("check-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (checkBusy) return;
+  const data = validateCheckForm();
+  if (!data) return;
+  if (!live && !trial && !db) {
+    setCheckStatus(`Chưa mở kiểm tra vé trực tuyến. Vui lòng gọi Ban tổ chức: ${eventCfg.phone}.`);
+    return;
+  }
+  checkBusy = true;
+  $("check-submit").disabled = true;
+  setCheckStatus("Đang tra cứu…");
+  clearCheckResult();
+  try {
+    const rows = await lookupTickets(data);
+    lookedUp = rows;
+    if (!rows.length) {
+      setCheckStatus("Không tìm thấy vé khớp họ tên và số điện thoại.");
+      return;
+    }
+    setCheckStatus("Tìm thấy " + rows.length + " vé.", true);
+    await renderCheckList(rows);
+  } catch (err) {
+    setCheckStatus(explain(err));
+  } finally {
+    checkBusy = false;
+    $("check-submit").disabled = false;
+  }
+});
+for (const id of ["check-name", "check-phone"]) {
+  $(id).addEventListener("input", () => {
+    $(id + "-err").textContent = "";
+    $(id).setAttribute("aria-invalid", "false");
+  });
+}
 $("staff-login").addEventListener("submit", async e => {
   e.preventDefault();
   $("staff-msg").textContent = "";
+  if (currentPage() !== "staff") {
+    $("staff-msg").textContent = "Mở trang /to-chuc để đăng nhập ban tổ chức.";
+    return;
+  }
   try {
     applyRemote(await api("/api/staff/login", { method: "POST", body: JSON.stringify({ password: $("staff-pass").value }) }));
     $("staff-pass").value = "";
-    $("staff-login").hidden = true;
     fillCfgForm();
+    syncStaffShell();
     render();
   } catch {
     $("staff-msg").textContent = "Mật khẩu chưa đúng.";
@@ -2239,6 +2504,7 @@ $("cfg-add-row").onclick = () => {
 };
 $("cfg").addEventListener("submit", saveCfg);
 
+applyPageShell();
 applyEvent();
 setStatus("Đang kết nối với hệ thống đăng ký…");
 start();
