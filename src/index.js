@@ -1,20 +1,52 @@
 import { DurableObject } from "cloudflare:workers";
 
+function buildHallRows() {
+  const letter = i => String.fromCharCode(65 + i);
+  const push = (rows, prefix, counts, zone, block, lockedAt) => {
+    counts.forEach((count, i) => {
+      const locked = typeof lockedAt === "function" ? !!lockedAt(letter(i), i) : !!lockedAt;
+      rows.push({ label: prefix + letter(i), count, zone, block, locked });
+    });
+  };
+  const rows = [];
+  // Trên lầu: 59 + 96 + 61 = 216
+  push(rows, "L1", [9, 11, 12, 13, 14], "lau", 1, false);
+  push(rows, "L2", [17, 18, 19, 20, 22], "lau", 2, false);
+  push(rows, "L3", [9, 11, 13, 14, 14], "lau", 3, false);
+  // Tầng trệt: 167 + 186 + 167 = 520 — chỉ khóa VIP A–D khối 2; bàn BGK chỉ là chữ trên sơ đồ
+  push(rows, "1", [12, 13, 14, 15, 16, 17, 18, 19, 21, 22], "tre", 1, false);
+  push(rows, "2", [14, 15, 16, 16, 17, 17, 17, 18, 18, 19, 19], "tre", 2, L => "ABCD".includes(L));
+  push(rows, "3", [12, 13, 14, 15, 16, 17, 18, 19, 21, 22], "tre", 3, false);
+  return rows;
+}
+
+function seatsFromLockedRows(rows) {
+  const out = [];
+  for (const row of rows || []) {
+    if (!row.locked) continue;
+    for (let n = 1; n <= row.count; n++) out.push(row.label + n);
+  }
+  return out;
+}
+
 const DEFAULT_EVENT = {
-  eyebrow: "Đêm diễn cải lương · Đăng ký vé mời",
+  eyebrow: "Ngày Văn hóa Việt Nam 2026 · Vé mời miễn phí",
   title: "Tiếng Hò",
   titleEm: "Sông Hậu",
-  description: "Vở cải lương kinh điển về tình người miền sông nước Hậu Giang, với những lớp ca vọng cổ và điệu hò quen thuộc của Nam Bộ. Vé mời miễn phí, số ghế có hạn. Chọn ghế trên sơ đồ rồi điền thông tin để giữ chỗ.",
-  venue: "Nhà hát Tây Đô, 22 Hòa Bình, Ninh Kiều, Cần Thơ",
+  description: "Công diễn vở cải lương với NSND Quế Trân, NSƯT Lê Tứ và nghệ sĩ Đoàn Nghệ thuật Cải lương Tây Đô — Trung tâm Văn hóa, Nghệ thuật thành phố. Vé mời miễn phí, số ghế có hạn.",
+  venue: "Nhà biểu diễn Trung tâm Văn hóa, Nghệ thuật TP (Khu Bãi Cát, phường Cái Khế, Cần Thơ)",
   phone: "0292 3 000 000",
   door: "Trước giờ diễn 45 phút",
-  ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt đăng ký",
+  ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt. VIP A–D khối 2 dành cho đại biểu",
   codePrefix: "VE",
   maxSeats: 4,
-  aisle: true,
+  aisle: false,
   blocked: [],
-  shows: [{ id: "s1", day: "22/11", label: "Thứ Bảy, 22/11/2026", time: "19:30" }],
-  rows: ["A", "B", "C", "D", "E", "F", "G", "H"].map(label => ({ label, count: 14 }))
+  shows: [
+    { id: "s1", day: "15/11", label: "Chủ nhật, 15/11/2026 · Truyền hình trực tiếp", time: "19:00" },
+    { id: "s2", day: "24/11", label: "Thứ Ba, 24/11/2026 · Ngày Văn hóa Việt Nam", time: "19:00" }
+  ],
+  rows: buildHallRows()
 };
 
 function normalizeEvent(raw) {
@@ -48,14 +80,38 @@ function normalizeEvent(raw) {
     if (shows.length) base.shows = shows;
   }
   if (Array.isArray(raw.rows) && raw.rows.length) {
-    const rows = raw.rows.slice(0, 30).map(row => ({
-      label: String(row.label || "").trim().replace(/[\s/\\_"']/g, "").slice(0, 8),
-      count: Math.min(40, Math.max(1, Number(row.count) || 1))
-    })).filter(row => row.label);
+    const rows = raw.rows.slice(0, 80).map(row => {
+      const block = Number(row.block);
+      return {
+        label: String(row.label || "").trim().replace(/[\s/\\_"']/g, "").slice(0, 8),
+        count: Math.min(40, Math.max(1, Number(row.count) || 1)),
+        zone: row.zone === "lau" ? "lau" : "tre",
+        block: block === 2 || block === 3 ? block : 1,
+        locked: !!row.locked
+      };
+    }).filter(row => row.label);
     const labels = new Set(rows.map(row => row.label.toUpperCase()));
     if (rows.length && labels.size === rows.length) base.rows = rows;
   }
-  base.blocked = canonicalSeats(layoutOf(base), raw.blocked);
+  // Chuẩn hóa VIP: chỉ A–D khối 2 tầng trệt; Ban giám khảo không phải ghế
+  for (const row of base.rows) {
+    if (/^2[A-Z]$/i.test(row.label)) {
+      row.zone = "tre";
+      row.block = 2;
+      row.locked = "ABCD".includes(row.label.slice(-1).toUpperCase());
+    }
+  }
+  const locked = seatsFromLockedRows(base.rows);
+  // Bỏ ghế VIP E–K còn sót trong blocked cũ; chỉ giữ khóa A–D + ghế khóa tay khác
+  const manual = [];
+  if (Array.isArray(raw.blocked)) {
+    for (const item of raw.blocked) {
+      const seat = String(item || "").replace(/\s/g, "");
+      if (!seat || /^2[E-K]/i.test(seat)) continue;
+      manual.push(seat);
+    }
+  }
+  base.blocked = canonicalSeats(layoutOf(base), manual.concat(locked));
   return base;
 }
 
@@ -78,7 +134,7 @@ function canonicalSeats(layout, raw) {
     if (!seat || seen.has(seat)) continue;
     seen.add(seat);
     out.push(seat);
-    if (out.length >= 200) break;
+    if (out.length >= 600) break;
   }
   return out;
 }
@@ -231,7 +287,13 @@ export class Venue extends DurableObject {
 
   event() {
     const row = this.ctx.storage.sql.exec("SELECT value FROM meta WHERE key = ?", "event").toArray()[0];
-    return normalizeEvent(row ? JSON.parse(row.value) : null);
+    const parsed = row ? JSON.parse(row.value) : null;
+    const event = normalizeEvent(parsed);
+    const prevLock = (parsed?.rows || []).filter(r => r.locked).map(r => r.label).sort().join(",");
+    const nextLock = event.rows.filter(r => r.locked).map(r => r.label).sort().join(",");
+    const prevBlocked = Array.isArray(parsed?.blocked) ? parsed.blocked.length : -1;
+    if (prevLock !== nextLock || prevBlocked !== event.blocked.length) this.saveEvent(event);
+    return event;
   }
 
   snapshot(actor, staff) {
@@ -528,7 +590,7 @@ export default {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     if (request.method === "GET" && url.pathname === "/api/version") {
-      return Response.json({ name: "ve-moi", features: ["lookup"] });
+      return Response.json({ name: "ve-moi", features: ["lookup", "hall-vip-ad", "aisles"] });
     }
     const secure = secureRequest(request);
     if (request.method === "PUT" || request.method === "POST") {
