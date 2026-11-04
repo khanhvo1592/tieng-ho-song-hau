@@ -37,7 +37,7 @@ const DEFAULT_EVENT = {
   venue: "Nhà biểu diễn Trung tâm Văn hóa, Nghệ thuật TP (Khu Bãi Cát, phường Cái Khế, Cần Thơ)",
   phone: "0292 3 000 000",
   door: "Trước giờ diễn 45 phút",
-  ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt. VIP A–D khối 2 dành cho đại biểu",
+  ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt đăng ký",
   codePrefix: "VE",
   maxSeats: 4,
   aisle: false,

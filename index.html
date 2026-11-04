@@ -176,48 +176,90 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 @keyframes stamp{0%{transform:scale(1.25) rotate(-4deg);opacity:.2}60%{transform:scale(.97) rotate(1deg);opacity:1}100%{transform:none}}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .status.shake{animation:shake .32s var(--ease-out)}
-.seatband{display:grid;gap:14px;min-width:0}
-.seatmap{display:grid;gap:14px;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 16px 14px;box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
+.seatband{
+  display:grid;gap:14px;min-width:0;
+  width:100vw;max-width:100vw;
+  margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
+  padding-left:max(12px,env(safe-area-inset-left,0px));
+  padding-right:max(12px,env(safe-area-inset-right,0px));
+  box-sizing:border-box;
+}
+.seatmap{display:grid;gap:14px;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 12px 14px;box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
 .seatmap-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
 .seatmap h3{font-family:var(--font-display);font-size:1.2rem;font-weight:600;margin:0}
 .zone-tabs{display:inline-flex;flex-wrap:wrap;gap:6px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--lacquer) 8%,var(--bg));border:1px solid var(--line)}
 .zone-tab{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.85rem;min-height:40px;padding:8px 16px;border-radius:999px;cursor:pointer}
 .zone-tab[aria-selected="true"]{background:var(--lacquer);color:var(--lacquer-ink);box-shadow:0 6px 16px -10px rgba(18,38,31,.55)}
 .zone-tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.stage{text-align:center;letter-spacing:.16em;text-transform:uppercase;font-size:.75rem;font-weight:700;color:var(--lacquer-ink);background:var(--lacquer);border-radius:4px;padding:12px 12px;max-width:420px;margin:0 auto;width:100%}
-.seat-scroll{overflow:auto;padding:8px 4px 16px;-webkit-overflow-scrolling:touch;max-height:min(72vh,900px);border:1px dashed color-mix(in srgb,var(--line) 80%,transparent);border-radius:8px;background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 55%,white),var(--surface))}
-.seat-scroll-hint{margin:0;font-size:.78rem;color:var(--muted);text-align:center}
-.hall{display:grid;gap:16px;width:max-content;min-width:100%;margin:0 auto;justify-items:center}
-.hall-level{display:grid;gap:10px;width:max-content}
-.hall-title{margin:0;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--gold);text-align:center}
-.hall-blocks{display:grid;grid-template-columns:max-content 56px max-content 56px max-content;column-gap:10px;align-items:start;width:max-content}
-.hall-aisle{box-sizing:border-box;width:56px;min-width:56px;max-width:56px;align-self:stretch;display:flex;align-items:center;justify-content:center;padding:10px 0;border-radius:6px;border:1px dashed color-mix(in srgb,var(--muted) 35%,var(--line));background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--bg) 70%,white),color-mix(in srgb,var(--bg) 70%,white) 5px,color-mix(in srgb,var(--line) 45%,transparent) 5px,color-mix(in srgb,var(--line) 45%,transparent) 10px);color:var(--muted);font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;writing-mode:vertical-rl;text-orientation:mixed;user-select:none;pointer-events:none;z-index:1}
-.hall-block{display:grid;gap:4px;width:max-content;min-width:max-content;padding:10px 8px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--surface) 92%,white)}
-.hall-block.vip{border-color:color-mix(in srgb,var(--danger) 35%,var(--line));background:color-mix(in srgb,var(--danger) 5%,var(--surface))}
-.hall-block-h{font-size:.72rem;font-weight:700;text-align:center;color:var(--muted);letter-spacing:.04em;margin-bottom:2px}
-.hall-block.vip .hall-block-h{color:var(--danger)}
-.bgk-mark{text-align:center;font-size:.75rem;font-weight:800;letter-spacing:.03em;color:#fff;background:#8B1E1E;border-radius:4px;padding:8px 8px;margin:4px 0;user-select:none;pointer-events:none}
-.seat-row{display:flex;align-items:center;gap:5px;width:max-content;margin:0}
-.seat-row .rl{min-width:1.85rem;text-align:right;font-weight:700;color:var(--gold);font-size:.72rem;flex:none}
-.seat-row.vip-lock .rl{color:var(--danger)}
-.cluster{display:flex;flex:none;gap:3px;width:max-content;justify-content:center}
+.seat-scroll{
+  overflow-x:auto;overflow-y:auto;
+  padding:12px 16px 20px;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x pan-y;
+  max-height:min(78vh,980px);
+  border:1px solid #d9b4b4;border-radius:8px;background:#fffefb;
+  scrollbar-gutter:stable;
+}
+.seat-scroll::-webkit-scrollbar{height:10px;width:10px}
+.seat-scroll::-webkit-scrollbar-thumb{background:#c9a0a4;border-radius:999px}
+.hall{display:grid;gap:0;width:max-content;min-width:max-content;margin:0 auto;justify-items:center;padding:8px 20px 4px}
+.hall-level{display:grid;gap:8px;width:max-content;padding:10px 4px}
+.hall-level.lau{padding-bottom:14px}
+.hall-level.tre{padding-top:14px}
+.hall-title{margin:0;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#9a3b3b;text-align:center}
+.hall-divider{width:100%;height:5px;margin:2px 0;border-radius:999px;background:linear-gradient(90deg,#f0a04b,#e67e22,#f0a04b);box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.hall-blocks{display:grid;grid-template-columns:max-content 48px max-content 48px max-content;column-gap:10px;align-items:end;width:max-content}
+.hall-aisle{box-sizing:border-box;width:48px;min-width:48px;max-width:48px;align-self:stretch;display:flex;align-items:center;justify-content:center;padding:8px 0;border-radius:4px;background:repeating-linear-gradient(-45deg,#f7f1ea,#f7f1ea 4px,#efe4d8 4px,#efe4d8 8px);color:#8a7360;font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;writing-mode:vertical-rl;text-orientation:mixed;user-select:none;pointer-events:none;z-index:1}
+.hall-block{display:grid;gap:3px;width:max-content;min-width:max-content;padding:8px 6px 10px;border:0;background:transparent;position:relative}
+.hall-block-h{display:grid;place-items:center;width:28px;height:28px;margin:0 auto 6px;border-radius:50%;background:#2f5f9f;color:#fff;font-size:.85rem;font-weight:800;line-height:1}
+.hall-block.side-left .seat-row{margin-left:auto}
+.hall-block.side-right .seat-row{margin-right:auto}
+.hall-block.center .seat-row{margin-inline:auto}
+.hall-door{margin:8px auto 0;padding:6px 14px;border-radius:4px;background:#3b6ea8;color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;width:max-content}
+.hall-side-door{position:absolute;left:-44px;top:40%;transform:translateY(-50%);writing-mode:vertical-rl;text-orientation:mixed;padding:10px 6px;border-radius:4px;background:#6b4ea3;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;pointer-events:none}
+.stage{text-align:center;letter-spacing:.2em;text-transform:uppercase;font-size:.85rem;font-weight:800;color:#fff;background:#8B1E1E;border-radius:2px;padding:14px 16px;width:100%;max-width:none;margin:10px 0 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.seat-row{display:flex;align-items:center;gap:4px;width:max-content;margin:0}
+.seat-row .rl{min-width:1.5rem;text-align:right;font-weight:800;color:#7a3030;font-size:.7rem;flex:none}
+.seat-row.vip-lock .rl{color:#8B1E1E}
+.cluster{display:flex;flex:none;gap:2px;width:max-content;justify-content:center}
 .aisle{width:clamp(18px,2.6vw,40px);flex:none}
-button.seat{flex:0 0 auto;width:30px;min-width:30px;max-width:34px;height:30px;min-height:30px;padding:0;border-radius:5px 5px 3px 3px;border:1px solid var(--field-line);background:var(--field);color:var(--ink);font-size:.68rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;display:grid;place-items:center;align-content:center;cursor:pointer}
-button.seat:hover:not(:disabled){transform:translateY(-1px)}
-button.seat.org{width:auto;min-width:34px;max-width:48px;height:auto;min-height:34px;padding:2px 2px;gap:0}
-button.seat .nm{display:block;width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.52rem;font-weight:600;line-height:1.1;text-align:center}
+button.seat{flex:0 0 auto;width:20px;min-width:20px;max-width:24px;height:20px;min-height:20px;padding:0;border-radius:2px;border:1px solid #e2a4ab;background:#f6d0d5;color:#6a3038;font-size:.58rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;display:grid;place-items:center;align-content:center;cursor:pointer}
+button.seat .num{font-size:.58rem}
+button.seat:hover:not(:disabled){filter:brightness(1.05);transform:translateY(-1px)}
+button.seat.org{width:auto;min-width:24px;max-width:42px;height:auto;min-height:26px;padding:1px;gap:0}
+button.seat .nm{display:block;width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.45rem;font-weight:600;line-height:1.05;text-align:center}
+button.seat.pick{background:#f1c977;border-color:#c9a045;color:#12261F;box-shadow:inset 0 0 0 1px #c9a045}
+button.seat.mine{background:var(--lacquer);border-color:var(--lacquer);color:var(--lacquer-ink)}
+button.seat.taken{background:repeating-linear-gradient(-45deg,#ecd3d6,#ecd3d6 3px,#e0bec3 3px,#e0bec3 6px);color:#8a6066;border-color:#d7b0b5}
+button.seat.blocked{background:#efe6e7;color:#a08085;border-style:dashed;border-color:#cbb0b4;cursor:not-allowed}
 .legend{display:flex;flex-wrap:wrap;gap:8px 14px;list-style:none;padding:0;margin:0;font-size:.85rem}
 .bookbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:30;margin-top:4px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--lacquer) 28%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--surface) 92%,white);box-shadow:0 12px 28px -18px rgba(18,38,31,.55);backdrop-filter:blur(8px)}
 .bookbar p{margin:0;font-weight:700}
 .bookbar .btns{margin:0}
 .pick-chips{display:flex;flex-wrap:wrap;gap:6px}
 .pick-chip{display:inline-flex;align-items:center;min-height:28px;padding:2px 10px;border-radius:999px;background:color-mix(in srgb,var(--gold) 22%,white);border:1px solid var(--gold);font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
-#show-field{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;box-shadow:0 12px 28px -24px rgba(18,38,31,.4)}
+#show-field{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;box-shadow:0 12px 28px -24px rgba(18,38,31,.4);max-width:1180px;width:100%;margin-inline:auto;box-sizing:border-box}
 #show-field .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+/* Mobile: giữ đúng 3 khối + lối đi, kéo ngang */
 @media (max-width:900px){
-  .hall-blocks{grid-template-columns:max-content;row-gap:12px}
-  .hall-aisle{width:100%;min-width:0;max-width:none;min-height:34px;writing-mode:horizontal-tb;text-orientation:mixed;padding:8px 10px;letter-spacing:.14em}
-  button.seat{width:32px;min-width:32px;max-width:36px;height:32px;min-height:32px;font-size:.72rem}
+  .hall-side-door{display:none}
+  .seat-scroll{padding:10px 8px 16px;max-height:min(70vh,760px)}
+  button.seat{width:22px;min-width:22px;max-width:26px;height:22px;min-height:22px;font-size:.62rem}
+  button.seat .num{font-size:.62rem}
+  .hall-aisle{width:36px;min-width:36px;max-width:36px;font-size:.55rem}
+  .hall-blocks{grid-template-columns:max-content 36px max-content 36px max-content;column-gap:6px}
+}
+@media (min-width:1100px){
+  button.seat{width:24px;min-width:24px;max-width:28px;height:24px;min-height:24px;font-size:.65rem}
+  button.seat .num{font-size:.65rem}
+  .hall-aisle{width:56px;min-width:56px;max-width:56px}
+  .hall-blocks{grid-template-columns:max-content 56px max-content 56px max-content}
+}
+@media (min-width:1400px){
+  button.seat{width:28px;min-width:28px;max-width:32px;height:28px;min-height:28px;font-size:.72rem}
+  button.seat .num{font-size:.72rem}
+  .seatmap{padding:18px 18px 16px}
 }
 #check{grid-column:1/-1;border-color:color-mix(in srgb,var(--lacquer) 28%,var(--line));box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
 #check .check-grid{display:grid;gap:14px}
@@ -236,21 +278,14 @@ body.page-public .staff-only{display:none!important}
   #panel{grid-column:2;grid-row:3}
   #admin{grid-column:1/-1}
 }
-button.seat.pick{background:color-mix(in srgb,var(--gold) 30%,white);border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
-button.seat.mine{background:var(--lacquer);border-color:var(--lacquer);color:var(--lacquer-ink)}
-button.seat.taken{background:repeating-linear-gradient(-45deg,#E4EBE6,#E4EBE6 4px,#D5E0D9 4px,#D5E0D9 8px);color:var(--muted)}
-button.seat:hover:not(:disabled){border-color:var(--lacquer)}
-button.seat.taken.org:hover{border-color:var(--gold)}
 button.seat:disabled{opacity:1;cursor:not-allowed}
-.legend{display:flex;flex-wrap:wrap;gap:8px 14px;list-style:none;padding:0;margin:0;font-size:.85rem}
 .legend li{display:flex;align-items:center;gap:6px}
-.sw{width:14px;height:14px;border-radius:3px;border:1px solid var(--field-line);display:inline-block;flex:none}
-.sw.free{background:var(--field)}
-.sw.pick{background:color-mix(in srgb,var(--gold) 30%,white);border-color:var(--gold)}
+.sw{width:14px;height:14px;border-radius:2px;border:1px solid #e2a4ab;display:inline-block;flex:none}
+.sw.free{background:#f6d0d5}
+.sw.pick{background:#f1c977;border-color:#c9a045}
 .sw.mine{background:var(--lacquer);border-color:var(--lacquer)}
-.sw.taken{background:repeating-linear-gradient(-45deg,#E4EBE6,#E4EBE6 3px,#D5E0D9 3px,#D5E0D9 6px)}
-.sw.blocked{background:var(--bg);border-style:dashed;border-color:var(--muted)}
-button.seat.blocked{background:var(--bg);color:var(--muted);border-style:dashed;border-color:var(--muted);cursor:not-allowed}
+.sw.taken{background:repeating-linear-gradient(-45deg,#ecd3d6,#ecd3d6 3px,#e0bec3 3px,#e0bec3 6px)}
+.sw.blocked{background:#efe6e7;border-style:dashed;border-color:#cbb0b4}
 .cfg{display:grid;gap:14px;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--line)}
 .cfg h2{margin-bottom:0}
 .cfg-block{display:grid;gap:8px}
@@ -406,19 +441,18 @@ a.primary:hover{filter:brightness(1.12)}
       <div class="seatmap-head">
         <h3 id="map-h">Sơ đồ chỗ ngồi</h3>
         <div class="zone-tabs" role="tablist" aria-label="Chọn tầng">
-          <button class="zone-tab" type="button" role="tab" id="zone-tre" data-zone="tre" aria-selected="true">Tầng trệt</button>
+          <button class="zone-tab" type="button" role="tab" id="zone-all" data-zone="all" aria-selected="true">Toàn nhà</button>
+          <button class="zone-tab" type="button" role="tab" id="zone-tre" data-zone="tre" aria-selected="false">Tầng trệt</button>
           <button class="zone-tab" type="button" role="tab" id="zone-lau" data-zone="lau" aria-selected="false">Trên lầu</button>
         </div>
       </div>
-      <div class="stage" id="stage-label">Sân khấu</div>
-      <p class="seat-scroll-hint">Vuốt ngang nếu sơ đồ rộng · Lối đi nằm giữa các khối</p>
       <div class="seat-scroll" id="seat-scroll" role="tabpanel" aria-label="Các hàng ghế"></div>
       <ul class="legend">
         <li><span class="sw free"></span> Trống</li>
         <li><span class="sw pick"></span> Đang chọn</li>
         <li><span class="sw mine"></span> Của bạn</li>
         <li><span class="sw taken"></span> Đã có người</li>
-        <li><span class="sw blocked"></span> VIP A–D khối 2</li>
+        <li><span class="sw blocked"></span> Không mở</li>
       </ul>
       <p class="hint" id="seat-cap"></p>
       <div class="bookbar" id="bookbar" hidden>
@@ -629,7 +663,7 @@ const EVENT_DEFAULT = {
   venue: "Nhà biểu diễn Trung tâm Văn hóa, Nghệ thuật TP (Khu Bãi Cát, phường Cái Khế, Cần Thơ)",
   phone: "0292 3 000 000",
   door: "Trước giờ diễn 45 phút",
-  ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt. VIP A–D khối 2 dành cho đại biểu",
+  ticketNote: "Miễn phí, tối đa 4 ghế mỗi lượt đăng ký",
   codePrefix: "VE",
   maxSeats: 4,
   aisle: false,
@@ -698,7 +732,7 @@ let checkBusy = false;
 let canEditUser = false, canWrite = false, viewOnly = false, ready = false, busy = false;
 let seatHolds = {}, adminRows = [], regById = {};
 let editing = false, draftKind = null, draftId = null, draftReg = null, draftSeats = [];
-let activeShow = null, mapZone = "tre", mapSig = "", cfgDirty = false, cfgSilent = false;
+let activeShow = null, mapZone = "all", mapSig = "", cfgDirty = false, cfgSilent = false;
 let editShows = [], editRows = [];
 let countdownTimer = null, countdownFor = null, countdownDone = false;
 let trial = false, live = false;
@@ -974,11 +1008,15 @@ function clusters(count, aisle) {
   const left = Math.ceil(n / 2);
   return [[1, left], [left + 1, n]];
 }
+function rowLetter(label) {
+  const m = String(label || "").match(/([A-Z])$/i);
+  return m ? m[1].toUpperCase() : "";
+}
 function renderRowLine(row) {
   const line = el("div", "seat-row" + (row.locked ? " vip-lock" : ""));
   line.setAttribute("role", "group");
-  line.setAttribute("aria-label", "Hàng " + row.label + (row.locked ? ", VIP không đặt" : ""));
-  line.append(el("span", "rl", row.label.replace(/^L/, "")));
+  line.setAttribute("aria-label", "Hàng " + row.label + (row.locked ? ", không mở đặt" : ""));
+  line.append(el("span", "rl", rowLetter(row.label) || row.label.replace(/^L/, "")));
   const cluster = el("div", "cluster");
   for (let n = 1; n <= row.count; n++) cluster.append(makeSeat(row.label + n, n));
   line.append(cluster);
@@ -988,45 +1026,30 @@ function renderBlockCol(zoneRows, zoneId, blockNum) {
   const brow = zoneRows.filter(r => (Number(r.block) || 1) === blockNum);
   if (!brow.length) return null;
   const isVip = zoneId === "tre" && blockNum === 2;
-  const col = el("div", "hall-block" + (isVip ? " vip" : ""));
-  const head = "Khối " + blockNum;
-  col.append(el("div", "hall-block-h", head));
-  for (const row of brow) {
-    col.append(renderRowLine(row));
-    // Sau hàng B khối 2: chỉ chữ Ban giám khảo, không phải ghế
-    if (isVip && /2B$/i.test(row.label)) {
-      const mark = el("div", "bgk-mark", "Ban giám khảo");
-      mark.setAttribute("aria-hidden", "true");
-      col.append(mark);
-    }
+  const side = blockNum === 1 ? " side-left" : (blockNum === 3 ? " side-right" : " center");
+  const col = el("div", "hall-block" + side + (isVip ? " vip" : ""));
+  col.append(el("div", "hall-block-h", String(blockNum)));
+  if (zoneId === "tre" && blockNum === 1) {
+    const door = el("div", "hall-side-door", "Cửa hông");
+    door.setAttribute("aria-hidden", "true");
+    col.append(door);
+  }
+  // Sân khấu dưới: đảo hàng để A sát sân khấu (giống sơ đồ giấy)
+  const ordered = brow.slice().reverse();
+  for (const row of ordered) col.append(renderRowLine(row));
+  if (isVip) {
+    const mainDoor = el("div", "hall-door", "Cửa chính");
+    mainDoor.setAttribute("aria-hidden", "true");
+    // Cửa chính ở phía xa sân khấu = đầu khối (trên cùng sau khi đảo)
+    col.insertBefore(mainDoor, col.children[1] || null);
   }
   return col;
 }
-function setMapZone(zone) {
-  const next = zone === "lau" ? "lau" : "tre";
-  if (mapZone === next) return;
-  mapZone = next;
-  for (const btn of document.querySelectorAll(".zone-tab")) {
-    btn.setAttribute("aria-selected", btn.dataset.zone === mapZone ? "true" : "false");
-  }
-  const stage = $("stage-label");
-  if (stage) stage.textContent = mapZone === "tre" ? "Sân khấu" : "Nhìn xuống sân khấu";
-  mapSig = "";
-  renderMap();
-}
-function renderMap() {
-  const sig = mapSignature();
-  const scroll = $("seat-scroll");
-  if (sig === mapSig) return;
-  mapSig = sig;
-  const active = document.activeElement;
-  const keep = active && active.dataset ? (active.dataset.seat || "") : "";
-  scroll.textContent = "";
-  const hall = el("div", "hall");
-  const zoneId = mapZone === "lau" ? "lau" : "tre";
+function appendLevel(hall, zoneId) {
   const zoneRows = eventCfg.rows.filter(r => (r.zone || "tre") === zoneId);
-  const level = el("div", "hall-level");
-  level.append(el("h4", "hall-title", zoneId === "lau" ? "Trên lầu · 3 khối" : "Tầng trệt · 3 khối · lối đi giữa"));
+  if (!zoneRows.length) return;
+  const level = el("div", "hall-level " + zoneId);
+  level.append(el("h4", "hall-title", zoneId === "lau" ? "Trên lầu" : "Tầng trệt"));
   const blocks = el("div", "hall-blocks");
   const col1 = renderBlockCol(zoneRows, zoneId, 1);
   const col2 = renderBlockCol(zoneRows, zoneId, 2);
@@ -1046,6 +1069,39 @@ function renderMap() {
   if (col3) blocks.append(col3);
   level.append(blocks);
   hall.append(level);
+}
+function setMapZone(zone) {
+  const next = zone === "lau" || zone === "tre" ? zone : "all";
+  if (mapZone === next) return;
+  mapZone = next;
+  for (const btn of document.querySelectorAll(".zone-tab")) {
+    btn.setAttribute("aria-selected", btn.dataset.zone === mapZone ? "true" : "false");
+  }
+  mapSig = "";
+  renderMap();
+}
+function renderMap() {
+  const sig = mapSignature();
+  const scroll = $("seat-scroll");
+  if (sig === mapSig) return;
+  mapSig = sig;
+  const active = document.activeElement;
+  const keep = active && active.dataset ? (active.dataset.seat || "") : "";
+  scroll.textContent = "";
+  const hall = el("div", "hall");
+  if (mapZone === "lau") appendLevel(hall, "lau");
+  else if (mapZone === "tre") appendLevel(hall, "tre");
+  else {
+    appendLevel(hall, "lau");
+    const div = el("div", "hall-divider");
+    div.setAttribute("aria-hidden", "true");
+    hall.append(div);
+    appendLevel(hall, "tre");
+  }
+  if (mapZone !== "lau") {
+    const stage = el("div", "stage", "Sân khấu");
+    hall.append(stage);
+  }
   scroll.append(hall);
   if (keep) {
     const again = scroll.querySelector('[data-seat="' + keep.replace(/"/g, "") + '"]');
@@ -1509,7 +1565,7 @@ function render() {
   const multi = eventCfg.shows.length > 1;
   $("map-h").textContent = multi && activeShow ? "Sơ đồ chỗ ngồi · " + showText(activeShow) : "Sơ đồ chỗ ngồi";
   const open = [...layoutSeatSet(eventCfg)].filter(s => !(eventCfg.blocked || []).includes(s)).length;
-  $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt. Đang mở ${open} ghế. Khóa VIP A–D khối 2; Ban giám khảo chỉ là ghi chú, không đặt được.`;
+  $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt. Đang mở ${open} ghế.`;
   renderMap();
 }
 
@@ -1992,7 +2048,7 @@ function openExisting(regId) {
 }
 async function onSeatClick(seat) {
   if (busy) return;
-  if (holdFor(seat)?.blocked || (eventCfg.blocked || []).includes(seat)) { setStatus("Ghế này không mở để đặt (VIP / BGK hoặc ghế khóa)."); return; }
+  if (holdFor(seat)?.blocked || (eventCfg.blocked || []).includes(seat)) { setStatus("Ghế này không mở để đặt."); return; }
   if (!ready || !canWrite) { nudgeStatus(); return; }
   const hold = holdFor(seat);
   const owner = hold?.registrationId || "";
