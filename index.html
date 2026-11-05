@@ -6,142 +6,202 @@
 <title>Tiếng Hò Sông Hậu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,800;1,600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,500&display=swap">
 <style>
-/* Layout: one narrow column like a theatre programme — river-green title band, river-wave rule, then details and the sign-up form side by side on wide screens. */
+/* Chương trình đêm diễn sông nước — sơn then xanh, vàng nhũ, nền sương sông. */
 :root{
-  --bg:#E8F1EA;          /* xanh lá non */
-  --surface:#F7FBF7;
-  --ink:#12261F;
-  --muted:#4A6157;
-  --line:#C3D8CB;
-  --lacquer:#1E5C43;     /* xanh lá dừa */
-  --lacquer-ink:#F1FAF4;
-  --gold:#7A5E0C;
+  --bg:#DCEDE3;
+  --bg-deep:#C9E0D2;
+  --surface:#F4FAF5;
+  --ink:#10241C;
+  --muted:#4A6358;
+  --line:#B7CFC1;
+  --lacquer:#174F39;
+  --lacquer-ink:#F3FBF6;
+  --gold:#8A6A14;
+  --gold-bright:#E8C56A;
   --field:#FFFFFF;
   --field-line:#7F9A8B;
-  --ok:#2F6B45;
+  --ok:#2A6A42;
   --danger:#A3302A;
-  --code:#1E5C43;
+  --code:#174F39;
   --warn:#9A5B12;
-  --font-display:"Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display:"Source Serif 4", "Times New Roman", Georgia, serif;
+  --font-body:"Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius:10px;
+  --shadow:0 22px 48px -30px rgba(16,36,28,.55);
   color-scheme:light;
-  --font-body:"Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 img{max-width:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.6}
-.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+html{background:var(--bg)}
+body{
+  margin:0;color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.65;
+  background:
+    radial-gradient(1200px 420px at 12% -8%, rgba(232,197,106,.22), transparent 55%),
+    radial-gradient(900px 380px at 92% 8%, rgba(23,79,57,.12), transparent 50%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 48%, #D4E8DC 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 
-.hero{position:relative;overflow:hidden;color:var(--lacquer-ink);background:linear-gradient(180deg,#0F3A2A 0%,#17503A 45%,var(--lacquer) 100%)}
+.hero{position:relative;overflow:hidden;color:var(--lacquer-ink);background:linear-gradient(165deg,#0A2A1F 0%,#123D2C 38%,#1A5740 72%,var(--lacquer) 100%)}
+.hero::before{content:"";position:absolute;inset:auto -10% -18% -10%;height:42%;background:radial-gradient(ellipse at center, rgba(232,197,106,.18), transparent 68%);pointer-events:none}
 .hero .scene{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.hero .wrap{position:relative;z-index:1}
-.hero h1,.hero p{text-shadow:0 1px 12px rgba(6,28,20,.45)}
-.hero .wrap{padding-block:64px 120px;display:grid;gap:14px}
-.eyebrow{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
-.hero .eyebrow{color:#F1C977}
-h1{font-family:var(--font-display);font-weight:800;font-size:clamp(2.6rem,8vw,5rem);line-height:1.02;margin:0;text-wrap:balance}
-h1 em{font-style:italic;font-weight:600;display:block;font-size:.62em;margin-top:.15em}
-.hero p{margin:0;max-width:58ch;opacity:.92}
-.hero-cta{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;margin-top:10px}
-.cta{display:inline-flex;align-items:center;min-height:48px;padding:12px 26px;border-radius:999px;background:#F1C977;color:#12261F;font-weight:700;text-decoration:none}
-.cta:hover{background:#F6D894}
+.hero .wrap{position:relative;z-index:1;padding-block:72px 128px;display:grid;gap:16px;max-width:760px;margin-left:auto;margin-right:auto}
+body.page-home .hero .wrap{max-width:820px;padding-block:88px 148px}
+body:not(.page-home) .hero .wrap{padding-block:40px 84px;gap:12px}
+body:not(.page-home) .hero h1{font-size:clamp(2.1rem,5.5vw,3.4rem)}
+body:not(.page-home) #hero-lead{font-size:.98rem;max-width:46ch}
+.hero h1,.hero p{text-shadow:0 2px 18px rgba(4,22,16,.4)}
+.eyebrow{font-family:var(--font-body);font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.hero .eyebrow{color:var(--gold-bright)}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(2.8rem,8.2vw,5.4rem);line-height:.98;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1 em{font-style:italic;font-weight:500;display:block;font-size:.58em;margin-top:.12em;opacity:.96}
+.hero p{margin:0;max-width:52ch;opacity:.93;font-size:1.05rem}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;margin-top:8px}
+.cta{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:12px 28px;border-radius:999px;background:var(--gold-bright);color:#12261F;font-weight:700;text-decoration:none;letter-spacing:.01em}
+.cta:hover{background:#F3D78A}
 .cta:focus-visible{outline:2px solid #F1FAF4;outline-offset:3px}
-.cta.ghost{background:transparent;color:#F1FAF4;border:1px solid rgba(241,250,244,.55)}
-.cta.ghost:hover{background:rgba(241,250,244,.12);border-color:#F1FAF4}
-.hero-meta{font-size:.92rem;opacity:.9}
-.countdown{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
-.countdown .cd-label{width:100%;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:#F1C977}
-.countdown .unit{display:grid;justify-items:center;min-width:64px;padding:8px 10px;border-radius:8px;background:rgba(6,28,20,.35);border:1px solid rgba(241,201,119,.35);backdrop-filter:blur(3px)}
-.countdown .unit b{font-size:1.6rem;line-height:1.1;font-weight:800;font-variant-numeric:tabular-nums;color:#F1FAF4}
-.countdown .unit span{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#CFE6D8}
-.countdown .sep{font-size:1.4rem;font-weight:800;color:#F1C977;opacity:.8}
-.countdown .live{font-size:1.1rem;font-weight:700;color:#F1C977}
-@media (max-width:420px){.countdown .unit{min-width:56px;padding:6px 8px}.countdown .unit b{font-size:1.35rem}}
-@media (max-width:600px){.hero .wrap{padding-block:44px 96px}}
-.wave{display:block;width:100%;height:28px;color:var(--lacquer);background:var(--bg)}
+.cta.ghost{background:transparent;color:#F1FAF4;border:1px solid rgba(241,250,244,.5)}
+.cta.ghost:hover{background:rgba(241,250,244,.1);border-color:#F1FAF4}
+.hero-meta{font-size:.9rem;opacity:.88;font-weight:500}
+.countdown{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px}
+.countdown .cd-label{width:100%;font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--gold-bright)}
+.countdown .unit{display:grid;justify-items:center;min-width:64px;padding:10px 12px;border-radius:12px;background:rgba(6,28,20,.38);border:1px solid rgba(241,201,119,.32);backdrop-filter:blur(6px)}
+.countdown .unit b{font-family:var(--font-display);font-size:1.7rem;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums;color:#F1FAF4}
+.countdown .unit span{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#CFE6D8}
+.countdown .sep{font-size:1.4rem;font-weight:700;color:var(--gold-bright);opacity:.8}
+.countdown .live{font-size:1.1rem;font-weight:700;color:var(--gold-bright)}
+@media (max-width:420px){.countdown .unit{min-width:56px;padding:8px}.countdown .unit b{font-size:1.35rem}}
+@media (max-width:600px){.hero .wrap,body.page-home .hero .wrap{padding-block:52px 108px}}
+.wave{display:block;width:100%;height:32px;color:var(--lacquer);background:transparent;margin-bottom:-1px}
 
-main.wrap{padding-block:28px 64px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:40px;align-items:start}
-@media (max-width:820px){main.wrap{grid-template-columns:minmax(0,1fr);gap:32px}}
+.site-nav{
+  position:sticky;top:0;z-index:40;
+  display:flex;flex-wrap:wrap;gap:6px 4px;align-items:center;
+  padding-block:12px;margin-top:4px;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(12px) saturate(1.15);
+  border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);
+}
+.site-nav .brand{
+  display:inline-flex;flex-direction:column;gap:0;margin-right:10px;padding:4px 10px 4px 0;
+  text-decoration:none;color:var(--ink);border:0;background:transparent;min-height:0;
+}
+.site-nav .brand strong{font-family:var(--font-display);font-size:1.05rem;font-weight:700;line-height:1.1}
+.site-nav .brand span{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.site-nav a{
+  display:inline-flex;align-items:center;min-height:42px;padding:8px 14px;
+  border-radius:999px;text-decoration:none;font-weight:600;font-size:.88rem;
+  color:var(--muted);border:1px solid transparent;background:transparent;
+}
+.site-nav a:hover{color:var(--ink);background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.site-nav a[aria-current="page"]{background:var(--lacquer);color:var(--lacquer-ink);border-color:var(--lacquer)}
+@media (max-width:560px){
+  .site-nav .brand{width:100%;margin:0 0 4px}
+}
 
-h2{font-family:var(--font-display);font-weight:600;font-size:1.6rem;margin:0 0 8px;text-wrap:balance}
-.info{display:grid;gap:28px}
+main.wrap{padding-block:28px 72px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:40px;align-items:start}
+@media (max-width:820px){main.wrap{grid-template-columns:minmax(0,1fr);gap:28px}}
+
+h2{font-family:var(--font-display);font-weight:700;font-size:clamp(1.45rem,2.6vw,1.85rem);margin:0 0 10px;text-wrap:balance;letter-spacing:-.01em}
+.info{display:grid;gap:0;grid-template-columns:1.15fr .85fr;align-items:start}
+@media (max-width:820px){.info{grid-template-columns:1fr}}
+.info-block{padding:8px 0 28px;border-bottom:1px solid color-mix(in srgb,var(--line) 80%,transparent)}
+.info-block:last-of-type{border-bottom:0}
+.info-aside{padding:8px 0 0 28px;border-left:1px solid color-mix(in srgb,var(--line) 80%,transparent)}
+@media (max-width:820px){.info-aside{padding:20px 0 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--line) 80%,transparent)}}
 .info p{margin:0;color:var(--muted);max-width:60ch}
-dl.facts{margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px 18px}
-dl.facts dt{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:600;padding-top:3px}
-dl.facts dd{margin:0}
-.shows{display:grid;gap:10px}
-.show{display:flex;gap:14px;align-items:baseline;border-top:1px solid var(--line);padding-top:10px}
-.show .d{font-family:var(--font-display);font-size:1.35rem;font-weight:600;min-width:4.6ch;font-variant-numeric:tabular-nums}
-.show small{color:var(--muted)}
-.note{font-size:.9rem;color:var(--muted);border-left:3px solid var(--gold);padding-left:12px}
+.home-cta{
+  margin-top:28px;padding:22px 24px;display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;justify-content:space-between;
+  background:linear-gradient(120deg, color-mix(in srgb,var(--lacquer) 92%,#0a2a1f), var(--lacquer));
+  color:var(--lacquer-ink);border-radius:var(--radius);box-shadow:var(--shadow);
+}
+.home-cta p{margin:0;max-width:42ch;color:rgba(243,251,246,.9);font-size:.95rem}
+.home-cta .cta{box-shadow:none}
+dl.facts{margin:0;display:grid;grid-template-columns:auto 1fr;gap:14px 20px}
+dl.facts dt{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;padding-top:4px}
+dl.facts dd{margin:0;font-size:1.02rem}
+.shows{display:grid;gap:0}
+.show{display:flex;gap:16px;align-items:baseline;border-top:1px solid var(--line);padding:14px 0}
+.show:first-child{border-top:0;padding-top:4px}
+.show .d{font-family:var(--font-display);font-size:1.55rem;font-weight:700;min-width:4.8ch;font-variant-numeric:tabular-nums;color:var(--lacquer)}
+.show strong{font-weight:600}
+.show small{color:var(--muted);font-size:.88rem}
+.note{font-size:.9rem;color:var(--muted);border-left:3px solid var(--gold);padding:4px 0 4px 14px;margin:18px 0 0}
 
-.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:28px}
+.card{background:color-mix(in srgb,var(--surface) 92%,white);border:1px solid color-mix(in srgb,var(--line) 85%,transparent);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
 @media (max-width:480px){.card{padding:20px}}
+.panel-tool{max-width:560px}
 form{display:grid;gap:16px}
 .row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:520px){.row{grid-template-columns:1fr}}
 label{display:grid;gap:6px;align-content:start;font-weight:500;font-size:.92rem}
 label>span:first-child{line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 label .opt{font-weight:400;color:var(--muted)}
-input,select,textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:4px;padding:11px 12px;width:100%;min-height:46px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:8px;padding:11px 12px;width:100%;min-height:46px}
 input:hover,select:hover,textarea:hover{border-color:var(--lacquer)}
-.hint{font-weight:400;font-size:.82rem;color:var(--muted)}
+.hint{font-weight:400;font-size:.84rem;color:var(--muted)}
 .req{color:var(--danger)}
 textarea{min-height:76px;resize:vertical}
-input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 input[aria-invalid="true"]{border-color:var(--danger)}
 .err{color:var(--danger);font-size:.85rem;min-height:0}
 fieldset{border:0;padding:0;margin:0;display:grid;gap:8px}
-legend{font-weight:500;font-size:.92rem;margin-bottom:6px}
+legend{font-weight:600;font-size:.92rem;margin-bottom:6px}
 .choices{display:grid;gap:8px}
-.choice{display:flex;gap:10px;align-items:center;min-height:48px;background:var(--field);border:1px solid var(--field-line);border-radius:4px;padding:10px 12px;font-weight:400;cursor:pointer}
+.choice{display:flex;gap:10px;align-items:center;min-height:48px;background:var(--field);border:1px solid var(--field-line);border-radius:8px;padding:10px 12px;font-weight:400;cursor:pointer}
 .choice input{width:20px;height:20px;min-height:0;accent-color:var(--lacquer)}
 .choice:has(input:checked){border-color:var(--lacquer);box-shadow:inset 0 0 0 1px var(--lacquer);background:color-mix(in srgb,var(--lacquer) 8%,var(--field))}
 .btns{display:flex;flex-wrap:wrap;gap:10px}
-button{font:inherit;font-weight:600;border-radius:4px;padding:12px 22px;min-height:46px;cursor:pointer;border:1px solid transparent}
+button,a.ghost{font:inherit;font-weight:600;border-radius:8px;padding:12px 22px;min-height:46px;cursor:pointer;border:1px solid transparent}
 .primary{background:var(--lacquer);color:var(--lacquer-ink)}
-.primary:hover{filter:brightness(1.12)}
-button,.cta,.choice,input,select,textarea{transition:background-color .18s ease,border-color .18s ease,filter .18s ease,box-shadow .18s ease}
+.primary:hover{filter:brightness(1.1)}
+button,.cta,.choice,input,select,textarea,a.ghost{transition:background-color .18s ease,border-color .18s ease,filter .18s ease,box-shadow .18s ease,transform .18s ease,color .18s ease}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-.ghost{background:transparent;color:var(--ink);border-color:var(--field-line)}
-.ghost:hover{border-color:var(--lacquer);background:color-mix(in srgb,var(--lacquer) 6%,transparent)}
+.ghost,a.ghost{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:var(--ink);border-color:var(--field-line);text-decoration:none}
+.ghost:hover,a.ghost:hover{border-color:var(--lacquer);background:color-mix(in srgb,var(--lacquer) 7%,transparent)}
 .danger{background:var(--danger);color:#fff}
 .danger:hover{filter:brightness(1.1)}
 #reg .btns,.ticket .btns,.confirm .btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:4px}
 #reg .btns button,.ticket .btns button{width:100%}
 form .err:empty{display:none}
 button:disabled{opacity:.55;cursor:not-allowed}
-.status{font-size:.92rem;padding:10px 12px;border-radius:4px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--ink)}
-.status.ok{background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.status{font-size:.92rem;padding:12px 14px;border-radius:8px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 22%,transparent)}
+.status.ok{background:color-mix(in srgb,var(--ok) 12%,transparent);border-color:color-mix(in srgb,var(--ok) 28%,transparent)}
 
 .ticket{display:grid;gap:14px}
-.ticket .code{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:.06em;color:var(--code)}
+.ticket .code{font-family:var(--font-display);font-size:2rem;font-weight:700;letter-spacing:.04em;color:var(--code)}
 .ticket dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 16px}
 .ticket dt{color:var(--muted);font-size:.88rem}
 .ticket dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
 .confirm{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:14px}
 
-.admin{grid-column:1/-1}
+.admin{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
 .admin header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:baseline;margin-bottom:14px}
 .totals{display:flex;flex-wrap:wrap;gap:8px}
-.pill{font-size:.85rem;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-variant-numeric:tabular-nums}
-.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.pill{font-size:.85rem;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-variant-numeric:tabular-nums;background:color-mix(in srgb,var(--bg) 50%,white)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
 table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:720px}
-th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--bg) 55%,white)}
 td.n{font-variant-numeric:tabular-nums;text-align:right}
 tr:last-child td{border-bottom:0}
-footer{color:var(--muted);font-size:.85rem;padding-block:0 40px}
+tr:hover td{background:color-mix(in srgb,var(--lacquer) 4%,transparent)}
+footer{color:var(--muted);font-size:.85rem;padding-block:8px 48px;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent);margin-top:8px}
+footer .foot-links{margin:14px 0 0;display:flex;flex-wrap:wrap;gap:10px 18px}
+footer .foot-links a{color:var(--muted);font-size:.85rem;text-decoration:none;border-bottom:1px solid transparent}
+footer .foot-links a:hover{color:var(--lacquer);border-bottom-color:color-mix(in srgb,var(--lacquer) 40%,transparent)}
 /* Chuyển động: vào trang một lần, cảnh sông nước chuyển động rất chậm, phản hồi nhanh khi tương tác. */
 :root{--ease-out:cubic-bezier(.22,1,.36,1);--ease-io:cubic-bezier(.45,0,.55,1);--dur-fast:.18s;--dur-enter:.7s}
 #seatmap,#panel,#check{scroll-margin-top:16px}
-.card{box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
-.cta{position:relative;overflow:hidden;box-shadow:0 8px 22px -10px rgba(0,0,0,.45);transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),background-color var(--dur-fast) ease}
-.cta::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%)}
-.cta:hover{transform:translateY(-2px);box-shadow:0 14px 28px -12px rgba(0,0,0,.5)}
+.cta{position:relative;overflow:hidden;box-shadow:0 10px 26px -12px rgba(0,0,0,.45);transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),background-color var(--dur-fast) ease}
+.cta::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.5) 50%,transparent 70%);transform:translateX(-120%)}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(0,0,0,.48)}
 .cta:hover::after{transform:translateX(120%);transition:transform .7s var(--ease-out)}
 .primary{transition:transform var(--dur-fast) var(--ease-out),filter var(--dur-fast) ease}
 .primary:active,.cta:active{transform:translateY(1px) scale(.98)}
@@ -154,40 +214,41 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
   html{scroll-behavior:smooth}
   .hero .wrap>*{animation:rise var(--dur-enter) var(--ease-out) both}
   .hero .wrap>:nth-child(2){animation-delay:.08s}
-  .hero .wrap>:nth-child(3){animation-delay:.18s}
-  .hero .wrap>:nth-child(4){animation-delay:.28s}
-  .hero .wrap>:nth-child(5){animation-delay:.36s}
-  main .info,main .card{animation:rise var(--dur-enter) var(--ease-out) both;animation-delay:.3s}
-  main .card{animation-delay:.42s}
+  .hero .wrap>:nth-child(3){animation-delay:.16s}
+  .hero .wrap>:nth-child(4){animation-delay:.24s}
+  .hero .wrap>:nth-child(5){animation-delay:.32s}
+  main .info,main .card,main .seatband,.admin,.home-cta{animation:rise var(--dur-enter) var(--ease-out) both;animation-delay:.28s}
   .scene .bob{animation:bob 6s var(--ease-io) infinite alternate}
   .scene .fronds{animation:sway 7s var(--ease-io) infinite alternate}
   .scene .ripples{animation:drift 10s var(--ease-io) infinite alternate}
   .scene .glow{animation:glow 9s var(--ease-io) infinite alternate}
-  .ticket:not([hidden]){animation:pop .55s var(--ease-out) both}
+  .wave{animation:waveShift 8s var(--ease-io) infinite alternate}
+  .ticket:not([hidden]),.checkin-card{animation:pop .55s var(--ease-out) both}
   .ticket:not([hidden]) .code{animation:stamp .6s var(--ease-out) .15s both}
   .err:not(:empty){animation:shake .32s var(--ease-out)}
 }
-@keyframes rise{from{transform:translateY(14px);opacity:.25}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
 @keyframes bob{from{transform:translateY(-2px) rotate(-1.2deg)}to{transform:translateY(3px) rotate(1.2deg)}}
 @keyframes sway{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
 @keyframes drift{from{transform:translateX(-14px);opacity:.7}to{transform:translateX(14px);opacity:1}}
 @keyframes glow{from{transform:scale(1);opacity:.6}to{transform:scale(1.12);opacity:1}}
+@keyframes waveShift{from{transform:translateX(-8px)}to{transform:translateX(8px)}}
 @keyframes pop{from{transform:translateY(10px) scale(.98);opacity:.3}to{transform:none;opacity:1}}
 @keyframes stamp{0%{transform:scale(1.25) rotate(-4deg);opacity:.2}60%{transform:scale(.97) rotate(1deg);opacity:1}100%{transform:none}}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .status.shake{animation:shake .32s var(--ease-out)}
 .seatband{
-  display:grid;gap:14px;min-width:0;
+  display:grid;gap:16px;min-width:0;
   width:100vw;max-width:100vw;
   margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
   padding-left:max(12px,env(safe-area-inset-left,0px));
   padding-right:max(12px,env(safe-area-inset-right,0px));
   box-sizing:border-box;
 }
-.seatmap{display:grid;gap:14px;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 12px 14px;box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
+.seatmap{display:grid;gap:14px;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 14px 16px;box-shadow:var(--shadow)}
 .seatmap-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
-.seatmap h3{font-family:var(--font-display);font-size:1.2rem;font-weight:600;margin:0}
-.zone-tabs{display:inline-flex;flex-wrap:wrap;gap:6px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--lacquer) 8%,var(--bg));border:1px solid var(--line)}
+.seatmap h3{font-family:var(--font-display);font-size:1.25rem;font-weight:700;margin:0}
+.zone-tabs{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--lacquer) 8%,var(--bg));border:1px solid var(--line)}
 .zone-tab{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.85rem;min-height:40px;padding:8px 16px;border-radius:999px;cursor:pointer}
 .zone-tab[aria-selected="true"]{background:var(--lacquer);color:var(--lacquer-ink);box-shadow:0 6px 16px -10px rgba(18,38,31,.55)}
 .zone-tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -234,12 +295,12 @@ button.seat.mine{background:var(--lacquer);border-color:var(--lacquer);color:var
 button.seat.taken{background:repeating-linear-gradient(-45deg,#ecd3d6,#ecd3d6 3px,#e0bec3 3px,#e0bec3 6px);color:#8a6066;border-color:#d7b0b5}
 button.seat.blocked{background:#efe6e7;color:#a08085;border-style:dashed;border-color:#cbb0b4;cursor:not-allowed}
 .legend{display:flex;flex-wrap:wrap;gap:8px 14px;list-style:none;padding:0;margin:0;font-size:.85rem}
-.bookbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:30;margin-top:4px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--lacquer) 28%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--surface) 92%,white);box-shadow:0 12px 28px -18px rgba(18,38,31,.55);backdrop-filter:blur(8px)}
+.bookbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:30;margin-top:4px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--lacquer) 30%,var(--line));border-radius:12px;background:color-mix(in srgb,var(--surface) 88%,white);box-shadow:0 14px 32px -16px rgba(18,38,31,.55);backdrop-filter:blur(10px)}
 .bookbar p{margin:0;font-weight:700}
 .bookbar .btns{margin:0}
-.pick-chips{display:flex;flex-wrap:wrap;gap:6px}
-.pick-chip{display:inline-flex;align-items:center;min-height:28px;padding:2px 10px;border-radius:999px;background:color-mix(in srgb,var(--gold) 22%,white);border:1px solid var(--gold);font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
-#show-field{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;box-shadow:0 12px 28px -24px rgba(18,38,31,.4);max-width:1180px;width:100%;margin-inline:auto;box-sizing:border-box}
+.pick-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pick-chip{display:inline-flex;align-items:center;min-height:28px;padding:2px 10px;border-radius:999px;background:color-mix(in srgb,var(--gold-bright) 35%,white);border:1px solid var(--gold);font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
+#show-field{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);max-width:1180px;width:100%;margin-inline:auto;box-sizing:border-box}
 #show-field .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
 /* Mobile: giữ đúng 3 khối + lối đi, kéo ngang */
 @media (max-width:900px){
@@ -261,7 +322,7 @@ button.seat.blocked{background:#efe6e7;color:#a08085;border-style:dashed;border-
   button.seat .num{font-size:.72rem}
   .seatmap{padding:18px 18px 16px}
 }
-#check{grid-column:1/-1;border-color:color-mix(in srgb,var(--lacquer) 28%,var(--line));box-shadow:0 18px 40px -28px rgba(18,38,31,.45)}
+#check{grid-column:1/-1;border-color:color-mix(in srgb,var(--lacquer) 26%,var(--line))}
 #check .check-grid{display:grid;gap:14px}
 @media (min-width:640px){
   #check .check-grid{grid-template-columns:1fr 1fr auto;align-items:end}
@@ -271,23 +332,24 @@ body:not(.page-home) .view-home{display:none!important}
 body:not(.page-book) .view-book{display:none!important}
 body:not(.page-staff) .view-staff{display:none!important}
 body:not(.page-checkin) .view-checkin{display:none!important}
-.site-nav{display:flex;flex-wrap:wrap;gap:8px 10px;padding-block:14px 0;align-items:center}
-.site-nav a{display:inline-flex;align-items:center;min-height:40px;padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.9rem;color:var(--ink);border:1px solid var(--line);background:var(--surface)}
-.site-nav a[aria-current="page"]{background:var(--lacquer);color:var(--lacquer-ink);border-color:var(--lacquer)}
-.site-nav .nav-staff{margin-left:auto;color:var(--muted);border-style:dashed}
-#staff-gate,#checkin-box{grid-column:1/-1;max-width:560px}
-#staff-session,#checkin-session{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.checkin-result{display:grid;gap:10px;margin-top:14px}
-.checkin-card{display:grid;gap:8px;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-.checkin-card.done{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
-body.page-book main.wrap{grid-template-columns:1fr}
-body.page-home main.wrap{grid-template-columns:1fr}
-body.page-staff main.wrap,body.page-checkin main.wrap{grid-template-columns:1fr}
+#staff-gate,#checkin-box{grid-column:1/-1}
+#staff-gate.panel-tool,#checkin-box.panel-tool{max-width:560px;width:100%}
+#staff-session,#checkin-session{display:grid;gap:14px}
+#staff-session>.btns,#checkin-session>.session-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.session-bar{justify-content:space-between}
+.checkin-result{display:grid;gap:12px;margin-top:4px}
+.checkin-card{display:grid;gap:8px;padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+.checkin-card.done{border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 8%,#fff)}
+.checkin-card strong{font-family:var(--font-display);font-size:1.2rem;font-weight:700;letter-spacing:.02em}
+.checkin-divider{display:flex;align-items:center;gap:12px;margin:4px 0;color:var(--muted);font-size:.82rem}
+.checkin-divider::before,.checkin-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+body.page-book main.wrap,body.page-home main.wrap,body.page-staff main.wrap,body.page-checkin main.wrap{grid-template-columns:1fr}
+body.page-home main.wrap{max-width:980px}
+body.page-staff main.wrap,body.page-checkin main.wrap{max-width:920px}
 @media (min-width:821px){
-  #check{grid-column:1/-1;grid-row:1}
-  .seatband{grid-column:1/-1;grid-row:2}
-  main.wrap>.info{grid-column:1;grid-row:3}
-  #panel{grid-column:2;grid-row:3}
+  body.page-book #check{grid-column:1/-1;grid-row:1}
+  body.page-book .seatband{grid-column:1/-1;grid-row:2}
+  body.page-book #panel{grid-column:1/-1;grid-row:3;max-width:720px}
   #admin{grid-column:1/-1}
 }
 button.seat:disabled{opacity:1;cursor:not-allowed}
@@ -311,7 +373,8 @@ button.seat:disabled{opacity:1;cursor:not-allowed}
 .book-modal{border:0;padding:0;margin:auto;background:transparent;color:var(--ink);width:min(640px,calc(100vw - 20px));max-width:calc(100vw - 20px);max-height:calc(100vh - 20px)}
 .book-modal:has(#modal-pass:not([hidden])){width:min(400px,calc(100vw - 20px))}
 .book-modal::backdrop{background:rgba(8,24,18,.62)}
-.modal-sheet{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:0 24px 60px -24px rgba(0,0,0,.55);max-height:calc(100vh - 32px);overflow:auto}
+.modal-sheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:0 28px 64px -24px rgba(0,0,0,.55);max-height:calc(100vh - 32px);overflow:auto}
+.book-page-hint{margin:-2px 0 14px;max-width:62ch}
 .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
 .modal-head h2{margin:0}
 .pass{display:grid;gap:8px;margin:0;justify-items:center}
@@ -372,27 +435,29 @@ a.primary:hover{filter:brightness(1.12)}
   <div class="wrap">
     <span class="eyebrow" id="hero-eyebrow">Đêm diễn cải lương · Đăng ký vé mời</span>
     <h1 id="hero-title"><span id="hero-title-text">Tiếng Hò</span><em id="hero-em">Sông Hậu</em></h1>
-    <p id="hero-lead">Vở cải lương kinh điển về tình người miền sông nước Hậu Giang, với những lớp ca vọng cổ và điệu hò quen thuộc của Nam Bộ. Vé mời miễn phí, số ghế có hạn. Chọn ghế trên sơ đồ rồi điền thông tin để giữ chỗ.</p>
+    <p id="hero-lead">Vé mời miễn phí cho đêm cải lương sông nước Hậu Giang. Số ghế có hạn — giữ chỗ trên sơ đồ trước khi hết suất.</p>
     <div class="hero-cta view-home"><a class="cta" href="/dat-ve">Đăng ký nhận vé</a><a class="cta ghost" href="/dat-ve#check">Kiểm tra vé</a><span class="hero-meta" id="hero-meta"></span></div>
-    <div class="hero-cta view-book"><a class="cta" href="#seatmap">Chọn ghế</a><a class="cta ghost" href="#check">Kiểm tra vé</a><span class="hero-meta">Trang đặt vé</span></div>
-    <div class="hero-cta view-staff"><a class="cta ghost" href="/">Về trang giới thiệu</a><a class="cta ghost" href="/check-in">Check-in</a><span class="hero-meta">Ban tổ chức</span></div>
-    <div class="hero-cta view-checkin"><a class="cta ghost" href="/to-chuc">Quản trị</a><a class="cta ghost" href="/">Trang chủ</a><span class="hero-meta">Check-in khán giả</span></div>
+    <div class="hero-cta view-book"><a class="cta" href="#seatmap">Chọn ghế</a><a class="cta ghost" href="#check">Kiểm tra vé</a></div>
+    <div class="hero-cta view-staff"><a class="cta ghost" href="/check-in">Sang check-in</a><a class="cta ghost" href="/">Trang chủ</a></div>
+    <div class="hero-cta view-checkin"><a class="cta ghost" href="/to-chuc">Sang quản trị</a><a class="cta ghost" href="/">Trang chủ</a></div>
     <div class="countdown view-home" id="countdown" hidden></div>
   </div>
 </header>
-<svg class="wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 0H1200V10C1100 26 1000 26 900 14S700 2 600 14 400 26 300 14 100 2 0 14Z"/></svg>
+<svg class="wave" viewBox="0 0 1200 32" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 0H1200V12C1080 30 960 30 840 16S600 0 480 16 240 32 120 16 40 2 0 16Z"/></svg>
 
 <nav class="site-nav wrap" aria-label="Chuyên mục">
+  <a class="brand" href="/" aria-label="Tiếng Hò Sông Hậu — trang giới thiệu">
+    <strong>Tiếng Hò</strong>
+    <span>Sông Hậu</span>
+  </a>
   <a href="/" data-nav="home">Giới thiệu</a>
   <a href="/dat-ve" data-nav="book">Đặt vé</a>
-  <a href="/to-chuc" data-nav="staff" class="nav-staff">Ban tổ chức</a>
-  <a href="/check-in" data-nav="checkin" class="nav-staff">Check-in</a>
 </nav>
 
 <main class="wrap">
   <section class="card view-book" id="check" aria-labelledby="check-h">
     <h2 id="check-h">Kiểm tra vé</h2>
-    <p class="hint" style="margin:-4px 0 12px">Đã đăng ký? Điền đúng họ tên và số điện thoại để xem vé hoặc hủy đăng ký.</p>
+    <p class="hint book-page-hint">Đã đăng ký? Điền đúng họ tên và số điện thoại để xem vé hoặc hủy đăng ký.</p>
     <form id="check-form" novalidate>
       <div class="check-grid">
         <label for="check-name"><span>Họ và tên <span class="req" aria-hidden="true">*</span></span>
@@ -412,43 +477,49 @@ a.primary:hover{filter:brightness(1.12)}
     <div id="check-list" hidden style="margin-top:14px"></div>
   </section>
 
-  <section class="card view-staff" id="staff-gate" aria-labelledby="staff-h">
+  <section class="card panel-tool view-staff" id="staff-gate" aria-labelledby="staff-h">
     <span class="eyebrow">Nội bộ</span>
     <h2 id="staff-h">Ban tổ chức</h2>
-    <p class="hint" style="margin:-4px 0 12px">Đăng nhập để sửa sự kiện và xem danh sách đăng ký. Check-in khán giả dùng trang riêng.</p>
+    <p class="hint" style="margin:-2px 0 14px">Đăng nhập để sửa sự kiện và xem danh sách đăng ký. Check-in khán giả dùng trang riêng.</p>
     <form id="staff-login" novalidate>
       <label for="staff-pass"><span>Mật khẩu ban tổ chức</span>
         <input id="staff-pass" type="password" autocomplete="current-password" maxlength="80">
       </label>
       <div class="btns">
-        <button class="primary" type="submit">Vào</button>
-        <a class="ghost" href="/" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--field-line);border-radius:4px;padding:12px 22px;font-weight:600;color:var(--ink)">Về trang chủ</a>
+        <button class="primary" type="submit">Vào quản trị</button>
+        <a class="ghost" href="/">Về trang chủ</a>
       </div>
       <p class="hint" id="staff-msg"></p>
     </form>
     <div id="staff-session" hidden>
-      <p class="hint" style="margin:0">Bạn đang đăng nhập khu vực ban tổ chức.</p>
-      <div class="btns">
-        <button class="ghost" type="button" id="staff-logout">Thoát</button>
-        <a class="ghost" href="/" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--field-line);border-radius:4px;padding:12px 22px;font-weight:600;color:var(--ink)">Về trang chủ</a>
+      <div class="session-bar">
+        <p class="hint" style="margin:0">Bạn đang đăng nhập khu vực ban tổ chức.</p>
+        <div class="btns">
+          <a class="ghost" href="/check-in">Check-in</a>
+          <button class="ghost" type="button" id="staff-logout">Thoát</button>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="info view-home" aria-labelledby="info-h">
-    <div>
+    <div class="info-block">
       <h2 id="info-h">Thông tin chương trình</h2>
       <dl class="facts">
         <dt>Địa điểm</dt><dd id="f-venue"></dd>
         <dt>Mở cửa</dt><dd id="f-door">Trước giờ diễn 45 phút</dd>
         <dt>Vé</dt><dd id="f-ticket">Miễn phí, tối đa 4 ghế mỗi lượt đăng ký</dd>
       </dl>
+      <p class="note" id="f-note">Chọn ghế trên sơ đồ, xác nhận thông tin rồi tải mã vé. Tại quầy, đọc mã vé và số điện thoại để vào cửa.</p>
+      <div class="home-cta">
+        <p>Còn ghế trống — đăng ký ngay để giữ chỗ cho đêm diễn.</p>
+        <a class="cta" href="/dat-ve">Đặt vé miễn phí</a>
+      </div>
     </div>
-    <div>
+    <aside class="info-aside" aria-labelledby="shows-h">
       <h2 id="shows-h">Thời gian</h2>
       <div class="shows" id="shows"></div>
-    </div>
-    <p class="note" id="f-note">Chọn ghế trên sơ đồ, bấm Đặt và xác nhận. Bạn nhận một mã vé cùng ảnh chỗ ngồi để tải về. Đến nơi, đọc mã vé và số điện thoại tại quầy đón khách. Bạn có thể thêm ghế, trả ghế hoặc hủy đăng ký trên trang này.</p>
+    </aside>
   </section>
 
   <div class="seatband view-book">
@@ -491,8 +562,8 @@ a.primary:hover{filter:brightness(1.12)}
   </div>
 
   <section class="card view-book" aria-labelledby="panel-h" id="panel">
-    <h2 id="panel-h">Đăng ký tham dự</h2>
-    <p class="hint" id="form-lead" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Chọn ghế trên sơ đồ, bấm Đặt, rồi xác nhận trong cửa sổ.</p>
+    <h2 id="panel-h">Vé của bạn</h2>
+    <p class="hint" id="form-lead" style="margin:-2px 0 12px">Sau khi đặt ghế, mã vé và ảnh QR hiện tại đây. Bạn có thể sửa thông tin hoặc hủy đăng ký.</p>
     <div id="status" class="status" role="status" tabindex="-1">Đang kết nối với hệ thống đăng ký…</div>
 
     <fieldset id="book-mode" hidden>
@@ -530,33 +601,32 @@ a.primary:hover{filter:brightness(1.12)}
     </div>
   </section>
 
-  <section class="card view-checkin" id="checkin-box" aria-labelledby="checkin-h">
-    <span class="eyebrow">Nội bộ</span>
+  <section class="card panel-tool view-checkin" id="checkin-box" aria-labelledby="checkin-h">
+    <span class="eyebrow">Quầy đón khách</span>
     <h2 id="checkin-h">Check-in</h2>
-    <p class="hint" style="margin:-4px 0 12px">Đăng nhập ban tổ chức rồi tra mã vé hoặc họ tên + số điện thoại để xác nhận khách vào cửa.</p>
+    <p class="hint" style="margin:-2px 0 14px">Tra mã vé hoặc họ tên + số điện thoại, rồi xác nhận khán giả vào cửa.</p>
     <div id="checkin-need-login">
-      <p class="hint">Cần phiên ban tổ chức. Đăng nhập bên dưới hoặc mở trang quản trị.</p>
       <form id="checkin-login" novalidate>
         <label for="checkin-pass"><span>Mật khẩu ban tổ chức</span>
           <input id="checkin-pass" type="password" autocomplete="current-password" maxlength="80">
         </label>
         <div class="btns">
           <button class="primary" type="submit">Vào check-in</button>
-          <a class="ghost" href="/to-chuc" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--field-line);border-radius:4px;padding:12px 22px;font-weight:600;color:var(--ink)">Sang quản trị</a>
+          <a class="ghost" href="/to-chuc">Sang quản trị</a>
         </div>
         <p class="hint" id="checkin-login-msg"></p>
       </form>
     </div>
     <div id="checkin-session" hidden>
-      <p class="hint" style="margin:0">Đã đăng nhập. Có thể check-in vé.</p>
-      <div class="btns">
+      <div class="session-bar">
+        <p class="hint" style="margin:0">Đã đăng nhập — sẵn sàng check-in.</p>
         <button class="ghost" type="button" id="checkin-logout">Thoát</button>
       </div>
-      <form id="checkin-form" novalidate style="margin-top:14px">
+      <form id="checkin-form" novalidate>
         <label for="checkin-code"><span>Mã vé</span>
-          <input id="checkin-code" name="checkin-code" maxlength="24" placeholder="VE-XXXXX" autocomplete="off">
+          <input id="checkin-code" name="checkin-code" maxlength="24" placeholder="VE-XXXXX" autocomplete="off" inputmode="text">
         </label>
-        <p class="hint" style="margin:0">Hoặc tra theo họ tên và số điện thoại:</p>
+        <div class="checkin-divider">hoặc</div>
         <div class="row">
           <label for="checkin-name"><span>Họ và tên</span>
             <input id="checkin-name" maxlength="80" autocomplete="name">
@@ -569,7 +639,7 @@ a.primary:hover{filter:brightness(1.12)}
           <button class="primary" type="submit" id="checkin-submit">Tra cứu</button>
         </div>
       </form>
-      <div id="checkin-status" class="status" hidden role="status" style="margin-top:12px"></div>
+      <div id="checkin-status" class="status" hidden role="status"></div>
       <div id="checkin-list" class="checkin-result" hidden></div>
     </div>
   </section>
@@ -687,13 +757,11 @@ a.primary:hover{filter:brightness(1.12)}
   </div>
 </dialog>
 <footer class="wrap">
-  <p style="margin:0 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
-  <p style="margin:0;font-weight:500;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
-  <p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:10px 16px">
-    <a href="/" style="color:var(--muted);font-size:.85rem">Giới thiệu</a>
-    <a href="/dat-ve" style="color:var(--muted);font-size:.85rem">Đặt vé</a>
-    <a href="/to-chuc" style="color:var(--muted);font-size:.85rem">Ban tổ chức</a>
-    <a href="/check-in" style="color:var(--muted);font-size:.85rem">Check-in</a>
+  <p style="margin:18px 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
+  <p style="margin:0;font-weight:600;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
+  <p class="foot-links">
+    <a href="/">Giới thiệu</a>
+    <a href="/dat-ve">Đặt vé</a>
   </p>
 </footer>
 
@@ -780,7 +848,8 @@ function applyPageShell() {
   document.body.classList.toggle("page-staff", page === "staff");
   document.body.classList.toggle("page-checkin", page === "checkin");
   for (const link of document.querySelectorAll(".site-nav a[data-nav]")) {
-    link.setAttribute("aria-current", link.dataset.nav === page ? "page" : "false");
+    if (link.dataset.nav === page) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
   }
   const eye = $("hero-eyebrow");
   const lead = $("hero-lead");
@@ -997,7 +1066,9 @@ function applyEvent() {
     $("hero-lead").textContent = "Chọn suất diễn, bấm ghế trống trên sơ đồ rồi xác nhận thông tin để giữ chỗ.";
   } else {
     $("hero-eyebrow").textContent = e.eyebrow;
-    $("hero-lead").textContent = e.description;
+    const desc = String(e.description || "").trim();
+    const cut = desc.match(/^.{40,160}?[.!?…](?=\s|$)/);
+    $("hero-lead").textContent = cut ? cut[0] : (desc.length > 160 ? desc.slice(0, 157).replace(/\s+\S*$/, "") + "…" : desc);
   }
   $("f-venue").textContent = e.venue;
   $("f-door").textContent = e.door;
