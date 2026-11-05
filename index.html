@@ -3,7 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tiếng Hò Sông Hậu</title>
+<title>Đăng ký nhận vé mời · Tiếng Hò Sông Hậu</title>
+<meta name="description" content="Đăng ký nhận vé mời miễn phí chương trình cải lương Tiếng Hò Sông Hậu tại Cần Thơ. Chọn ghế trên sơ đồ, nhận mã vé QR, kiểm tra hoặc hủy đăng ký trực tuyến.">
+<meta name="keywords" content="đăng ký nhận vé mời, vé mời miễn phí, Tiếng Hò Sông Hậu, cải lương Cần Thơ, đặt ghế">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#174F39">
+<link rel="canonical" href="https://vemoi.vanhoacantho.vn/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:site_name" content="Đăng ký nhận vé mời">
+<meta property="og:title" content="Đăng ký nhận vé mời · Tiếng Hò Sông Hậu">
+<meta property="og:description" content="Đăng ký nhận vé mời miễn phí chương trình cải lương Tiếng Hò Sông Hậu tại Cần Thơ. Chọn ghế, nhận mã vé QR.">
+<meta property="og:url" content="https://vemoi.vanhoacantho.vn/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Đăng ký nhận vé mời · Tiếng Hò Sông Hậu">
+<meta name="twitter:description" content="Đăng ký nhận vé mời miễn phí · Tiếng Hò Sông Hậu · Cần Thơ.">
+<script type="application/ld+json" id="seo-jsonld">
+{"@context":"https://schema.org","@type":"Event","name":"Tiếng Hò Sông Hậu","description":"Đăng ký nhận vé mời miễn phí chương trình cải lương Tiếng Hò Sông Hậu.","eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled","url":"https://vemoi.vanhoacantho.vn/","organizer":{"@type":"Organization","name":"Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ"},"offers":{"@type":"Offer","price":0,"priceCurrency":"VND","availability":"https://schema.org/InStock","url":"https://vemoi.vanhoacantho.vn/dat-ve"}}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,500&display=swap">
@@ -80,6 +97,7 @@ h1 em{font-style:italic;font-weight:500;display:block;font-size:.58em;margin-top
 @media (max-width:600px){.hero .wrap,body.page-home .hero .wrap{padding-block:52px 108px}}
 .wave{display:block;width:100%;height:32px;color:var(--lacquer);background:transparent;margin-bottom:-1px}
 
+body.page-home .site-nav{display:none!important}
 .site-nav{
   position:sticky;top:0;z-index:50;
   background:rgba(10,42,31,.92);
@@ -303,8 +321,19 @@ button.seat.blocked{background:#efe6e7;color:#a08085;border-style:dashed;border-
 .bookbar .btns{margin:0}
 .pick-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .pick-chip{display:inline-flex;align-items:center;min-height:28px;padding:2px 10px;border-radius:999px;background:color-mix(in srgb,var(--gold-bright) 35%,white);border:1px solid var(--gold);font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
-#show-field{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);max-width:1180px;width:100%;margin-inline:auto;box-sizing:border-box}
-#show-field .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+#show-field{
+  background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;
+  max-width:1180px;width:100%;margin:0 auto 4px;box-sizing:border-box;
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;
+}
+#show-field legend{margin:0;font-size:.82rem;font-weight:600;color:var(--muted);letter-spacing:.04em}
+#show-field .choices{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+#show-field .choice{
+  min-height:36px;padding:6px 12px;border-radius:999px;gap:8px;font-size:.88rem;
+  box-shadow:none;background:var(--surface);border:1px solid var(--line);
+}
+#show-field .choice input{width:16px;height:16px}
+#show-field .err{width:100%}
 /* Mobile: giữ đúng 3 khối + lối đi, kéo ngang */
 @media (max-width:900px){
   .hall-side-door{display:none}
@@ -350,11 +379,12 @@ body.page-book main.wrap,body.page-home main.wrap,body.page-staff main.wrap,body
 body.page-home main.wrap{max-width:980px}
 body.page-staff main.wrap,body.page-checkin main.wrap{max-width:920px}
 @media (min-width:821px){
-  body.page-book #check{grid-column:1/-1;grid-row:1}
-  body.page-book .seatband{grid-column:1/-1;grid-row:2}
-  body.page-book #panel{grid-column:1/-1;grid-row:3;max-width:720px}
+  body.page-book .seatband{grid-column:1/-1;grid-row:1}
+  body.page-book #panel{grid-column:1/-1;grid-row:2;max-width:720px}
+  body.page-book #check{grid-column:1/-1;grid-row:3;max-width:720px}
   #admin{grid-column:1/-1}
 }
+body.page-book #check{max-width:720px}
 button.seat:disabled{opacity:1;cursor:not-allowed}
 .legend li{display:flex;align-items:center;gap:6px}
 .sw{width:14px;height:14px;border-radius:2px;border:1px solid #e2a4ab;display:inline-block;flex:none}
@@ -391,12 +421,13 @@ a.primary:hover{filter:brightness(1.12)}
 
 <nav class="site-nav" aria-label="Chuyên mục">
   <div class="site-nav-inner">
-    <a class="brand" href="/" aria-label="Tiếng Hò Sông Hậu — trang giới thiệu">
+    <a class="brand" href="/" aria-label="Tiếng Hò Sông Hậu — trang chủ">
       <strong>Tiếng Hò</strong>
       <span>Sông Hậu</span>
     </a>
-    <a href="/" data-nav="home">Giới thiệu</a>
+    <a href="/" data-nav="home">Trang chủ</a>
     <a href="/dat-ve" data-nav="book">Đặt vé</a>
+    <a href="/dat-ve#check" data-nav="check">Kiểm tra vé</a>
   </div>
 </nav>
 
@@ -447,10 +478,10 @@ a.primary:hover{filter:brightness(1.12)}
     <path d="M650 296q35 4 70 0t70 0" fill="none" stroke="#CFEBDD" stroke-width="2" opacity=".2" stroke-linecap="round"/>
   </svg>
   <div class="wrap">
-    <span class="eyebrow" id="hero-eyebrow">Đêm diễn cải lương · Đăng ký vé mời</span>
+    <span class="eyebrow" id="hero-eyebrow">Đăng ký nhận vé mời · Miễn phí</span>
     <h1 id="hero-title"><span id="hero-title-text">Tiếng Hò</span><em id="hero-em">Sông Hậu</em></h1>
     <p id="hero-lead">Vé mời miễn phí cho đêm cải lương sông nước Hậu Giang. Số ghế có hạn — giữ chỗ trên sơ đồ trước khi hết suất.</p>
-    <div class="hero-cta view-home"><a class="cta" href="/dat-ve">Đăng ký nhận vé</a><span class="hero-meta" id="hero-meta"></span></div>
+    <div class="hero-cta view-home"><a class="cta" href="/dat-ve">Đăng ký nhận vé mời</a><span class="hero-meta" id="hero-meta"></span></div>
     <div class="hero-cta view-book"><a class="cta" href="#seatmap">Chọn ghế</a></div>
     <div class="hero-cta view-staff"><a class="cta ghost" href="/check-in">Sang check-in</a><a class="cta ghost" href="/">Trang chủ</a></div>
     <div class="hero-cta view-checkin"><a class="cta ghost" href="/to-chuc">Sang quản trị</a><a class="cta ghost" href="/">Trang chủ</a></div>
@@ -460,28 +491,6 @@ a.primary:hover{filter:brightness(1.12)}
 <svg class="wave" viewBox="0 0 1200 32" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 0H1200V12C1080 30 960 30 840 16S600 0 480 16 240 32 120 16 40 2 0 16Z"/></svg>
 
 <main class="wrap">
-  <section class="card view-book" id="check" aria-labelledby="check-h">
-    <h2 id="check-h">Kiểm tra vé</h2>
-    <p class="hint book-page-hint">Đã đăng ký? Điền đúng họ tên và số điện thoại để xem vé hoặc hủy đăng ký.</p>
-    <form id="check-form" novalidate>
-      <div class="check-grid">
-        <label for="check-name"><span>Họ và tên <span class="req" aria-hidden="true">*</span></span>
-          <input id="check-name" name="check-name" autocomplete="name" maxlength="80" required>
-          <span class="err" id="check-name-err" role="alert"></span>
-        </label>
-        <label for="check-phone"><span>Số điện thoại <span class="req" aria-hidden="true">*</span></span>
-          <input id="check-phone" name="check-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="09xx xxx xxx" required>
-          <span class="err" id="check-phone-err" role="alert"></span>
-        </label>
-        <div class="btns">
-          <button class="primary" type="submit" id="check-submit">Tra cứu</button>
-        </div>
-      </div>
-    </form>
-    <div id="check-status" class="status" hidden role="status" style="margin-top:12px"></div>
-    <div id="check-list" hidden style="margin-top:14px"></div>
-  </section>
-
   <section class="card panel-tool view-staff" id="staff-gate" aria-labelledby="staff-h">
     <span class="eyebrow">Nội bộ</span>
     <h2 id="staff-h">Ban tổ chức</h2>
@@ -518,7 +527,7 @@ a.primary:hover{filter:brightness(1.12)}
       <p class="note" id="f-note">Chọn ghế trên sơ đồ, xác nhận thông tin rồi tải mã vé. Tại quầy, đọc mã vé và số điện thoại để vào cửa.</p>
       <div class="home-cta">
         <p>Còn ghế trống — đăng ký ngay để giữ chỗ cho đêm diễn.</p>
-        <a class="cta" href="/dat-ve">Đặt vé miễn phí</a>
+        <a class="cta" href="/dat-ve">Đăng ký nhận vé mời</a>
       </div>
     </div>
     <aside class="info-aside" aria-labelledby="shows-h">
@@ -537,9 +546,9 @@ a.primary:hover{filter:brightness(1.12)}
     <div class="seatmap" id="seatmap" role="region" aria-labelledby="map-h">
       <div class="seatmap-head">
         <h3 id="map-h">Sơ đồ chỗ ngồi</h3>
-        <div class="zone-tabs" role="tablist" aria-label="Chọn tầng">
-          <button class="zone-tab" type="button" role="tab" id="zone-all" data-zone="all" aria-selected="true">Toàn nhà</button>
-          <button class="zone-tab" type="button" role="tab" id="zone-tre" data-zone="tre" aria-selected="false">Tầng trệt</button>
+        <div class="zone-tabs" role="tablist" aria-label="Chọn tầng" hidden>
+          <button class="zone-tab" type="button" role="tab" id="zone-all" data-zone="all" aria-selected="false">Toàn nhà</button>
+          <button class="zone-tab" type="button" role="tab" id="zone-tre" data-zone="tre" aria-selected="true">Tầng trệt</button>
           <button class="zone-tab" type="button" role="tab" id="zone-lau" data-zone="lau" aria-selected="false">Trên lầu</button>
         </div>
       </div>
@@ -604,6 +613,28 @@ a.primary:hover{filter:brightness(1.12)}
         <a id="issued-dl" class="primary" download>Tải vé</a>
       </figure>
     </div>
+  </section>
+
+  <section class="card view-book" id="check" aria-labelledby="check-h">
+    <h2 id="check-h">Kiểm tra vé</h2>
+    <p class="hint book-page-hint">Đã đăng ký? Điền đúng họ tên và số điện thoại để xem vé hoặc hủy đăng ký.</p>
+    <form id="check-form" novalidate>
+      <div class="check-grid">
+        <label for="check-name"><span>Họ và tên <span class="req" aria-hidden="true">*</span></span>
+          <input id="check-name" name="check-name" autocomplete="name" maxlength="80" required>
+          <span class="err" id="check-name-err" role="alert"></span>
+        </label>
+        <label for="check-phone"><span>Số điện thoại <span class="req" aria-hidden="true">*</span></span>
+          <input id="check-phone" name="check-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="09xx xxx xxx" required>
+          <span class="err" id="check-phone-err" role="alert"></span>
+        </label>
+        <div class="btns">
+          <button class="primary" type="submit" id="check-submit">Tra cứu</button>
+        </div>
+      </div>
+    </form>
+    <div id="check-status" class="status" hidden role="status" style="margin-top:12px"></div>
+    <div id="check-list" hidden style="margin-top:14px"></div>
   </section>
 
   <section class="card panel-tool view-checkin" id="checkin-box" aria-labelledby="checkin-h">
@@ -765,8 +796,9 @@ a.primary:hover{filter:brightness(1.12)}
   <p style="margin:18px 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
   <p style="margin:0;font-weight:600;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
   <p class="foot-links">
-    <a href="/">Giới thiệu</a>
+    <a href="/">Trang chủ</a>
     <a href="/dat-ve">Đặt vé</a>
+    <a href="/dat-ve#check">Kiểm tra vé</a>
   </p>
 </footer>
 
@@ -846,31 +878,70 @@ function currentPage() {
   if (path === "/check-in") return "checkin";
   return "home";
 }
+function currentNav() {
+  const page = currentPage();
+  if (page === "book" && (location.hash || "") === "#check") return "check";
+  return page;
+}
+function eventName() {
+  return [eventCfg.title, eventCfg.titleEm].filter(Boolean).join(" ").trim() || "Tiếng Hò Sông Hậu";
+}
+function setSeoTitle(primary) {
+  const name = eventName();
+  document.title = primary ? (primary + " · " + name) : ("Đăng ký nhận vé mời · " + name);
+}
+function syncSeoMeta(page) {
+  const name = eventName();
+  const path = (location.pathname || "/").replace(/\/+$/, "") || "/";
+  const hash = location.hash || "";
+  const origin = "https://vemoi.vanhoacantho.vn";
+  const url = origin + (path === "/" ? "/" : path) + (page === "book" && hash === "#check" ? "#check" : "");
+  const descHome = "Đăng ký nhận vé mời miễn phí chương trình cải lương " + name + " tại Cần Thơ. Chọn ghế trên sơ đồ, nhận mã vé QR, kiểm tra hoặc hủy đăng ký trực tuyến.";
+  const descBook = "Đăng ký nhận vé mời " + name + ": chọn suất diễn, bấm ghế trống và xác nhận thông tin để giữ chỗ.";
+  const descCheck = "Kiểm tra vé mời đã đăng ký cho " + name + " bằng họ tên và số điện thoại.";
+  let titlePrimary = "Đăng ký nhận vé mời";
+  let desc = descHome;
+  if (page === "book" && hash === "#check") { titlePrimary = "Kiểm tra vé"; desc = descCheck; }
+  else if (page === "book") { titlePrimary = "Đăng ký nhận vé mời"; desc = descBook; }
+  else if (page === "staff") { titlePrimary = "Ban tổ chức"; desc = "Khu vực ban tổ chức quản lý đăng ký vé mời " + name + "."; }
+  else if (page === "checkin") { titlePrimary = "Check-in"; desc = "Check-in khán giả bằng mã vé hoặc họ tên và số điện thoại."; }
+  setSeoTitle(titlePrimary);
+  const set = (sel, attr, val) => {
+    const node = document.querySelector(sel);
+    if (node) node.setAttribute(attr, val);
+  };
+  set('meta[name="description"]', "content", desc);
+  set('meta[property="og:title"]', "content", document.title);
+  set('meta[property="og:description"]', "content", desc);
+  set('meta[property="og:url"]', "content", url);
+  set('meta[name="twitter:title"]', "content", document.title);
+  set('meta[name="twitter:description"]', "content", desc);
+  set('link[rel="canonical"]', "href", url.split("#")[0]);
+}
 function applyPageShell() {
   const page = currentPage();
+  const nav = currentNav();
   document.body.classList.toggle("page-home", page === "home");
   document.body.classList.toggle("page-book", page === "book");
   document.body.classList.toggle("page-staff", page === "staff");
   document.body.classList.toggle("page-checkin", page === "checkin");
   for (const link of document.querySelectorAll(".site-nav a[data-nav]")) {
-    if (link.dataset.nav === page) link.setAttribute("aria-current", "page");
+    if (link.dataset.nav === nav) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   }
   const eye = $("hero-eyebrow");
   const lead = $("hero-lead");
   if (page === "staff") {
-    document.title = "Ban tổ chức · Vé mời";
     if (eye) eye.textContent = "Khu vực nội bộ";
     if (lead) lead.textContent = "Đăng nhập để tùy chỉnh sự kiện và xem danh sách đăng ký.";
   } else if (page === "checkin") {
-    document.title = "Check-in · Vé mời";
     if (eye) eye.textContent = "Quầy đón khách";
     if (lead) lead.textContent = "Tra mã vé hoặc họ tên + số điện thoại để xác nhận khán giả vào cửa.";
   } else if (page === "book") {
-    document.title = "Đặt vé · Tiếng Hò Sông Hậu";
-    if (eye) eye.textContent = "Đăng ký ghế · Vé mời miễn phí";
+    if (eye) eye.textContent = "Đăng ký nhận vé mời · Miễn phí";
     if (lead) lead.textContent = "Chọn suất diễn, bấm ghế trống trên sơ đồ rồi xác nhận thông tin để giữ chỗ.";
   }
+  syncSeoMeta(page);
   syncStaffShell();
   syncCheckinShell();
 }
@@ -898,7 +969,8 @@ let checkBusy = false;
 let canEditUser = false, canWrite = false, viewOnly = false, ready = false, busy = false;
 let seatHolds = {}, adminRows = [], regById = {};
 let editing = false, draftKind = null, draftId = null, draftReg = null, draftSeats = [];
-let activeShow = null, mapZone = "all", mapSig = "", cfgDirty = false, cfgSilent = false;
+let activeShow = null, mapZone = "tre", mapSig = "", cfgDirty = false, cfgSilent = false;
+const HIDE_LAU = true;
 let editShows = [], editRows = [];
 let countdownTimer = null, countdownFor = null, countdownDone = false;
 let trial = false, live = false;
@@ -1055,11 +1127,49 @@ function setupCountdown() {
   tick();
 }
 
+function syncJsonLd() {
+  const node = $("seo-jsonld");
+  if (!node) return;
+  const e = eventCfg;
+  const name = eventName();
+  const shows = (e.shows || []).slice(0, 4).map(s => {
+    const day = String(s.day || "").trim();
+    const time = String(s.time || "19:00").trim();
+    let startDate = "";
+    const m = day.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?$/);
+    if (m) {
+      const year = m[3] || "2026";
+      startDate = `${year}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}T${time.length === 5 ? time + ":00" : time}+07:00`;
+    }
+    return {
+      "@type": "Event",
+      name,
+      startDate: startDate || undefined,
+      location: { "@type": "Place", name: e.venue || "Cần Thơ", address: e.venue || "Cần Thơ" },
+      offers: { "@type": "Offer", price: 0, priceCurrency: "VND", url: "https://vemoi.vanhoacantho.vn/dat-ve" }
+    };
+  });
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Đăng ký nhận vé mời",
+    alternateName: name,
+    url: "https://vemoi.vanhoacantho.vn/",
+    description: "Đăng ký nhận vé mời miễn phí chương trình cải lương " + name + ".",
+    potentialAction: {
+      "@type": "ReserveAction",
+      target: "https://vemoi.vanhoacantho.vn/dat-ve",
+      name: "Đăng ký nhận vé mời"
+    },
+    mainEntity: shows.length === 1 ? shows[0] : { "@type": "ItemList", itemListElement: shows }
+  };
+  node.textContent = JSON.stringify(payload);
+}
 function applyEvent() {
   const e = eventCfg;
   const page = currentPage();
-  if (page === "home") document.title = (e.title + " " + e.titleEm).trim();
-  else if (page === "book") document.title = "Đặt vé · " + (e.title + " " + e.titleEm).trim();
+  syncSeoMeta(page);
+  syncJsonLd();
   $("hero-title-text").textContent = e.title;
   $("hero-em").textContent = e.titleEm;
   if (page === "staff") {
@@ -1071,10 +1181,10 @@ function applyEvent() {
     $("hero-lead").textContent = "Tra mã vé hoặc họ tên + số điện thoại để xác nhận khán giả vào cửa.";
     if ($("countdown")) $("countdown").hidden = true;
   } else if (page === "book") {
-    $("hero-eyebrow").textContent = e.eyebrow || "Đăng ký ghế · Vé mời miễn phí";
+    $("hero-eyebrow").textContent = e.eyebrow || "Đăng ký nhận vé mời · Miễn phí";
     $("hero-lead").textContent = "Chọn suất diễn, bấm ghế trống trên sơ đồ rồi xác nhận thông tin để giữ chỗ.";
   } else {
-    $("hero-eyebrow").textContent = e.eyebrow;
+    $("hero-eyebrow").textContent = e.eyebrow || "Đăng ký nhận vé mời · Miễn phí";
     const desc = String(e.description || "").trim();
     const cut = desc.match(/^.{40,160}?[.!?…](?=\s|$)/);
     $("hero-lead").textContent = cut ? cut[0] : (desc.length > 160 ? desc.slice(0, 157).replace(/\s+\S*$/, "") + "…" : desc);
@@ -1249,6 +1359,7 @@ function appendLevel(hall, zoneId) {
   hall.append(level);
 }
 function setMapZone(zone) {
+  if (HIDE_LAU) zone = "tre";
   const next = zone === "lau" || zone === "tre" ? zone : "all";
   if (mapZone === next) return;
   mapZone = next;
@@ -1267,8 +1378,9 @@ function renderMap() {
   const keep = active && active.dataset ? (active.dataset.seat || "") : "";
   scroll.textContent = "";
   const hall = el("div", "hall");
-  if (mapZone === "lau") appendLevel(hall, "lau");
-  else if (mapZone === "tre") appendLevel(hall, "tre");
+  const zone = HIDE_LAU ? "tre" : mapZone;
+  if (zone === "lau") appendLevel(hall, "lau");
+  else if (zone === "tre") appendLevel(hall, "tre");
   else {
     appendLevel(hall, "lau");
     const div = el("div", "hall-divider");
@@ -1276,7 +1388,7 @@ function renderMap() {
     hall.append(div);
     appendLevel(hall, "tre");
   }
-  if (mapZone !== "lau") {
+  if (zone !== "lau") {
     const stage = el("div", "stage", "Sân khấu");
     hall.append(stage);
   }
@@ -1769,7 +1881,12 @@ function render() {
   if (showIssued) renderPassImage(issued, $("issued-img"), $("issued-dl"));
   const multi = eventCfg.shows.length > 1;
   $("map-h").textContent = multi && activeShow ? "Sơ đồ chỗ ngồi · " + showText(activeShow) : "Sơ đồ chỗ ngồi";
-  const open = [...layoutSeatSet(eventCfg)].filter(s => !(eventCfg.blocked || []).includes(s)).length;
+  const open = [...layoutSeatSet(eventCfg)].filter(s => {
+    if ((eventCfg.blocked || []).includes(s)) return false;
+    if (!HIDE_LAU) return true;
+    const row = (eventCfg.rows || []).find(r => s.startsWith(r.label) && s.slice(r.label.length).match(/^\d+$/));
+    return !row || row.zone !== "lau";
+  }).length;
   $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt. Đang mở ${open} ghế.`;
   renderMap();
 }
@@ -3019,6 +3136,7 @@ $("cfg-add-row").onclick = () => {
   cfgDirty = true; renderCfgEditors();
 };
 $("cfg").addEventListener("submit", saveCfg);
+window.addEventListener("hashchange", () => applyPageShell());
 
 applyPageShell();
 applyEvent();
