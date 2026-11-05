@@ -267,10 +267,22 @@ button.seat.blocked{background:#efe6e7;color:#a08085;border-style:dashed;border-
   #check .check-grid{grid-template-columns:1fr 1fr auto;align-items:end}
   #check .check-grid .btns{margin:0 0 2px}
 }
-body.page-staff .public-only{display:none!important}
-body.page-public .staff-only{display:none!important}
-#staff-gate{grid-column:1/-1;max-width:520px}
-#staff-session{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+body:not(.page-home) .view-home{display:none!important}
+body:not(.page-book) .view-book{display:none!important}
+body:not(.page-staff) .view-staff{display:none!important}
+body:not(.page-checkin) .view-checkin{display:none!important}
+.site-nav{display:flex;flex-wrap:wrap;gap:8px 10px;padding-block:14px 0;align-items:center}
+.site-nav a{display:inline-flex;align-items:center;min-height:40px;padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.9rem;color:var(--ink);border:1px solid var(--line);background:var(--surface)}
+.site-nav a[aria-current="page"]{background:var(--lacquer);color:var(--lacquer-ink);border-color:var(--lacquer)}
+.site-nav .nav-staff{margin-left:auto;color:var(--muted);border-style:dashed}
+#staff-gate,#checkin-box{grid-column:1/-1;max-width:560px}
+#staff-session,#checkin-session{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.checkin-result{display:grid;gap:10px;margin-top:14px}
+.checkin-card{display:grid;gap:8px;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.checkin-card.done{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
+body.page-book main.wrap{grid-template-columns:1fr}
+body.page-home main.wrap{grid-template-columns:1fr}
+body.page-staff main.wrap,body.page-checkin main.wrap{grid-template-columns:1fr}
 @media (min-width:821px){
   #check{grid-column:1/-1;grid-row:1}
   .seatband{grid-column:1/-1;grid-row:2}
@@ -361,15 +373,24 @@ a.primary:hover{filter:brightness(1.12)}
     <span class="eyebrow" id="hero-eyebrow">Đêm diễn cải lương · Đăng ký vé mời</span>
     <h1 id="hero-title"><span id="hero-title-text">Tiếng Hò</span><em id="hero-em">Sông Hậu</em></h1>
     <p id="hero-lead">Vở cải lương kinh điển về tình người miền sông nước Hậu Giang, với những lớp ca vọng cổ và điệu hò quen thuộc của Nam Bộ. Vé mời miễn phí, số ghế có hạn. Chọn ghế trên sơ đồ rồi điền thông tin để giữ chỗ.</p>
-    <div class="hero-cta public-only"><a class="cta" href="#seatmap">Đăng ký nhận vé</a><a class="cta ghost" href="#check">Kiểm tra vé</a><span class="hero-meta" id="hero-meta"></span></div>
-    <div class="hero-cta staff-only"><a class="cta ghost" href="/">Về trang đăng ký</a><span class="hero-meta">Khu vực ban tổ chức</span></div>
-    <div class="countdown public-only" id="countdown" hidden></div>
+    <div class="hero-cta view-home"><a class="cta" href="/dat-ve">Đăng ký nhận vé</a><a class="cta ghost" href="/dat-ve#check">Kiểm tra vé</a><span class="hero-meta" id="hero-meta"></span></div>
+    <div class="hero-cta view-book"><a class="cta" href="#seatmap">Chọn ghế</a><a class="cta ghost" href="#check">Kiểm tra vé</a><span class="hero-meta">Trang đặt vé</span></div>
+    <div class="hero-cta view-staff"><a class="cta ghost" href="/">Về trang giới thiệu</a><a class="cta ghost" href="/check-in">Check-in</a><span class="hero-meta">Ban tổ chức</span></div>
+    <div class="hero-cta view-checkin"><a class="cta ghost" href="/to-chuc">Quản trị</a><a class="cta ghost" href="/">Trang chủ</a><span class="hero-meta">Check-in khán giả</span></div>
+    <div class="countdown view-home" id="countdown" hidden></div>
   </div>
 </header>
 <svg class="wave" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 0H1200V10C1100 26 1000 26 900 14S700 2 600 14 400 26 300 14 100 2 0 14Z"/></svg>
 
+<nav class="site-nav wrap" aria-label="Chuyên mục">
+  <a href="/" data-nav="home">Giới thiệu</a>
+  <a href="/dat-ve" data-nav="book">Đặt vé</a>
+  <a href="/to-chuc" data-nav="staff" class="nav-staff">Ban tổ chức</a>
+  <a href="/check-in" data-nav="checkin" class="nav-staff">Check-in</a>
+</nav>
+
 <main class="wrap">
-  <section class="card public-only" id="check" aria-labelledby="check-h">
+  <section class="card view-book" id="check" aria-labelledby="check-h">
     <h2 id="check-h">Kiểm tra vé</h2>
     <p class="hint" style="margin:-4px 0 12px">Đã đăng ký? Điền đúng họ tên và số điện thoại để xem vé hoặc hủy đăng ký.</p>
     <form id="check-form" novalidate>
@@ -391,10 +412,10 @@ a.primary:hover{filter:brightness(1.12)}
     <div id="check-list" hidden style="margin-top:14px"></div>
   </section>
 
-  <section class="card staff-only" id="staff-gate" aria-labelledby="staff-h">
+  <section class="card view-staff" id="staff-gate" aria-labelledby="staff-h">
     <span class="eyebrow">Nội bộ</span>
     <h2 id="staff-h">Ban tổ chức</h2>
-    <p class="hint" style="margin:-4px 0 12px">Đăng nhập để sửa sự kiện và xem danh sách đăng ký. Khách dùng trang chủ để đặt vé.</p>
+    <p class="hint" style="margin:-4px 0 12px">Đăng nhập để sửa sự kiện và xem danh sách đăng ký. Check-in khán giả dùng trang riêng.</p>
     <form id="staff-login" novalidate>
       <label for="staff-pass"><span>Mật khẩu ban tổ chức</span>
         <input id="staff-pass" type="password" autocomplete="current-password" maxlength="80">
@@ -414,7 +435,7 @@ a.primary:hover{filter:brightness(1.12)}
     </div>
   </section>
 
-  <section class="info public-only" aria-labelledby="info-h">
+  <section class="info view-home" aria-labelledby="info-h">
     <div>
       <h2 id="info-h">Thông tin chương trình</h2>
       <dl class="facts">
@@ -430,7 +451,7 @@ a.primary:hover{filter:brightness(1.12)}
     <p class="note" id="f-note">Chọn ghế trên sơ đồ, bấm Đặt và xác nhận. Bạn nhận một mã vé cùng ảnh chỗ ngồi để tải về. Đến nơi, đọc mã vé và số điện thoại tại quầy đón khách. Bạn có thể thêm ghế, trả ghế hoặc hủy đăng ký trên trang này.</p>
   </section>
 
-  <div class="seatband public-only">
+  <div class="seatband view-book">
     <fieldset id="show-field">
       <legend>Chọn suất diễn <span class="req" aria-hidden="true">*</span></legend>
       <div class="choices" id="show-choices"></div>
@@ -469,7 +490,7 @@ a.primary:hover{filter:brightness(1.12)}
     </div>
   </div>
 
-  <section class="card public-only" aria-labelledby="panel-h" id="panel">
+  <section class="card view-book" aria-labelledby="panel-h" id="panel">
     <h2 id="panel-h">Đăng ký tham dự</h2>
     <p class="hint" id="form-lead" style="margin:-4px 0 12px">Mục có dấu <span class="req">*</span> là bắt buộc. Chọn ghế trên sơ đồ, bấm Đặt, rồi xác nhận trong cửa sổ.</p>
     <div id="status" class="status" role="status" tabindex="-1">Đang kết nối với hệ thống đăng ký…</div>
@@ -509,7 +530,51 @@ a.primary:hover{filter:brightness(1.12)}
     </div>
   </section>
 
-  <section class="admin staff-only" id="admin" hidden aria-labelledby="admin-h">
+  <section class="card view-checkin" id="checkin-box" aria-labelledby="checkin-h">
+    <span class="eyebrow">Nội bộ</span>
+    <h2 id="checkin-h">Check-in</h2>
+    <p class="hint" style="margin:-4px 0 12px">Đăng nhập ban tổ chức rồi tra mã vé hoặc họ tên + số điện thoại để xác nhận khách vào cửa.</p>
+    <div id="checkin-need-login">
+      <p class="hint">Cần phiên ban tổ chức. Đăng nhập bên dưới hoặc mở trang quản trị.</p>
+      <form id="checkin-login" novalidate>
+        <label for="checkin-pass"><span>Mật khẩu ban tổ chức</span>
+          <input id="checkin-pass" type="password" autocomplete="current-password" maxlength="80">
+        </label>
+        <div class="btns">
+          <button class="primary" type="submit">Vào check-in</button>
+          <a class="ghost" href="/to-chuc" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--field-line);border-radius:4px;padding:12px 22px;font-weight:600;color:var(--ink)">Sang quản trị</a>
+        </div>
+        <p class="hint" id="checkin-login-msg"></p>
+      </form>
+    </div>
+    <div id="checkin-session" hidden>
+      <p class="hint" style="margin:0">Đã đăng nhập. Có thể check-in vé.</p>
+      <div class="btns">
+        <button class="ghost" type="button" id="checkin-logout">Thoát</button>
+      </div>
+      <form id="checkin-form" novalidate style="margin-top:14px">
+        <label for="checkin-code"><span>Mã vé</span>
+          <input id="checkin-code" name="checkin-code" maxlength="24" placeholder="VE-XXXXX" autocomplete="off">
+        </label>
+        <p class="hint" style="margin:0">Hoặc tra theo họ tên và số điện thoại:</p>
+        <div class="row">
+          <label for="checkin-name"><span>Họ và tên</span>
+            <input id="checkin-name" maxlength="80" autocomplete="name">
+          </label>
+          <label for="checkin-phone"><span>Số điện thoại</span>
+            <input id="checkin-phone" type="tel" inputmode="tel" maxlength="16" placeholder="09xx xxx xxx">
+          </label>
+        </div>
+        <div class="btns">
+          <button class="primary" type="submit" id="checkin-submit">Tra cứu</button>
+        </div>
+      </form>
+      <div id="checkin-status" class="status" hidden role="status" style="margin-top:12px"></div>
+      <div id="checkin-list" class="checkin-result" hidden></div>
+    </div>
+  </section>
+
+  <section class="admin view-staff" id="admin" hidden aria-labelledby="admin-h">
     <form id="cfg" class="cfg" autocomplete="off" novalidate>
       <div>
         <span class="eyebrow">Chỉ Ban tổ chức</span>
@@ -624,7 +689,12 @@ a.primary:hover{filter:brightness(1.12)}
 <footer class="wrap">
   <p style="margin:0 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
   <p style="margin:0;font-weight:500;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
-  <p class="public-only" style="margin:10px 0 0"><a href="/to-chuc" style="color:var(--muted);font-size:.85rem">Ban tổ chức</a></p>
+  <p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:10px 16px">
+    <a href="/" style="color:var(--muted);font-size:.85rem">Giới thiệu</a>
+    <a href="/dat-ve" style="color:var(--muted);font-size:.85rem">Đặt vé</a>
+    <a href="/to-chuc" style="color:var(--muted);font-size:.85rem">Ban tổ chức</a>
+    <a href="/check-in" style="color:var(--muted);font-size:.85rem">Check-in</a>
+  </p>
 </footer>
 
 <script>
@@ -698,31 +768,53 @@ const el = (tag, cls, text) => {
 };
 function currentPage() {
   const path = (location.pathname || "/").replace(/\/+$/, "") || "/";
-  return path === "/to-chuc" ? "staff" : "public";
+  if (path === "/dat-ve") return "book";
+  if (path === "/to-chuc") return "staff";
+  if (path === "/check-in") return "checkin";
+  return "home";
 }
 function applyPageShell() {
-  const staffPage = currentPage() === "staff";
-  document.body.classList.toggle("page-staff", staffPage);
-  document.body.classList.toggle("page-public", !staffPage);
-  if (staffPage) {
+  const page = currentPage();
+  document.body.classList.toggle("page-home", page === "home");
+  document.body.classList.toggle("page-book", page === "book");
+  document.body.classList.toggle("page-staff", page === "staff");
+  document.body.classList.toggle("page-checkin", page === "checkin");
+  for (const link of document.querySelectorAll(".site-nav a[data-nav]")) {
+    link.setAttribute("aria-current", link.dataset.nav === page ? "page" : "false");
+  }
+  const eye = $("hero-eyebrow");
+  const lead = $("hero-lead");
+  if (page === "staff") {
     document.title = "Ban tổ chức · Vé mời";
-    const eye = $("hero-eyebrow");
-    const lead = $("hero-lead");
     if (eye) eye.textContent = "Khu vực nội bộ";
-    if (lead) lead.textContent = "Đăng nhập để tùy chỉnh sự kiện và theo dõi danh sách đăng ký. Trang này không dùng để khách đặt vé.";
+    if (lead) lead.textContent = "Đăng nhập để tùy chỉnh sự kiện và xem danh sách đăng ký.";
+  } else if (page === "checkin") {
+    document.title = "Check-in · Vé mời";
+    if (eye) eye.textContent = "Quầy đón khách";
+    if (lead) lead.textContent = "Tra mã vé hoặc họ tên + số điện thoại để xác nhận khán giả vào cửa.";
+  } else if (page === "book") {
+    document.title = "Đặt vé · Tiếng Hò Sông Hậu";
+    if (eye) eye.textContent = "Đăng ký ghế · Vé mời miễn phí";
+    if (lead) lead.textContent = "Chọn suất diễn, bấm ghế trống trên sơ đồ rồi xác nhận thông tin để giữ chỗ.";
   }
   syncStaffShell();
+  syncCheckinShell();
 }
 function syncStaffShell() {
   if (currentPage() !== "staff") return;
-  const gate = $("staff-gate");
   const login = $("staff-login");
   const session = $("staff-session");
   const admin = $("admin");
-  if (gate) gate.hidden = false;
   if (login) login.hidden = !!canEditUser;
   if (session) session.hidden = !canEditUser;
   if (admin) admin.hidden = !canEditUser;
+}
+function syncCheckinShell() {
+  if (currentPage() !== "checkin") return;
+  const need = $("checkin-need-login");
+  const session = $("checkin-session");
+  if (need) need.hidden = !!canEditUser;
+  if (session) session.hidden = !canEditUser;
 }
 
 let eventCfg = normalizeEvent(null);
@@ -887,14 +979,22 @@ function setupCountdown() {
 
 function applyEvent() {
   const e = eventCfg;
-  const staffPage = currentPage() === "staff";
-  document.title = staffPage ? "Ban tổ chức · Vé mời" : (e.title + " " + e.titleEm).trim();
+  const page = currentPage();
+  if (page === "home") document.title = (e.title + " " + e.titleEm).trim();
+  else if (page === "book") document.title = "Đặt vé · " + (e.title + " " + e.titleEm).trim();
   $("hero-title-text").textContent = e.title;
   $("hero-em").textContent = e.titleEm;
-  if (staffPage) {
+  if (page === "staff") {
     $("hero-eyebrow").textContent = "Khu vực nội bộ";
-    $("hero-lead").textContent = "Đăng nhập để tùy chỉnh sự kiện và theo dõi danh sách đăng ký. Trang này không dùng để khách đặt vé.";
-    $("countdown").hidden = true;
+    $("hero-lead").textContent = "Đăng nhập để tùy chỉnh sự kiện và xem danh sách đăng ký.";
+    if ($("countdown")) $("countdown").hidden = true;
+  } else if (page === "checkin") {
+    $("hero-eyebrow").textContent = "Quầy đón khách";
+    $("hero-lead").textContent = "Tra mã vé hoặc họ tên + số điện thoại để xác nhận khán giả vào cửa.";
+    if ($("countdown")) $("countdown").hidden = true;
+  } else if (page === "book") {
+    $("hero-eyebrow").textContent = e.eyebrow || "Đăng ký ghế · Vé mời miễn phí";
+    $("hero-lead").textContent = "Chọn suất diễn, bấm ghế trống trên sơ đồ rồi xác nhận thông tin để giữ chỗ.";
   } else {
     $("hero-eyebrow").textContent = e.eyebrow;
     $("hero-lead").textContent = e.description;
@@ -1811,6 +1911,7 @@ function applyRemote(data) {
   if (typeof data.staff === "boolean") {
     canEditUser = data.staff;
     syncStaffShell();
+    syncCheckinShell();
   }
   if (data.event) {
     const next = normalizeEvent(data.event);
@@ -2530,20 +2631,23 @@ async function start() {
     });
     try { canEditUser = !!(user && typeof user.canEdit === "function" && await user.canEdit()); }
     catch { canEditUser = false; }
-    if (canEditUser && currentPage() === "staff") {
+    if (canEditUser && (currentPage() === "staff" || currentPage() === "checkin")) {
       syncStaffShell();
-      fillCfgForm();
-      renderAdmin();
-      render();
-      db.collection("dangky").orderBy("createdAt", "desc").onSnapshot(s => {
-        setAdminRows((s.docs || []).map(x => {
-          const data = typeof x.data === "function" ? (x.data() || {}) : {};
-          return { ...data, regId: x.id || data.regId };
-        }));
-      }, () => {
-        $("admin-empty").hidden = false;
-        $("admin-empty").textContent = "Không tải được danh sách. Tải lại trang để thử lại.";
-      });
+      syncCheckinShell();
+      if (currentPage() === "staff") {
+        fillCfgForm();
+        renderAdmin();
+        render();
+        db.collection("dangky").orderBy("createdAt", "desc").onSnapshot(s => {
+          setAdminRows((s.docs || []).map(x => {
+            const data = typeof x.data === "function" ? (x.data() || {}) : {};
+            return { ...data, regId: x.id || data.regId };
+          }));
+        }, () => {
+          $("admin-empty").hidden = false;
+          $("admin-empty").textContent = "Không tải được danh sách. Tải lại trang để thử lại.";
+        });
+      }
     }
     if (trial) {
       showTrialNote();
@@ -2634,10 +2738,11 @@ $("copy-csv").onclick = async () => {
 for (const id of ["cfg-eyebrow", "cfg-phone", "cfg-title", "cfg-em", "cfg-desc", "cfg-venue", "cfg-door", "cfg-max", "cfg-ticket", "cfg-blocked"]) {
   $(id).addEventListener("input", markCfg);
 }
-$("staff-logout").onclick = async () => {
+async function staffLogout() {
   if (!live) {
     canEditUser = false;
     syncStaffShell();
+    syncCheckinShell();
     render();
     return;
   }
@@ -2645,9 +2750,12 @@ $("staff-logout").onclick = async () => {
   catch {
     canEditUser = false;
     syncStaffShell();
+    syncCheckinShell();
   }
   render();
-};
+}
+$("staff-logout").onclick = () => staffLogout();
+$("checkin-logout").onclick = () => staffLogout();
 $("check-form").addEventListener("submit", async e => {
   e.preventDefault();
   if (checkBusy) return;
@@ -2683,21 +2791,115 @@ for (const id of ["check-name", "check-phone"]) {
     $(id).setAttribute("aria-invalid", "false");
   });
 }
+async function staffLoginWith(password, msgEl) {
+  if (msgEl) msgEl.textContent = "";
+  try {
+    applyRemote(await api("/api/staff/login", { method: "POST", body: JSON.stringify({ password }) }));
+    if (currentPage() === "staff") fillCfgForm();
+    syncStaffShell();
+    syncCheckinShell();
+    render();
+    return true;
+  } catch {
+    if (msgEl) msgEl.textContent = "Mật khẩu chưa đúng.";
+    return false;
+  }
+}
 $("staff-login").addEventListener("submit", async e => {
   e.preventDefault();
-  $("staff-msg").textContent = "";
-  if (currentPage() !== "staff") {
-    $("staff-msg").textContent = "Mở trang /to-chuc để đăng nhập ban tổ chức.";
+  await staffLoginWith($("staff-pass").value, $("staff-msg"));
+  if (canEditUser) $("staff-pass").value = "";
+});
+function setCheckinStatus(text, ok) {
+  const el = $("checkin-status");
+  if (!el) return;
+  if (!text) { el.hidden = true; el.textContent = ""; return; }
+  el.hidden = false;
+  el.textContent = text;
+  el.classList.toggle("ok", !!ok);
+}
+function clearCheckinList() {
+  const list = $("checkin-list");
+  if (!list) return;
+  list.hidden = true;
+  list.replaceChildren();
+}
+function whenShort(iso) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+  } catch { return iso; }
+}
+function renderCheckinCards(rows) {
+  const list = $("checkin-list");
+  if (!list) return;
+  list.replaceChildren();
+  if (!rows.length) { list.hidden = true; return; }
+  list.hidden = false;
+  for (const reg of rows) {
+    const done = !!reg.checkedInAt;
+    const card = el("article", "checkin-card" + (done ? " done" : ""));
+    card.append(
+      el("strong", "", (reg.code || "—") + (done ? " · đã vào" : "")),
+      el("div", "", (reg.name || "") + (reg.phone ? " · " + reg.phone : "")),
+      el("div", "", "Ghế " + (seatsPlain(reg) || "—") + (reg.show ? " · " + showText(reg.show) : ""))
+    );
+    if (done) card.append(el("div", "hint", "Check-in lúc " + whenShort(reg.checkedInAt)));
+    else {
+      const btn = el("button", "primary", "Xác nhận vào cửa");
+      btn.type = "button";
+      btn.onclick = async () => {
+        btn.disabled = true;
+        setCheckinStatus("Đang ghi nhận check-in…");
+        try {
+          const data = await api("/api/checkin", { method: "POST", body: JSON.stringify({ regId: reg.regId }) });
+          const next = data.registrations || (data.registration ? [data.registration] : []);
+          setCheckinStatus("Đã check-in " + (data.registration?.code || reg.code || "") + ".", true);
+          renderCheckinCards(next);
+        } catch (err) {
+          setCheckinStatus(explain(err));
+          btn.disabled = false;
+        }
+      };
+      card.append(btn);
+    }
+    list.append(card);
+  }
+}
+$("checkin-login").addEventListener("submit", async e => {
+  e.preventDefault();
+  await staffLoginWith($("checkin-pass").value, $("checkin-login-msg"));
+  if (canEditUser) $("checkin-pass").value = "";
+});
+$("checkin-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!canEditUser) {
+    setCheckinStatus("Cần đăng nhập ban tổ chức trước.");
     return;
   }
+  const code = ($("checkin-code").value || "").trim().toUpperCase();
+  const name = ($("checkin-name").value || "").trim();
+  const phone = ($("checkin-phone").value || "").trim();
+  if (!code && (!name || !phone)) {
+    setCheckinStatus("Nhập mã vé, hoặc đủ họ tên và số điện thoại.");
+    return;
+  }
+  setCheckinStatus("Đang tra cứu…");
+  clearCheckinList();
   try {
-    applyRemote(await api("/api/staff/login", { method: "POST", body: JSON.stringify({ password: $("staff-pass").value }) }));
-    $("staff-pass").value = "";
-    fillCfgForm();
-    syncStaffShell();
-    render();
-  } catch {
-    $("staff-msg").textContent = "Mật khẩu chưa đúng.";
+    const body = code ? { code } : { name, phone };
+    const data = await api("/api/checkin/lookup", { method: "POST", body: JSON.stringify(body) });
+    const rows = data.registrations || [];
+    if (!rows.length) {
+      setCheckinStatus("Không tìm thấy vé khớp.");
+      return;
+    }
+    setCheckinStatus("Tìm thấy " + rows.length + " vé.", true);
+    renderCheckinCards(rows);
+  } catch (err) {
+    setCheckinStatus(explain(err));
   }
 });
 $("cfg-aisle").addEventListener("change", markCfg);

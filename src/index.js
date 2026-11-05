@@ -167,7 +167,8 @@ function regFromRow(row) {
     seats: seatIds.length,
     source: row.source,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
+    checkedInAt: row.checked_in_at || ""
   };
 }
 
@@ -228,6 +229,10 @@ export class Venue extends DurableObject {
       owner_uid TEXT NOT NULL DEFAULT '',
       blocked INTEGER NOT NULL DEFAULT 0
     )`);
+    const cols = sql.exec("PRAGMA table_info(registrations)").toArray().map(row => row.name);
+    if (!cols.includes("checked_in_at")) {
+      sql.exec("ALTER TABLE registrations ADD COLUMN checked_in_at TEXT NOT NULL DEFAULT ''");
+    }
     const existing = sql.exec("SELECT value FROM meta WHERE key = ?", "event").toArray();
     if (!existing.length) {
       sql.exec("INSERT INTO meta (key, value) VALUES (?, ?)", "event", JSON.stringify(normalizeEvent(null)));
@@ -273,6 +278,17 @@ export class Venue extends DurableObject {
         if (!/^[A-Za-z0-9-]{4,48}$/.test(id)) fail("invalid");
         this.deleteByIdentity(identity, id);
         return Response.json({ ...this.snapshot(actor, staff), cancelled: id });
+      }
+      if (request.method === "POST" && url.pathname === "/api/checkin/lookup") {
+        if (!staff) fail("forbidden");
+        const body = await request.json();
+        return Response.json({ registrations: this.lookupForCheckin(body) });
+      }
+      if (request.method === "POST" && url.pathname === "/api/checkin") {
+        if (!staff) fail("forbidden");
+        const body = await request.json();
+        const registration = this.markCheckin(body);
+        return Response.json({ registration, registrations: this.lookupForCheckin({ code: registration.code }) });
       }
       return Response.json({ error: "invalid" }, { status: 404 });
     } catch (error) {
@@ -481,6 +497,37 @@ export class Venue extends DurableObject {
     return this.ctx.storage.sql.exec("SELECT * FROM registrations ORDER BY created_at DESC").toArray()
       .filter(row => foldName(row.name) === identity.nameKey && foldPhone(row.phone) === identity.phoneKey)
       .map(regFromRow);
+  }
+
+  lookupForCheckin(body) {
+    const code = String(body?.code || "").trim().toUpperCase();
+    if (code) {
+      const row = this.ctx.storage.sql.exec(
+        "SELECT * FROM registrations WHERE upper(code) = ? LIMIT 1",
+        code
+      ).toArray()[0];
+      return row ? [regFromRow(row)] : [];
+    }
+    return this.findByIdentity(identityFromBody(body));
+  }
+
+  markCheckin(body) {
+    const id = String(body?.regId || "").trim();
+    if (!/^[A-Za-z0-9-]{4,48}$/.test(id)) fail("invalid");
+    let out = null;
+    this.ctx.storage.transactionSync(() => {
+      const current = this.ctx.storage.sql.exec("SELECT * FROM registrations WHERE id = ?", id).toArray()[0];
+      if (!current) fail("notfound");
+      const when = current.checked_in_at || new Date().toISOString();
+      this.ctx.storage.sql.exec(
+        "UPDATE registrations SET checked_in_at = ?, updated_at = ? WHERE id = ?",
+        when,
+        new Date().toISOString(),
+        id
+      );
+      out = regFromRow(this.ctx.storage.sql.exec("SELECT * FROM registrations WHERE id = ?", id).toArray()[0]);
+    });
+    return out;
   }
 
   matchesIdentity(row, identity) {
