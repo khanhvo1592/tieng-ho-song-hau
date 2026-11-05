@@ -81,26 +81,30 @@ h1 em{font-style:italic;font-weight:500;display:block;font-size:.58em;margin-top
 .wave{display:block;width:100%;height:32px;color:var(--lacquer);background:transparent;margin-bottom:-1px}
 
 .site-nav{
-  position:sticky;top:0;z-index:40;
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,42,31,.92);
+  backdrop-filter:blur(14px) saturate(1.2);
+  border-bottom:1px solid rgba(241,201,119,.22);
+}
+.site-nav-inner{
   display:flex;flex-wrap:wrap;gap:6px 4px;align-items:center;
-  padding-block:12px;margin-top:4px;
-  background:color-mix(in srgb,var(--bg) 82%,transparent);
-  backdrop-filter:blur(12px) saturate(1.15);
-  border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);
+  padding-block:10px;max-width:1180px;margin:0 auto;
+  padding-left:max(18px,env(safe-area-inset-left,0px));
+  padding-right:max(18px,env(safe-area-inset-right,0px));
 }
 .site-nav .brand{
-  display:inline-flex;flex-direction:column;gap:0;margin-right:10px;padding:4px 10px 4px 0;
-  text-decoration:none;color:var(--ink);border:0;background:transparent;min-height:0;
+  display:inline-flex;flex-direction:column;gap:0;margin-right:12px;padding:4px 10px 4px 0;
+  text-decoration:none;color:#F1FAF4;border:0;background:transparent;min-height:0;
 }
 .site-nav .brand strong{font-family:var(--font-display);font-size:1.05rem;font-weight:700;line-height:1.1}
-.site-nav .brand span{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.site-nav .brand span{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(241,201,119,.9);font-weight:600}
 .site-nav a{
   display:inline-flex;align-items:center;min-height:42px;padding:8px 14px;
   border-radius:999px;text-decoration:none;font-weight:600;font-size:.88rem;
-  color:var(--muted);border:1px solid transparent;background:transparent;
+  color:rgba(241,250,244,.82);border:1px solid transparent;background:transparent;
 }
-.site-nav a:hover{color:var(--ink);background:color-mix(in srgb,var(--surface) 70%,transparent)}
-.site-nav a[aria-current="page"]{background:var(--lacquer);color:var(--lacquer-ink);border-color:var(--lacquer)}
+.site-nav a:hover{color:#fff;background:rgba(241,250,244,.1)}
+.site-nav a[aria-current="page"]{background:var(--gold-bright);color:#12261F;border-color:var(--gold-bright)}
 @media (max-width:560px){
   .site-nav .brand{width:100%;margin:0 0 4px}
 }
@@ -130,8 +134,7 @@ dl.facts dd{margin:0;font-size:1.02rem}
 .show{display:flex;gap:16px;align-items:baseline;border-top:1px solid var(--line);padding:14px 0}
 .show:first-child{border-top:0;padding-top:4px}
 .show .d{font-family:var(--font-display);font-size:1.55rem;font-weight:700;min-width:4.8ch;font-variant-numeric:tabular-nums;color:var(--lacquer)}
-.show strong{font-weight:600}
-.show small{color:var(--muted);font-size:.88rem}
+.show strong{font-weight:600;font-size:1.15rem;font-variant-numeric:tabular-nums}
 .note{font-size:.9rem;color:var(--muted);border-left:3px solid var(--gold);padding:4px 0 4px 14px;margin:18px 0 0}
 
 .card{background:color-mix(in srgb,var(--surface) 92%,white);border:1px solid color-mix(in srgb,var(--line) 85%,transparent);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
@@ -378,13 +381,24 @@ button.seat:disabled{opacity:1;cursor:not-allowed}
 .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
 .modal-head h2{margin:0}
 .pass{display:grid;gap:8px;margin:0;justify-items:center}
-.pass img{width:min(100%,280px);max-height:42vh;height:auto;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff}
+.pass img{width:min(100%,300px);max-height:min(70vh,720px);height:auto;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff}
 a.primary{display:inline-flex;justify-content:center;align-items:center;min-height:46px;padding:12px 22px;border-radius:4px;background:var(--lacquer);color:var(--lacquer-ink);font-weight:700;text-decoration:none;text-align:center}
 a.primary:hover{filter:brightness(1.12)}
 @media (max-width:480px){.modal-sheet{padding:16px}}
 </style>
 </head>
 <body>
+
+<nav class="site-nav" aria-label="Chuyên mục">
+  <div class="site-nav-inner">
+    <a class="brand" href="/" aria-label="Tiếng Hò Sông Hậu — trang giới thiệu">
+      <strong>Tiếng Hò</strong>
+      <span>Sông Hậu</span>
+    </a>
+    <a href="/" data-nav="home">Giới thiệu</a>
+    <a href="/dat-ve" data-nav="book">Đặt vé</a>
+  </div>
+</nav>
 
 <header class="hero">
   <svg class="scene" viewBox="0 0 1200 340" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
@@ -436,23 +450,14 @@ a.primary:hover{filter:brightness(1.12)}
     <span class="eyebrow" id="hero-eyebrow">Đêm diễn cải lương · Đăng ký vé mời</span>
     <h1 id="hero-title"><span id="hero-title-text">Tiếng Hò</span><em id="hero-em">Sông Hậu</em></h1>
     <p id="hero-lead">Vé mời miễn phí cho đêm cải lương sông nước Hậu Giang. Số ghế có hạn — giữ chỗ trên sơ đồ trước khi hết suất.</p>
-    <div class="hero-cta view-home"><a class="cta" href="/dat-ve">Đăng ký nhận vé</a><a class="cta ghost" href="/dat-ve#check">Kiểm tra vé</a><span class="hero-meta" id="hero-meta"></span></div>
-    <div class="hero-cta view-book"><a class="cta" href="#seatmap">Chọn ghế</a><a class="cta ghost" href="#check">Kiểm tra vé</a></div>
+    <div class="hero-cta view-home"><a class="cta" href="/dat-ve">Đăng ký nhận vé</a><span class="hero-meta" id="hero-meta"></span></div>
+    <div class="hero-cta view-book"><a class="cta" href="#seatmap">Chọn ghế</a></div>
     <div class="hero-cta view-staff"><a class="cta ghost" href="/check-in">Sang check-in</a><a class="cta ghost" href="/">Trang chủ</a></div>
     <div class="hero-cta view-checkin"><a class="cta ghost" href="/to-chuc">Sang quản trị</a><a class="cta ghost" href="/">Trang chủ</a></div>
     <div class="countdown view-home" id="countdown" hidden></div>
   </div>
 </header>
 <svg class="wave" viewBox="0 0 1200 32" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 0H1200V12C1080 30 960 30 840 16S600 0 480 16 240 32 120 16 40 2 0 16Z"/></svg>
-
-<nav class="site-nav wrap" aria-label="Chuyên mục">
-  <a class="brand" href="/" aria-label="Tiếng Hò Sông Hậu — trang giới thiệu">
-    <strong>Tiếng Hò</strong>
-    <span>Sông Hậu</span>
-  </a>
-  <a href="/" data-nav="home">Giới thiệu</a>
-  <a href="/dat-ve" data-nav="book">Đặt vé</a>
-</nav>
 
 <main class="wrap">
   <section class="card view-book" id="check" aria-labelledby="check-h">
@@ -965,7 +970,11 @@ function normalizeEvent(raw) {
 }
 
 function showById(id) { return eventCfg.shows.find(s => s.id === id); }
-function showText(id) { const s = showById(id); return s ? `${s.label} · ${s.time}` : (id || ""); }
+function showText(id) {
+  const s = showById(id);
+  if (!s) return id || "";
+  return [s.day, s.time].filter(Boolean).join(" · ");
+}
 function sortSeats(ids) { return ids.slice().sort((a, b) => a.localeCompare(b, "vi", { numeric: true })); }
 function seatDocId(show, seat) { return show + "_" + seat; }
 function holdFor(seat) { return seatHolds[seatDocId(activeShow, seat)] || null; }
@@ -1081,9 +1090,7 @@ function applyEvent() {
   shows.textContent = "";
   for (const s of e.shows) {
     const row = el("div", "show");
-    const text = el("span");
-    text.append(el("strong", "", s.label), document.createElement("br"), el("small", "", "Mở màn " + s.time));
-    row.append(el("span", "d", s.day), text);
+    row.append(el("span", "d", s.day), el("strong", "", s.time));
     shows.append(row);
   }
   const prev = activeShow;
@@ -1096,7 +1103,7 @@ function applyEvent() {
     input.name = "show";
     input.id = "show-" + s.id;
     input.value = s.id;
-    lab.append(input, el("span", "", `${s.label} · ${s.time}`));
+    lab.append(input, el("span", "", showText(s.id)));
     choices.append(lab);
   }
   activeShow = e.shows.some(s => s.id === prev) ? prev : (e.shows[0]?.id || null);
@@ -1567,68 +1574,95 @@ function qrMatrix(text) {
 }
 
 async function drawPass(reg) {
-  try { await document.fonts.load("800 40px Montserrat"); await document.fonts.load("600 16px Montserrat"); }
-  catch { /* vẫn vẽ bằng phông dự phòng */ }
+  const font = "Be Vietnam Pro, Segoe UI, sans-serif";
+  try {
+    await document.fonts.load("700 32px Be Vietnam Pro");
+    await document.fonts.load("600 14px Be Vietnam Pro");
+  } catch { /* vẫn vẽ bằng phông dự phòng */ }
   const pad = 28;
   const W = 460;
+  const labelW = 112;
+  const valueX = pad + labelW;
+  const valueW = W - valueX - pad;
   const seats = sortSeats(reg.seatIds || []);
   const info = [
     ["Mã vé", reg.code || ""],
     ["Họ tên", reg.name || ""],
     ["Điện thoại", maskPhone(reg.phone)],
     ["Suất", showText(reg.show)],
-    ["Ghế", seats.join(", ") || ""]
+    ["Ghế", seats.join(", ") || ""],
+    ["Địa điểm", eventCfg.venue || ""]
   ];
   const matrix = qrMatrix(reg.code || "");
   const mod = 6, quiet = 4;
   const qrSize = (matrix.length + quiet * 2) * mod;
-  const band = 118;
-  const H = band + 16 + info.length * 28 + 20 + qrSize + 48;
   const canvas = document.createElement("canvas");
   const dpr = 2;
+  const ctx = canvas.getContext("2d");
+  const title = [eventCfg.title, eventCfg.titleEm].filter(Boolean).join(" ");
+  let size = 30;
+  do { ctx.font = "700 " + size + "px " + font; size -= 2; }
+  while (size >= 18 && ctx.measureText(title).width > W - pad * 2);
+  const titleSize = Math.max(18, size + 2);
+  ctx.font = "500 13px " + font;
+  const venueLines = wrapLines(ctx, eventCfg.venue || "", W - pad * 2).slice(0, 5);
+  const band = 72 + venueLines.length * 17;
+  let infoH = 0;
+  const infoLines = info.map(pair => {
+    ctx.font = "700 15px " + font;
+    const lines = wrapLines(ctx, pair[1], valueW);
+    const block = Math.max(26, 4 + lines.length * 19);
+    infoH += block;
+    return { label: pair[0], lines, block };
+  });
+  const H = band + 24 + infoH + 16 + qrSize + 44;
   canvas.width = Math.ceil(W * dpr);
   canvas.height = Math.ceil(H * dpr);
-  const ctx = canvas.getContext("2d");
-  ctx.scale(dpr, dpr);
-  ctx.fillStyle = "#F7FBF7";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = "#F4FAF5";
   ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "#1E5C43";
+  ctx.fillStyle = "#174F39";
   ctx.fillRect(0, 0, W, band);
-  ctx.fillStyle = "#F1C977";
-  ctx.font = "600 13px Montserrat, sans-serif";
-  ctx.fillText("VÉ MỜI", pad, 32);
-  const title = [eventCfg.title, eventCfg.titleEm].filter(Boolean).join(" ");
-  let size = 32;
-  do { ctx.font = "800 " + size + "px Montserrat, sans-serif"; size -= 2; }
-  while (size >= 20 && ctx.measureText(title).width > W - pad * 2);
+  ctx.fillStyle = "#E8C56A";
+  ctx.font = "600 12px " + font;
+  ctx.fillText("VÉ MỜI", pad, 28);
   ctx.fillStyle = "#F1FAF4";
-  ctx.fillText(title, pad, 70);
-  ctx.font = "500 14px Montserrat, sans-serif";
+  ctx.font = "700 " + titleSize + "px " + font;
+  ctx.fillText(title, pad, 56);
+  ctx.font = "500 13px " + font;
   ctx.fillStyle = "#CFE6D8";
-  ctx.fillText(wrapLines(ctx, eventCfg.venue || "", W - pad * 2)[0], pad, 98);
-  let y = band + 32;
-  for (const pair of info) {
-    ctx.font = "600 13px Montserrat, sans-serif";
-    ctx.fillStyle = "#4A6157";
-    ctx.fillText(pair[0], pad, y);
-    ctx.font = "700 16px Montserrat, sans-serif";
-    ctx.fillStyle = "#12261F";
-    ctx.fillText(wrapLines(ctx, pair[1], W - pad - 150)[0], pad + 124, y);
-    y += 28;
+  let vy = 76;
+  for (const line of venueLines) {
+    ctx.fillText(line, pad, vy);
+    vy += 17;
+  }
+  let y = band + 28;
+  for (const row of infoLines) {
+    ctx.font = "600 12px " + font;
+    ctx.fillStyle = "#4A6358";
+    ctx.fillText(row.label, pad, y);
+    ctx.font = "700 15px " + font;
+    ctx.fillStyle = "#10241C";
+    let ly = y;
+    for (const line of row.lines) {
+      ctx.fillText(line, valueX, ly);
+      ly += 19;
+    }
+    y += row.block;
   }
   const qx = Math.round((W - qrSize) / 2);
-  const qy = y + 8;
+  const qy = y + 6;
   drawQr(ctx, matrix, qx, qy, mod, quiet);
-  ctx.fillStyle = "#4A6157";
-  ctx.font = "500 13px Montserrat, sans-serif";
+  ctx.fillStyle = "#4A6358";
+  ctx.font = "500 13px " + font;
   ctx.textAlign = "center";
-  ctx.fillText("Quét mã QR để đọc mã vé.", W / 2, qy + qrSize + 26);
+  ctx.fillText("Quét mã QR để đọc mã vé.", W / 2, qy + qrSize + 24);
   ctx.textAlign = "left";
   return canvas;
 }
 async function renderPassImage(reg, img, link) {
   if (!reg || !img || !link) return;
-  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title].join("|");
+  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title, eventCfg.venue].join("|");
   const file = "ve-" + (reg.code || "ghe") + ".png";
   if (img.dataset.sig === sig && img.getAttribute("src")) {
     link.href = img.src;
