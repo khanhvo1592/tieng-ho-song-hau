@@ -299,6 +299,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 .hall-block.side-right .seat-row{margin-right:auto}
 .hall-block.center .seat-row{margin-inline:auto}
 .hall-door{margin:8px auto 0;padding:6px 14px;border-radius:4px;background:#3b6ea8;color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;width:max-content}
+.hall-bgk{margin:10px auto 2px;padding:8px 18px;border-radius:2px;background:#8B1E1E;color:#fff;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;width:min(100%,220px);text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
 .hall-side-door{position:absolute;left:-44px;top:40%;transform:translateY(-50%);writing-mode:vertical-rl;text-orientation:mixed;padding:10px 6px;border-radius:4px;background:#6b4ea3;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;pointer-events:none}
 .stage{text-align:center;letter-spacing:.2em;text-transform:uppercase;font-size:.85rem;font-weight:800;color:#fff;background:#8B1E1E;border-radius:2px;padding:14px 16px;width:100%;max-width:none;margin:10px 0 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
 .seat-row{display:flex;align-items:center;gap:4px;width:max-content;margin:0}
@@ -803,7 +804,7 @@ a.primary:hover{filter:brightness(1.12)}
 </footer>
 
 <script>
-const HALL_LAYOUT_ID = "nha-bd-736-v2";
+const HALL_LAYOUT_ID = "nha-bd-724-v3";
 function buildHallRows() {
   const letter = i => String.fromCharCode(65 + i);
   const push = (rows, prefix, counts, zone, block, lockedAt) => {
@@ -817,9 +818,9 @@ function buildHallRows() {
   push(rows, "L1", [18, 17, 13, 7, 4], "lau", 1, false);
   push(rows, "L2", [18, 21, 20, 19, 18], "lau", 2, false);
   push(rows, "L3", [18, 18, 15, 7, 3], "lau", 3, false);
-  // Tầng trệt 520: 167 + 186 + 167 — VIP A–D khối 2 khóa; hàng K chỉ khối giữa
+  // Tầng trệt 508: 167 + 174 + 167 — bàn BGK không đặt; khối giữa A–J
   push(rows, "1", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 1, false);
-  push(rows, "2", [12, 13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, L => "ABCD".includes(L));
+  push(rows, "2", [13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, false);
   push(rows, "3", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 3, false);
   return rows;
 }
@@ -1032,7 +1033,7 @@ function normalizeEvent(raw) {
     if (/^2[A-Z]$/i.test(row.label)) {
       row.zone = "tre";
       row.block = 2;
-      row.locked = "ABCD".includes(row.label.slice(-1).toUpperCase());
+      row.locked = false;
     }
   }
   const locked = seatsFromLockedRows(base.rows);
@@ -1040,7 +1041,8 @@ function normalizeEvent(raw) {
   const seen = new Set();
   for (const item of [].concat(Array.isArray(raw.blocked) ? raw.blocked : [], locked)) {
     const seat = String(item || "").replace(/\s/g, "");
-    if (!seat || seen.has(seat) || /^2[E-K]/i.test(seat)) continue;
+    // Bỏ khóa VIP A–K cũ — bàn BGK không phải ghế đặt
+    if (!seat || seen.has(seat) || /^2[A-K]\d+$/i.test(seat)) continue;
     seen.add(seat);
     merged.push(seat);
     if (merged.length >= 600) break;
@@ -1338,6 +1340,10 @@ function renderBlockCol(zoneRows, zoneId, blockNum) {
     mainDoor.setAttribute("aria-hidden", "true");
     // Cửa chính ở phía xa sân khấu = đầu khối (trên cùng sau khi đảo)
     col.insertBefore(mainDoor, col.children[1] || null);
+    // Bàn BGK sát sân khấu — không đặt ghế
+    const bgk = el("div", "hall-bgk", "Bàn BGK");
+    bgk.setAttribute("aria-hidden", "true");
+    col.append(bgk);
   }
   return col;
 }

@@ -1,6 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
 
-const HALL_LAYOUT_ID = "nha-bd-736-v2";
+const HALL_LAYOUT_ID = "nha-bd-724-v3";
 
 function buildHallRows() {
   const letter = i => String.fromCharCode(65 + i);
@@ -15,9 +15,9 @@ function buildHallRows() {
   push(rows, "L1", [18, 17, 13, 7, 4], "lau", 1, false);
   push(rows, "L2", [18, 21, 20, 19, 18], "lau", 2, false);
   push(rows, "L3", [18, 18, 15, 7, 3], "lau", 3, false);
-  // Tầng trệt: 167 + 186 + 167 = 520 — VIP A–D khối 2 khóa; hàng K chỉ có ở khối giữa
+  // Tầng trệt: 167 + 174 + 167 = 508 — bàn BGK không phải ghế đặt; khối giữa A–J
   push(rows, "1", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 1, false);
-  push(rows, "2", [12, 13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, L => "ABCD".includes(L));
+  push(rows, "2", [13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, false);
   push(rows, "3", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 3, false);
   return rows;
 }
@@ -105,21 +105,20 @@ function normalizeEvent(raw) {
     base.rows = official;
   }
   base.hallLayoutId = HALL_LAYOUT_ID;
-  // Chuẩn hóa VIP: chỉ A–D khối 2 tầng trệt; Ban giám khảo không phải ghế
   for (const row of base.rows) {
     if (/^2[A-Z]$/i.test(row.label)) {
       row.zone = "tre";
       row.block = 2;
-      row.locked = "ABCD".includes(row.label.slice(-1).toUpperCase());
+      row.locked = false;
     }
   }
   const locked = seatsFromLockedRows(base.rows);
-  // Bỏ ghế VIP E–K còn sót trong blocked cũ; chỉ giữ khóa A–D + ghế khóa tay khác
   const manual = [];
   if (Array.isArray(raw.blocked)) {
     for (const item of raw.blocked) {
       const seat = String(item || "").replace(/\s/g, "");
-      if (!seat || /^2[E-K]/i.test(seat)) continue;
+      // Bỏ khóa VIP A–D / E–K cũ — bàn BGK không phải ghế đặt
+      if (!seat || /^2[A-K]\d+$/i.test(seat)) continue;
       manual.push(seat);
     }
   }
