@@ -4,6 +4,10 @@
   "main": "src/index.js",
   "compatibility_date": "2026-11-03",
   "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "vemoi.vanhoacantho.vn/*", "zone_name": "digi247.io.vn" }
+  ],
   "observability": {
     "enabled": true,
     "traces": {
