@@ -1037,7 +1037,11 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
         <span class="eyebrow">Chỉ Ban tổ chức nhìn thấy</span>
         <h2 id="admin-h">Danh sách đăng ký</h2>
       </div>
-      <div class="btns"><button class="ghost" type="button" id="copy-csv">Sao chép bảng (CSV)</button></div>
+      <div class="btns">
+        <button class="primary" type="button" id="dl-xlsx">Tải Excel</button>
+        <button class="ghost" type="button" id="dl-docx">Tải Word</button>
+        <button class="ghost" type="button" id="copy-csv">Sao chép bảng</button>
+      </div>
     </header>
     <div class="totals" id="totals"></div>
     <p id="orphan-warn" class="note" hidden></p>
@@ -3103,6 +3107,231 @@ $("reg").addEventListener("submit", async e => {
 });
 
 function csvCell(v) { const s = String(v ?? ""); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+
+// ---------- Xuất Excel (.xlsx) / Word (.docx): tự đóng gói, không dùng thư viện ngoài ----------
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+// File zip không nén (đủ cho .xlsx/.docx; Office đọc được).
+function zipFiles(files) {
+  const enc = new TextEncoder();
+  const now = new Date();
+  const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const parts = [], central = [];
+  let offset = 0;
+  for (const [name, text] of Object.entries(files)) {
+    const nameB = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+    const head = new DataView(new ArrayBuffer(30));
+    head.setUint32(0, 0x04034b50, true); head.setUint16(4, 20, true); head.setUint16(6, 0x0800, true);
+    head.setUint16(8, 0, true); head.setUint16(10, dosTime, true); head.setUint16(12, dosDate, true);
+    head.setUint32(14, crc, true); head.setUint32(18, data.length, true); head.setUint32(22, data.length, true);
+    head.setUint16(26, nameB.length, true); head.setUint16(28, 0, true);
+    parts.push(head, nameB, data);
+    const cd = new DataView(new ArrayBuffer(46));
+    cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true); cd.setUint16(8, 0x0800, true);
+    cd.setUint16(10, 0, true); cd.setUint16(12, dosTime, true); cd.setUint16(14, dosDate, true);
+    cd.setUint32(16, crc, true); cd.setUint32(20, data.length, true); cd.setUint32(24, data.length, true);
+    cd.setUint16(28, nameB.length, true); cd.setUint32(42, offset, true);
+    central.push(cd, nameB);
+    offset += 30 + nameB.length + data.length;
+  }
+  const cdSize = central.reduce((n, p) => n + p.byteLength, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(8, Object.keys(files).length, true); end.setUint16(10, Object.keys(files).length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, end]);
+}
+function xmlEsc(v) {
+  return String(v ?? "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function saveBlob(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function exportFileName(ext) {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  return `danh-sach-ve-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.${ext}`;
+}
+function firstSeatKey(d) { return Array.isArray(d.seatIds) && d.seatIds.length ? sortSeats(d.seatIds)[0] : "￿"; }
+// Nhóm đăng ký theo suất, mỗi nhóm xếp theo ghế (tiện dò khi đón khách).
+function exportGroups() {
+  const bySeat = (a, b) => firstSeatKey(a).localeCompare(firstSeatKey(b), "vi", { numeric: true }) || String(a.name || "").localeCompare(String(b.name || ""), "vi");
+  const multi = eventCfg.shows.length > 1;
+  const groups = [];
+  if (multi) {
+    for (const s of eventCfg.shows) {
+      groups.push({ title: "Suất " + (showText(s.id) || s.id), label: s.label, show: s.id, rows: adminRows.filter(d => d.show === s.id).sort(bySeat) });
+    }
+    const known = new Set(eventCfg.shows.map(s => s.id));
+    const rest = adminRows.filter(d => !known.has(d.show));
+    if (rest.length) groups.push({ title: "Không thuộc suất nào", label: "", rows: rest.sort(bySeat) });
+  } else {
+    const s = eventCfg.shows[0];
+    groups.push({ title: s ? "Suất " + (showText(s.id) || s.id) : "Tất cả", label: s?.label || "", rows: adminRows.slice().sort(bySeat) });
+  }
+  return groups;
+}
+function seatsOnly(d) { return seatsPlain(d) || "chưa xếp ghế"; }
+
+function buildXlsx() {
+  const multi = eventCfg.shows.length > 1;
+  const groups = exportGroups();
+  const sheets = [];
+  const allRows = groups.flatMap(g => g.rows.map(d => ({ d, show: g.title.replace(/^Suất /, "") })));
+  if (multi) sheets.push({ name: "Tất cả", title: "Tất cả các suất", rows: allRows, withShow: true });
+  for (const g of groups) sheets.push({ name: g.title, title: [g.title, g.label].filter(Boolean).join(" — "), rows: g.rows.map(d => ({ d })), withShow: false });
+
+  const colName = i => { let s = ""; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = (i - m - 1) / 26; } return s; };
+  const used = new Set();
+  const sheetName = raw => {
+    let base = raw.replace(/(\d):(\d)/g, "$1h$2").replace(/[\[\]:*?\/\\]/g, "-").replace(/·/g, "").replace(/\s+/g, " ").trim().slice(0, 31) || "Trang";
+    let name = base, i = 2;
+    while (used.has(name.toLowerCase())) name = base.slice(0, 28) + " " + i++;
+    used.add(name.toLowerCase());
+    return name;
+  };
+  const strCell = (ref, v, s = 0) => `<c r="${ref}" t="inlineStr"${s ? ` s="${s}"` : ""}><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+  const numCell = (ref, v, s = 0) => `<c r="${ref}"${s ? ` s="${s}"` : ""}><v>${Number(v) || 0}</v></c>`;
+
+  const files = {};
+  const sheetXml = sh => {
+    const cols = ["STT", "Mã vé", "Họ tên", "Điện thoại", "Email", "Ghế", "Số vé"]
+      .concat(sh.withShow ? ["Suất"] : []).concat(["Đơn vị", "Ghi chú", "Lúc gửi"]);
+    const widths = [6, 12, 26, 14, 26, 24, 8].concat(sh.withShow ? [16] : []).concat([22, 30, 17]);
+    const nIdx = cols.indexOf("Số vé");
+    const last = colName(cols.length - 1);
+    const rows = [];
+    rows.push(`<row r="1">${strCell("A1", eventName(), 3)}</row>`);
+    rows.push(`<row r="2">${strCell("A2", sh.title, 4)}</row>`);
+    rows.push(`<row r="4">${cols.map((c, i) => strCell(colName(i) + 4, c, 1)).join("")}</row>`);
+    let r = 5, total = 0;
+    sh.rows.forEach(({ d, show }, i) => {
+      const n = countSeats(d); total += n;
+      const vals = [i + 1, d.code, d.name, d.phone, d.email, seatsOnly(d), n].concat(sh.withShow ? [show] : []).concat([d.org, d.msg, whenText(d.createdAt)]);
+      rows.push(`<row r="${r}">${vals.map((v, j) => (j === 0 || j === nIdx) ? numCell(colName(j) + r, v, 2) : strCell(colName(j) + r, v, 2)).join("")}</row>`);
+      r++;
+    });
+    const lastData = r - 1;
+    const sum = sh.rows.length ? `<c r="${colName(nIdx) + r}" s="5"><f>SUM(${colName(nIdx)}5:${colName(nIdx)}${lastData})</f><v>${total}</v></c>` : numCell(colName(nIdx) + r, 0, 5);
+    rows.push(`<row r="${r}">${strCell(colName(nIdx - 1) + r, "Tổng", 5)}${sum}</row>`);
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheetViews><sheetView workbookViewId="0"><pane ySplit="4" topLeftCell="A5" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
+<sheetData>${rows.join("")}</sheetData>
+${sh.rows.length ? `<autoFilter ref="A4:${last}${lastData}"/>` : ""}
+<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>
+<pageSetup paperSize="9" orientation="landscape" fitToHeight="0"/>
+</worksheet>`;
+  };
+  const names = [];
+  sheets.forEach((sh, i) => {
+    names.push(sheetName(sh.name));
+    files[`xl/worksheets/sheet${i + 1}.xml`] = sheetXml(sh);
+  });
+  files["[Content_Types].xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("\n")}
+</Types>`;
+  files["_rels/.rels"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  files["xl/workbook.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets>${names.map((n, i) => `<sheet name="${xmlEsc(n)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets>
+<definedNames>${sheets.map((sh, i) => {
+    const q = `'${xmlEsc(names[i].replace(/'/g, "''"))}'`;
+    return (sh.rows.length ? `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">${q}!$A$4:$${colName((sh.withShow ? 11 : 10) - 1)}$${4 + sh.rows.length}</definedName>` : "")
+      + `<definedName name="_xlnm.Print_Titles" localSheetId="${i}">${q}!$4:$4</definedName>`;
+  }).join("")}</definedNames>
+</workbook>`;
+  files["xl/_rels/workbook.xml.rels"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+${sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("\n")}
+<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+  // Kiểu ô: 0 thường · 1 tiêu đề cột · 2 dữ liệu (viền, xuống dòng) · 3 tên chương trình · 4 tên suất · 5 dòng tổng
+  files["xl/styles.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="4"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font><font><b/><sz val="15"/><name val="Arial"/></font><font><sz val="12"/><color rgb="FF555555"/><name val="Arial"/></font></fonts>
+<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF1E4C8"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFBBBBBB"/></left><right style="thin"><color rgb="FFBBBBBB"/></right><top style="thin"><color rgb="FFBBBBBB"/></top><bottom style="thin"><color rgb="FFBBBBBB"/></bottom><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="6">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"/>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+  return zipFiles(files);
+}
+
+function buildDocx() {
+  const groups = exportGroups().filter(g => g.rows.length || eventCfg.shows.length <= 1);
+  const cols = ["STT", "Mã vé", "Họ tên", "Điện thoại", "Ghế", "Số vé", "Đơn vị", "Ghi chú", "Ký nhận"];
+  const widths = [600, 1300, 2700, 1500, 2300, 800, 2000, 2398, 1800]; // tổng 15398 = khổ A4 ngang trừ lề
+  const run = (t, opts = {}) => `<w:r><w:rPr>${opts.b ? "<w:b/>" : ""}${opts.sz ? `<w:sz w:val="${opts.sz}"/><w:szCs w:val="${opts.sz}"/>` : ""}${opts.color ? `<w:color w:val="${opts.color}"/>` : ""}</w:rPr><w:t xml:space="preserve">${xmlEsc(t)}</w:t></w:r>`;
+  const para = (inner, opts = {}) => `<w:p><w:pPr>${opts.keep ? "<w:keepNext/>" : ""}<w:spacing w:before="${opts.before ?? 0}" w:after="${opts.after ?? 0}"/>${opts.jc ? `<w:jc w:val="${opts.jc}"/>` : ""}</w:pPr>${inner}</w:p>`;
+  const cell = (t, w, opts = {}) => `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${opts.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${opts.fill}"/>` : ""}</w:tcPr>${String(t ?? "").split("\n").map(line => para(run(line, opts), { jc: opts.jc })).join("")}</w:tc>`;
+  const border = `<w:top w:val="single" w:sz="4" w:color="999999"/><w:left w:val="single" w:sz="4" w:color="999999"/><w:bottom w:val="single" w:sz="4" w:color="999999"/><w:right w:val="single" w:sz="4" w:color="999999"/><w:insideH w:val="single" w:sz="4" w:color="999999"/><w:insideV w:val="single" w:sz="4" w:color="999999"/>`;
+  const body = [];
+  groups.forEach((g, gi) => {
+    let total = 0;
+    const head = `<w:tr><w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>${cols.map((c, i) => cell(c, widths[i], { b: true, fill: "F1E4C8", jc: i === 0 || i === 5 ? "center" : undefined })).join("")}</w:tr>`;
+    const rows = g.rows.map((d, i) => {
+      const n = countSeats(d); total += n;
+      const vals = [i + 1, d.code, d.name, d.phone, seatsOnly(d), n, d.org, d.msg, ""];
+      return `<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="460" w:hRule="atLeast"/></w:trPr>${vals.map((v, j) => cell(v, widths[j], { jc: j === 0 || j === 5 ? "center" : undefined })).join("")}</w:tr>`;
+    });
+    body.push(para(run(eventName(), { b: true, sz: 30 }), { after: 40, keep: true }));
+    body.push(para(run([g.title, g.label, eventCfg.venue].filter(Boolean).join(" — "), { sz: 22, color: "555555" }), { after: 160, keep: true }));
+    body.push(`<w:tbl><w:tblPr><w:tblW w:w="${widths.reduce((a, b) => a + b, 0)}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>${border}</w:tblBorders><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>${head}${rows.join("")}</w:tbl>`);
+    body.push(para(run(`Tổng: ${g.rows.length} lượt · ${total} ghế`, { b: true }), { before: 100 }));
+    if (gi < groups.length - 1) body.push(`<w:p><w:r><w:br w:type="page"/></w:r></w:p>`);
+  });
+  const files = {};
+  files["[Content_Types].xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+  files["_rels/.rels"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  files["word/_rels/document.xml.rels"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  files["word/styles.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="vi-VN"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+</w:styles>`;
+  files["word/document.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<w:body>${body.join("")}<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body>
+</w:document>`;
+  return zipFiles(files);
+}
 function whenText(v) {
   if (!v) return "";
   const dt = new Date(v);
@@ -3812,8 +4041,15 @@ $("copy-csv").onclick = async () => {
   const btn = $("copy-csv");
   try { await navigator.clipboard.writeText(lines.join("\n")); btn.textContent = "Đã sao chép"; }
   catch { btn.textContent = "Không sao chép được"; }
-  setTimeout(() => { btn.textContent = "Sao chép bảng (CSV)"; }, 2000);
+  setTimeout(() => { btn.textContent = "Sao chép bảng"; }, 2000);
 };
+for (const [id, ext, build] of [["dl-xlsx", "xlsx", () => buildXlsx()], ["dl-docx", "docx", () => buildDocx()]]) {
+  $(id).onclick = () => {
+    const btn = $(id), label = btn.textContent;
+    try { saveBlob(build(), exportFileName(ext)); }
+    catch (err) { console.error(err); btn.textContent = "Chưa tạo được file"; setTimeout(() => { btn.textContent = label; }, 2500); }
+  };
+}
 for (const id of ["cfg-eyebrow", "cfg-phone", "cfg-title", "cfg-em", "cfg-desc", "cfg-venue", "cfg-door", "cfg-max", "cfg-ticket", "cfg-blocked"]) {
   $(id).addEventListener("input", markCfg);
 }
