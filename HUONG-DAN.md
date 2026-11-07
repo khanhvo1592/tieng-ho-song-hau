@@ -98,12 +98,17 @@ Ban tổ chức đặt được cả ghế trên lầu khi lầu đang đóng v�
 
 ## 5. Check-in tại cửa (trang `/check-in`)
 
-1. Đăng nhập bằng mật khẩu ban tổ chức (nếu chưa).
-2. Nhập **mã vé** (ví dụ `VE-XXXXX`, in trên ảnh vé dưới mã QR), **hoặc** họ tên + số điện thoại.
-3. Bấm **Tra cứu** → kiểm tra suất và ghế → bấm xác nhận vào cửa.
-4. Vé đã check-in rồi sẽ báo đã vào, tránh một vé dùng hai lần.
+Trang này chỉ có công cụ check-in (không có ảnh bìa), mở bằng điện thoại hoặc máy tính bảng ở cửa.
 
-Mẹo: dùng điện thoại quét QR trên vé bằng camera để đọc mã, rồi gõ mã vào ô tra cứu.
+1. Đăng nhập bằng mật khẩu ban tổ chức (nếu chưa).
+2. **Quét QR**: bấm **Quét QR bằng camera** (lần đầu trình duyệt hỏi quyền camera → Cho phép). Đưa mã QR trên vé của khách vào khung.
+   - Đọc được mã: máy bíp, hiện thẻ vé ngay dưới camera → kiểm tra suất, ghế → **Xác nhận vào cửa**. Camera tự quét vé kế tiếp.
+   - Bật ô **Tự xác nhận vào cửa khi quét được vé hợp lệ** để khỏi bấm: quét xong là check-in luôn (thẻ xanh "mời vào").
+   - Thẻ **vàng "đã vào trước đó"** kèm tiếng bíp trầm: vé đã dùng, không cho vào lần hai. Mã không khớp vé nào cũng báo bíp trầm.
+   - Bấm **Quét vé tiếp** để quét vé khác, **Tắt camera** khi xong.
+3. **Nhập tay** (khi không quét được): gõ **mã vé** (ví dụ `VE-XXXXX`, in dưới mã QR), **hoặc** họ tên + số điện thoại → **Tra cứu** → **Xác nhận vào cửa**.
+
+Lưu ý camera: chỉ chạy khi trang mở bằng `https://`. Nếu lỡ bấm "Chặn", bấm biểu tượng ổ khóa cạnh thanh địa chỉ → cho phép Camera → tải lại trang. Điện thoại Android dùng Chrome; iPhone dùng Safari.
 
 ---
 

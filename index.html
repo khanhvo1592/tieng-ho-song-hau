@@ -452,6 +452,22 @@ body:not(.page-checkin) .view-checkin{display:none!important}
 #staff-session,#checkin-session{display:grid;gap:14px}
 #staff-session>.btns,#checkin-session>.session-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .session-bar{justify-content:space-between}
+.session-links{display:inline-flex;gap:8px}
+/* Trang check-in: bỏ hero, chỉ giữ công cụ quầy. */
+body.page-checkin .hero,body.page-checkin .wave{display:none}
+body.page-checkin main.wrap{padding-top:18px}
+.scan-box{display:grid;gap:10px}
+.scan-btn{width:100%;min-height:52px;font-size:1.05rem}
+.scan-view{position:relative;border-radius:var(--radius);overflow:hidden;background:#0A2A1F;aspect-ratio:4/3;max-height:62vh}
+.scan-view video{width:100%;height:100%;object-fit:cover;display:block}
+.scan-frame{position:absolute;inset:14% 22%;border:3px solid rgba(255,255,255,.85);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.28)}
+.scan-view.hit .scan-frame{border-color:#5FD08E}
+.scan-view.paused video{opacity:.45}
+.scan-tip{position:absolute;left:0;right:0;bottom:8px;margin:0;text-align:center;color:#fff;font-size:.9rem;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.scan-ctrl{margin:0}
+.scan-auto{font-size:.9rem}
+.checkin-card.warn{border-color:color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 10%,#fff)}
+.checkin-card .primary{min-height:48px;font-size:1.02rem}
 .checkin-result{display:grid;gap:12px;margin-top:4px}
 .checkin-card{display:grid;gap:8px;padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
 .checkin-card.done{border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 8%,#fff)}
@@ -914,7 +930,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
   <section class="card panel-tool view-checkin" id="checkin-box" aria-labelledby="checkin-h">
     <span class="eyebrow">Quầy đón khách</span>
     <h2 id="checkin-h">Check-in</h2>
-    <p class="hint" style="margin:-2px 0 14px">Tra mã vé hoặc họ tên + số điện thoại, rồi xác nhận khán giả vào cửa.</p>
+    <p class="hint" style="margin:-2px 0 14px">Quét QR trên vé, hoặc tra mã vé / họ tên + số điện thoại, rồi xác nhận khán giả vào cửa.</p>
     <div id="checkin-need-login">
       <form id="checkin-login" novalidate>
         <label for="checkin-pass"><span>Mật khẩu ban tổ chức</span>
@@ -930,8 +946,24 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
     <div id="checkin-session" hidden>
       <div class="session-bar">
         <p class="hint" style="margin:0">Đã đăng nhập — sẵn sàng check-in.</p>
-        <button class="ghost" type="button" id="checkin-logout">Thoát</button>
+        <span class="session-links"><a class="ghost" href="/to-chuc">Quản trị</a><button class="ghost" type="button" id="checkin-logout">Thoát</button></span>
       </div>
+      <div class="scan-box">
+        <button class="primary scan-btn" type="button" id="scan-start">Quét QR bằng camera</button>
+        <div class="scan-view" id="scan-view" hidden>
+          <video id="scan-video" playsinline muted aria-label="Hình camera để quét mã QR"></video>
+          <div class="scan-frame" aria-hidden="true"></div>
+          <p class="scan-tip" id="scan-tip">Đưa mã QR trên vé vào khung</p>
+        </div>
+        <div class="btns scan-ctrl" id="scan-ctrl" hidden>
+          <button class="primary" type="button" id="scan-next" hidden>Quét vé tiếp</button>
+          <button class="ghost" type="button" id="scan-stop">Tắt camera</button>
+        </div>
+        <label class="choice scan-auto"><input type="checkbox" id="scan-auto"> Tự xác nhận vào cửa khi quét được vé hợp lệ</label>
+      </div>
+      <div id="checkin-status" class="status" hidden role="status" aria-live="assertive"></div>
+      <div id="checkin-list" class="checkin-result" hidden></div>
+      <div class="checkin-divider">hoặc nhập tay</div>
       <form id="checkin-form" novalidate>
         <label for="checkin-code"><span>Mã vé</span>
           <input id="checkin-code" name="checkin-code" maxlength="24" placeholder="VE-XXXXX" autocomplete="off" inputmode="text">
@@ -949,8 +981,6 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
           <button class="primary" type="submit" id="checkin-submit">Tra cứu</button>
         </div>
       </form>
-      <div id="checkin-status" class="status" hidden role="status"></div>
-      <div id="checkin-list" class="checkin-result" hidden></div>
     </div>
   </section>
 
@@ -1311,6 +1341,7 @@ function syncCheckinShell() {
   const session = $("checkin-session");
   if (need) need.hidden = !!canEditUser;
   if (session) session.hidden = !canEditUser;
+  if (!canEditUser && typeof scan !== "undefined" && scan.on) stopScan();
 }
 
 let eventCfg = normalizeEvent(null);
@@ -4147,7 +4178,8 @@ function whenShort(iso) {
     return d.toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
   } catch { return iso; }
 }
-function renderCheckinCards(rows) {
+// justNow: mã vé vừa check-in trong lần này (thẻ xanh); vé đã vào từ trước thì thẻ vàng cảnh báo.
+function renderCheckinCards(rows, justNow = "") {
   const list = $("checkin-list");
   if (!list) return;
   list.replaceChildren();
@@ -4155,9 +4187,10 @@ function renderCheckinCards(rows) {
   list.hidden = false;
   for (const reg of rows) {
     const done = !!reg.checkedInAt;
-    const card = el("article", "checkin-card" + (done ? " done" : ""));
+    const fresh = done && justNow && reg.code === justNow;
+    const card = el("article", "checkin-card" + (fresh ? " done" : done ? " warn" : ""));
     card.append(
-      el("strong", "", (reg.code || "—") + (done ? " · đã vào" : "")),
+      el("strong", "", (reg.code || "—") + (fresh ? " · mời vào" : done ? " · đã vào trước đó" : "")),
       el("div", "", (reg.name || "") + (reg.phone ? " · " + reg.phone : "")),
       el("div", "", "Ghế " + (seatsPlain(reg) || "—") + (reg.show ? " · " + showText(reg.show) : ""))
     );
@@ -4167,22 +4200,194 @@ function renderCheckinCards(rows) {
       btn.type = "button";
       btn.onclick = async () => {
         btn.disabled = true;
-        setCheckinStatus("Đang ghi nhận check-in…");
-        try {
-          const data = await api("/api/checkin", { method: "POST", body: JSON.stringify({ regId: reg.regId }) });
-          const next = data.registrations || (data.registration ? [data.registration] : []);
-          setCheckinStatus("Đã check-in " + (data.registration?.code || reg.code || "") + ".", true);
-          renderCheckinCards(next);
-        } catch (err) {
-          setCheckinStatus(explain(err));
-          btn.disabled = false;
-        }
+        if (!(await confirmCheckin(reg))) btn.disabled = false;
       };
       card.append(btn);
     }
     list.append(card);
   }
 }
+async function confirmCheckin(reg) {
+  setCheckinStatus("Đang ghi nhận check-in…");
+  try {
+    const data = await api("/api/checkin", { method: "POST", body: JSON.stringify({ regId: reg.regId }) });
+    const next = data.registrations || (data.registration ? [data.registration] : []);
+    const code = data.registration?.code || reg.code || "";
+    setCheckinStatus("Đã check-in " + code + ". Mời khách vào.", true);
+    renderCheckinCards(next, code);
+    scanFeedback(true);
+    if (scan.on) setTimeout(resumeScan, 1200);
+    return true;
+  } catch (err) {
+    setCheckinStatus(explain(err));
+    scanFeedback(false);
+    return false;
+  }
+}
+async function lookupCheckin(body, fromScan = false) {
+  setCheckinStatus("Đang tra cứu…");
+  clearCheckinList();
+  try {
+    const data = await api("/api/checkin/lookup", { method: "POST", body: JSON.stringify(body) });
+    const rows = data.registrations || [];
+    if (!rows.length) {
+      setCheckinStatus(fromScan ? "Mã " + (body.code || "") + " không khớp vé nào. Kiểm tra lại vé." : "Không tìm thấy vé khớp.");
+      if (fromScan) scanFeedback(false);
+      return;
+    }
+    const open = rows.filter(r => !r.checkedInAt);
+    if (fromScan && !open.length) {
+      setCheckinStatus("Vé này đã check-in lúc " + whenShort(rows[0].checkedInAt) + ". Không cho vào lần hai.");
+      renderCheckinCards(rows);
+      scanFeedback(false);
+      return;
+    }
+    if (fromScan && $("scan-auto").checked && rows.length === 1 && open.length === 1) {
+      renderCheckinCards(rows);
+      await confirmCheckin(rows[0]);
+      return;
+    }
+    setCheckinStatus("Tìm thấy " + rows.length + " vé." + (open.length ? " Bấm Xác nhận vào cửa." : ""), true);
+    renderCheckinCards(rows);
+    if (fromScan) scanFeedback(true, true);
+  } catch (err) {
+    setCheckinStatus(explain(err));
+    if (fromScan) scanFeedback(false);
+  }
+}
+
+// ---------- Quét QR bằng camera ----------
+// Ưu tiên BarcodeDetector có sẵn (Chrome Android, Safari mới); máy khác tải jsQR khi cần.
+const JSQR_URL = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+var scan = { on: false, // var: syncCheckinShell có thể chạy trước dòng này
+ paused: false, stream: null, detector: null, canvas: null, timer: 0, last: "", lastAt: 0, jsqr: null };
+function loadJsQR() {
+  if (window.jsQR) return Promise.resolve(window.jsQR);
+  if (scan.jsqr) return scan.jsqr;
+  scan.jsqr = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = JSQR_URL; s.async = true; s.crossOrigin = "anonymous";
+    s.onload = () => window.jsQR ? resolve(window.jsQR) : reject(new Error("jsqr"));
+    s.onerror = () => { scan.jsqr = null; reject(new Error("jsqr")); };
+    document.head.append(s);
+  });
+  return scan.jsqr;
+}
+async function makeDetector() {
+  try {
+    if ("BarcodeDetector" in window) {
+      const formats = await BarcodeDetector.getSupportedFormats();
+      if (formats.includes("qr_code")) {
+        const d = new BarcodeDetector({ formats: ["qr_code"] });
+        return async video => (await d.detect(video))[0]?.rawValue || "";
+      }
+    }
+  } catch {}
+  const jsQR = await loadJsQR();
+  scan.canvas = scan.canvas || document.createElement("canvas");
+  const ctx = scan.canvas.getContext("2d", { willReadFrequently: true });
+  return async video => {
+    const w = video.videoWidth, h = video.videoHeight;
+    if (!w || !h) return "";
+    const k = Math.min(1, 720 / Math.max(w, h));
+    scan.canvas.width = Math.round(w * k); scan.canvas.height = Math.round(h * k);
+    ctx.drawImage(video, 0, 0, scan.canvas.width, scan.canvas.height);
+    const img = ctx.getImageData(0, 0, scan.canvas.width, scan.canvas.height);
+    return jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" })?.data || "";
+  };
+}
+function scanFeedback(ok, soft = false) {
+  try { navigator.vibrate?.(ok ? (soft ? 40 : [60, 40, 60]) : 300); } catch {}
+  try {
+    const ac = scan.audio || (scan.audio = new (window.AudioContext || window.webkitAudioContext)());
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.value = ok ? 1046 : 220; o.type = ok ? "sine" : "square";
+    g.gain.setValueAtTime(0.12, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + (ok ? 0.18 : 0.35));
+    o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + (ok ? 0.2 : 0.4));
+  } catch {}
+}
+function setScanUi() {
+  $("scan-start").hidden = scan.on;
+  $("scan-view").hidden = !scan.on;
+  $("scan-ctrl").hidden = !scan.on;
+  $("scan-next").hidden = !scan.paused;
+  $("scan-view").classList.toggle("paused", scan.paused);
+  $("scan-tip").textContent = scan.paused ? "Đã đọc mã — xem kết quả bên dưới" : "Đưa mã QR trên vé vào khung";
+}
+async function startScan() {
+  if (scan.on) return;
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setCheckinStatus("Trình duyệt này không mở được camera. Dùng Chrome/Safari bản mới, trang phải mở bằng https.");
+    return;
+  }
+  $("scan-start").disabled = true;
+  setCheckinStatus("Đang mở camera…");
+  try {
+    scan.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    const video = $("scan-video");
+    video.srcObject = scan.stream;
+    await video.play();
+    scan.detector = await makeDetector();
+    scan.on = true; scan.paused = false;
+    setScanUi();
+    setCheckinStatus("");
+    $("scan-view").scrollIntoView({ block: "nearest", behavior: "smooth" });
+    tickScan();
+  } catch (err) {
+    stopScan();
+    const name = err?.name || "";
+    setCheckinStatus(name === "NotAllowedError" ? "Chưa được phép dùng camera. Bấm biểu tượng ổ khóa trên thanh địa chỉ để cho phép, rồi thử lại."
+      : name === "NotFoundError" ? "Máy này không có camera."
+      : err?.message === "jsqr" ? "Không tải được bộ đọc QR. Kiểm tra mạng rồi thử lại, hoặc nhập mã vé tay."
+      : "Không mở được camera. Thử lại hoặc nhập mã vé tay.");
+  } finally { $("scan-start").disabled = false; }
+}
+function stopScan() {
+  clearTimeout(scan.timer);
+  scan.on = false; scan.paused = false;
+  if (scan.stream) for (const t of scan.stream.getTracks()) t.stop();
+  scan.stream = null;
+  const video = $("scan-video");
+  if (video) video.srcObject = null;
+  setScanUi();
+}
+function resumeScan() {
+  if (!scan.on) return;
+  scan.paused = false;
+  scan.lastAt = Date.now(); // vé vừa quét thường còn trước camera: bỏ qua thêm vài giây
+  $("scan-view").classList.remove("hit");
+  setScanUi();
+  tickScan();
+}
+async function tickScan() {
+  clearTimeout(scan.timer);
+  if (!scan.on || scan.paused) return;
+  let text = "";
+  try { text = await scan.detector($("scan-video")); } catch {}
+  if (!scan.on || scan.paused) return;
+  const code = (String(text).toUpperCase().match(/VE-[A-Z0-9]{4,12}/) || [""])[0];
+  const now = Date.now();
+  if (code && !(code === scan.last && now - scan.lastAt < 6000)) {
+    scan.last = code; scan.lastAt = now;
+    scan.paused = true;
+    $("scan-view").classList.add("hit");
+    setScanUi();
+    $("checkin-code").value = code;
+    $("checkin-name").value = ""; $("checkin-phone").value = "";
+    await lookupCheckin({ code }, true);
+    const target = $("checkin-list").hidden ? $("checkin-status") : $("checkin-list");
+    target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    return;
+  }
+  if (text && !code) setCheckinStatus("Mã QR này không phải vé của chương trình.");
+  scan.timer = setTimeout(tickScan, 180);
+}
+$("scan-start").onclick = startScan;
+$("scan-stop").onclick = stopScan;
+$("scan-next").onclick = () => { setCheckinStatus(""); clearCheckinList(); resumeScan(); };
+try { $("scan-auto").checked = localStorage.getItem("ve_scan_auto") === "1"; } catch {}
+$("scan-auto").addEventListener("change", () => { try { localStorage.setItem("ve_scan_auto", $("scan-auto").checked ? "1" : "0"); } catch {} });
+document.addEventListener("visibilitychange", () => { if (document.hidden && scan.on) stopScan(); });
 $("checkin-login").addEventListener("submit", async e => {
   e.preventDefault();
   await staffLoginWith($("checkin-pass").value, $("checkin-login-msg"));
@@ -4201,21 +4406,7 @@ $("checkin-form").addEventListener("submit", async e => {
     setCheckinStatus("Nhập mã vé, hoặc đủ họ tên và số điện thoại.");
     return;
   }
-  setCheckinStatus("Đang tra cứu…");
-  clearCheckinList();
-  try {
-    const body = code ? { code } : { name, phone };
-    const data = await api("/api/checkin/lookup", { method: "POST", body: JSON.stringify(body) });
-    const rows = data.registrations || [];
-    if (!rows.length) {
-      setCheckinStatus("Không tìm thấy vé khớp.");
-      return;
-    }
-    setCheckinStatus("Tìm thấy " + rows.length + " vé.", true);
-    renderCheckinCards(rows);
-  } catch (err) {
-    setCheckinStatus(explain(err));
-  }
+  await lookupCheckin(code ? { code } : { name, phone });
 });
 $("cfg-aisle").addEventListener("change", markCfg);
 $("cfg-add-show").onclick = () => {
