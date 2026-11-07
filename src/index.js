@@ -53,8 +53,40 @@ const DEFAULT_EVENT = {
     { id: "s2", day: "24/11", label: "Thứ Ba, 24/11/2026 · Ngày Văn hóa Việt Nam", time: "19:00" }
   ],
   rows: buildHallRows(),
-  hallLayoutId: HALL_LAYOUT_ID
+  hallLayoutId: HALL_LAYOUT_ID,
+  openLau: true,
+  org: "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ",
+  logo: "",
+  poster: "",
+  artists: [
+    { title: "NSND", name: "Quế Trân", photo: "" },
+    { title: "NSƯT", name: "Lê Tứ", photo: "" },
+    { title: "Nghệ sĩ", name: "Đoàn Nghệ thuật Cải lương Tây Đô", photo: "" }
+  ]
 };
+
+const IMAGE_ID = /^[a-f0-9]{24}$/;
+const IMAGE_MAX_BYTES = 1500000;
+const IMAGE_MAX_COUNT = 80;
+
+function imageRef(value) {
+  const id = String(value || "");
+  return IMAGE_ID.test(id) ? id : "";
+}
+
+// Nhận diện ảnh theo vài byte đầu, không tin content-type do trình duyệt gửi.
+function sniffImage(bytes) {
+  if (bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes.length > 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return "image/png";
+  if (bytes.length > 12 && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP") return "image/webp";
+  return "";
+}
+
+function imagesInEvent(event) {
+  const ids = new Set();
+  for (const id of [event.logo, event.poster, ...(event.artists || []).map(a => a.photo)]) if (id) ids.add(id);
+  return ids;
+}
 
 function normalizeEvent(raw) {
   const base = structuredClone(DEFAULT_EVENT);
@@ -67,9 +99,21 @@ function normalizeEvent(raw) {
   base.description = base.description.slice(0, 800);
   if (raw.maxSeats != null) base.maxSeats = Math.min(20, Math.max(1, Number(raw.maxSeats) || base.maxSeats));
   if (typeof raw.aisle === "boolean") base.aisle = raw.aisle;
+  if (typeof raw.openLau === "boolean") base.openLau = raw.openLau;
   if (typeof raw.codePrefix === "string") {
     const prefix = raw.codePrefix.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
     if (prefix) base.codePrefix = prefix;
+  }
+  if (typeof raw.org === "string" && raw.org.trim()) base.org = raw.org.trim().slice(0, 120);
+  if ("logo" in raw) base.logo = imageRef(raw.logo);
+  if ("poster" in raw) base.poster = imageRef(raw.poster);
+  if (Array.isArray(raw.artists)) {
+    // Danh sách rỗng là hợp lệ: trang chủ ẩn khối nghệ sĩ.
+    base.artists = raw.artists.slice(0, 12).map(artist => ({
+      title: String(artist?.title || "").trim().slice(0, 40),
+      name: String(artist?.name || "").trim().slice(0, 80),
+      photo: imageRef(artist?.photo)
+    })).filter(artist => artist.name);
   }
   if (Array.isArray(raw.shows) && raw.shows.length) {
     const seen = new Set();
@@ -240,6 +284,12 @@ export class Venue extends DurableObject {
       owner_uid TEXT NOT NULL DEFAULT '',
       blocked INTEGER NOT NULL DEFAULT 0
     )`);
+    sql.exec(`CREATE TABLE IF NOT EXISTS images (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      data BLOB NOT NULL,
+      created_at TEXT NOT NULL
+    )`);
     const cols = sql.exec("PRAGMA table_info(registrations)").toArray().map(row => row.name);
     if (!cols.includes("checked_in_at")) {
       sql.exec("ALTER TABLE registrations ADD COLUMN checked_in_at TEXT NOT NULL DEFAULT ''");
@@ -274,8 +324,28 @@ export class Venue extends DurableObject {
       if (request.method === "PUT" && url.pathname === "/api/event") {
         if (!staff) fail("forbidden");
         const event = normalizeEvent(await request.json());
+        this.dropMissingImages(event);
         this.saveEvent(event);
+        this.pruneImages(event);
         return Response.json(this.snapshot(actor, staff));
+      }
+      if (request.method === "POST" && url.pathname === "/api/images") {
+        if (!staff) fail("forbidden");
+        return Response.json(await this.saveImage(new Uint8Array(await request.arrayBuffer())));
+      }
+      const imagePath = url.pathname.match(/^\/api\/images\/([a-f0-9]{24})$/);
+      if (request.method === "GET" && imagePath) {
+        const row = this.ctx.storage.sql.exec("SELECT type, data FROM images WHERE id = ?", imagePath[1]).toArray()[0];
+        if (!row) return new Response("Không có ảnh", { status: 404 });
+        return new Response(row.data, {
+          headers: {
+            "content-type": row.type,
+            // Mã ảnh là băm nội dung, nên ảnh không bao giờ đổi dưới cùng một mã.
+            "cache-control": "public, max-age=31536000, immutable",
+            "x-content-type-options": "nosniff",
+            "content-security-policy": "default-src 'none'"
+          }
+        });
       }
       if (request.method === "POST" && url.pathname === "/api/lookup") {
         const body = await request.json();
@@ -364,6 +434,38 @@ export class Venue extends DurableObject {
     });
   }
 
+  async saveImage(bytes) {
+    if (!bytes.length || bytes.length > IMAGE_MAX_BYTES) fail("image-size");
+    const type = sniffImage(bytes);
+    if (!type) fail("image-type");
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+    const id = [...digest].map(byte => byte.toString(16).padStart(2, "0")).join("").slice(0, 24);
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT id FROM images WHERE id = ?", id).toArray().length) {
+      const count = sql.exec("SELECT COUNT(*) AS n FROM images").toArray()[0].n;
+      if (count >= IMAGE_MAX_COUNT) fail("image-full");
+      sql.exec("INSERT INTO images (id, type, data, created_at) VALUES (?, ?, ?, ?)", id, type, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), new Date().toISOString());
+    }
+    return { id, url: "/api/images/" + id };
+  }
+
+  dropMissingImages(event) {
+    const sql = this.ctx.storage.sql;
+    const has = id => !!id && sql.exec("SELECT id FROM images WHERE id = ?", id).toArray().length > 0;
+    if (!has(event.logo)) event.logo = "";
+    if (!has(event.poster)) event.poster = "";
+    for (const artist of event.artists) if (!has(artist.photo)) artist.photo = "";
+  }
+
+  // Ảnh tải lên mà không dùng trong cấu hình đã lưu thì xóa sau một ngày.
+  pruneImages(event) {
+    const keep = imagesInEvent(event);
+    const cutoff = new Date(Date.now() - 86400000).toISOString();
+    for (const row of this.ctx.storage.sql.exec("SELECT id FROM images WHERE created_at < ?", cutoff).toArray()) {
+      if (!keep.has(row.id)) this.ctx.storage.sql.exec("DELETE FROM images WHERE id = ?", row.id);
+    }
+  }
+
   syncBlocked(event) {
     const sql = this.ctx.storage.sql;
     const wanted = new Set(event.blocked);
@@ -407,6 +509,15 @@ export class Venue extends DurableObject {
       if (!seatIds.length || seatIds.length > event.maxSeats) fail(seatIds.length ? "full" : "invalid");
       for (const seat of seatIds) {
         if (!layout.has(seat)) fail("invalid");
+      }
+      if (!event.openLau && !staff) {
+        // Lầu đóng: khách không giữ thêm ghế trên lầu; ghế lầu đã có trong đăng ký cũ vẫn giữ được.
+        const lau = new Set(event.rows.filter(row => row.zone === "lau").map(row => row.label));
+        const held = new Set(current && current.show_id === show ? JSON.parse(current.seat_ids) : []);
+        for (const seat of seatIds) {
+          const row = event.rows.find(r => seat.startsWith(r.label) && /^\d+$/.test(seat.slice(r.label.length)));
+          if (row && lau.has(row.label) && !held.has(seat)) fail("closed:" + seat);
+        }
       }
       const name = String(body.name || "").trim().slice(0, 80);
       const phone = String(body.phone || "").trim().slice(0, 16);
@@ -644,14 +755,40 @@ async function callVenue(request, env, actor, staff, path) {
   return env.VENUE.getByName("mac-dinh").fetch(new Request(url, init));
 }
 
+async function isStaff(request, env) {
+  const cookies = cookieMap(request);
+  if (!env.STAFF_PASSWORD || !env.STAFF_SECRET || !cookies.ve_staff) return false;
+  const expected = await hmac(env.STAFF_SECRET, "staff:" + env.STAFF_PASSWORD);
+  return safeEqual(cookies.ve_staff, expected);
+}
+
+// Ảnh đi đường riêng: thân là byte ảnh, không qua giới hạn 20 KB của JSON.
+async function handleImages(request, env, url) {
+  const venue = env.VENUE.getByName("mac-dinh");
+  if (request.method === "GET") {
+    return venue.fetch(new Request(url, { method: "GET" }));
+  }
+  if (request.method === "POST" && url.pathname === "/api/images") {
+    if (!(await isStaff(request, env))) return Response.json({ error: "forbidden" }, { status: 403 });
+    const declared = Number(request.headers.get("content-length") || 0);
+    if (declared > IMAGE_MAX_BYTES) return Response.json({ error: "image-size" }, { status: 413 });
+    const body = await request.arrayBuffer();
+    if (body.byteLength > IMAGE_MAX_BYTES) return Response.json({ error: "image-size" }, { status: 413 });
+    const headers = new Headers({ "x-staff": "1", "x-actor": "" });
+    return venue.fetch(new Request(url, { method: "POST", headers, body }));
+  }
+  return Response.json({ error: "invalid" }, { status: 404 });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     if (request.method === "GET" && url.pathname === "/api/version") {
-      return Response.json({ name: "ve-moi", features: ["lookup", "hall-vip-ad", "aisles"] });
+      return Response.json({ name: "ve-moi", features: ["lookup", "hall-vip-ad", "aisles", "images"] });
     }
     const secure = secureRequest(request);
+    if (url.pathname.startsWith("/api/images")) return handleImages(request, env, url);
     if (request.method === "PUT" || request.method === "POST") {
       const text = await request.text();
       if (text.length > 20000) return Response.json({ error: "invalid" }, { status: 400 });

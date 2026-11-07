@@ -55,7 +55,7 @@ const boot = await call("/api/bootstrap", {}, guest);
 if (boot.status !== 200 || !String(boot.data.uid || "").startsWith("k")) fail("bootstrap");
 if (boot.data.staff || (boot.data.registrations || []).length) fail("guest sees staff data");
 
-const seat = "A2";
+const seat = "1A2";
 const created = await book(guest, boot.data.uid, seat, { code: "VE-TEST1" });
 if (created.status !== 200 || created.data.registration?.seatIds?.join() !== seat) {
   fail("book " + created.status + " " + JSON.stringify(created.data));
@@ -103,11 +103,11 @@ if (!found || found.phone !== "0903123456") fail("staff list");
 const blocked = await call("/api/event", {
   method: "PUT",
   headers: { "content-type": "application/json" },
-  body: JSON.stringify({ ...login.data.event, blocked: ["A1"] })
+  body: JSON.stringify({ ...login.data.event, blocked: ["1A1"] })
 }, staff);
-if (blocked.status !== 200 || !(blocked.data.event?.blocked || []).includes("A1")) fail("block " + JSON.stringify(blocked.data));
-const closed = await book(other, otherBoot.data.uid, "A1");
-if (closed.status !== 409 || closed.data.error !== "blocked:A1") fail("blocked " + JSON.stringify(closed.data));
+if (blocked.status !== 200 || !(blocked.data.event?.blocked || []).includes("1A1")) fail("block " + JSON.stringify(blocked.data));
+const closed = await book(other, otherBoot.data.uid, "1A1");
+if (closed.status !== 409 || closed.data.error !== "blocked:1A1") fail("blocked " + JSON.stringify(closed.data));
 
 const hostId = "btc-VE-HOST1";
 const host = await call("/api/registrations", {
@@ -118,7 +118,7 @@ const host = await call("/api/registrations", {
     name: "Khách được đặt hộ",
     phone: "0987654321",
     show: "s1",
-    seatIds: ["B2"],
+    seatIds: ["1B2"],
     code: "VE-HOST1",
     source: "btc"
   })
@@ -132,7 +132,7 @@ const guestHost = await call("/api/registrations", {
     name: "Khách lạ",
     phone: "0900000001",
     show: "s1",
-    seatIds: ["B3"],
+    seatIds: ["1B3"],
     code: "VE-NOPE1",
     source: "btc"
   })
@@ -142,11 +142,11 @@ if (guestHost.status !== 403) fail("guest host " + guestHost.status);
 const races = await Promise.all([0, 1].map(async (index) => {
   const jar = [];
   const start = await call("/api/bootstrap", {}, jar);
-  const result = await book(jar, start.data.uid, "C4", { name: "Người " + index, phone: "090100000" + index });
+  const result = await book(jar, start.data.uid, "1C4", { name: "Người " + index, phone: "090100000" + index });
   return { jar, uid: start.data.uid, result };
 }));
 const winners = races.filter(item => item.result.status === 200);
-const losers = races.filter(item => item.result.status === 409 && item.result.data.error === "taken:C4");
+const losers = races.filter(item => item.result.status === 409 && item.result.data.error === "taken:1C4");
 if (winners.length !== 1 || losers.length !== 1) fail("race " + JSON.stringify(races.map(item => item.result)));
 
 const opened = await call("/api/event", {
@@ -163,7 +163,7 @@ await call("/api/registrations/" + hostId, { method: "DELETE" }, staff);
 const removed = await call("/api/registrations/" + boot.data.uid, { method: "DELETE" }, guest);
 if (removed.status !== 200 || removed.data.mine) fail("delete");
 const after = await call("/api/bootstrap", {}, other);
-const tracked = new Set(["A2", "A1", "B2", "B3", "C4"]);
+const tracked = new Set(["1A2", "1A1", "1B2", "1B3", "1C4"]);
 const leftover = (after.data.seats || []).filter(item => tracked.has(item.seat) && item.registrationId);
 if (leftover.length) fail("seats left " + JSON.stringify(leftover));
 
@@ -182,7 +182,7 @@ const lookupBook = await call("/api/registrations", {
     org: "",
     msg: "",
     show: "s1",
-    seatIds: ["D5"],
+    seatIds: ["1D5"],
     code: "VE-LOOK1",
     source: "guest"
   })
@@ -221,5 +221,55 @@ const gone = await call("/api/lookup", {
   body: JSON.stringify({ name: lookupName, phone: lookupPhone })
 }, stranger);
 if ((gone.data.registrations || []).length) fail("lookup still there");
+
+// Công tắc ghế trên lầu: đóng thì khách không giữ được, mở thì giữ được.
+const putEvent = body => call("/api/event", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }, staff);
+const lauJar = [];
+const lauBoot = await call("/api/bootstrap", {}, lauJar);
+const lauClosed = await putEvent({ ...opened.data.event, openLau: false });
+if (lauClosed.status !== 200 || lauClosed.data.event?.openLau !== false) fail("close lau");
+const lauDenied = await book(lauJar, lauBoot.data.uid, "L1A1");
+if (lauDenied.status !== 409 || lauDenied.data.error !== "closed:L1A1") fail("lau closed " + JSON.stringify(lauDenied.data));
+const lauGround = await book(lauJar, lauBoot.data.uid, "1E6");
+if (lauGround.status !== 200) fail("ground while lau closed " + JSON.stringify(lauGround.data));
+const lauOpened = await putEvent({ ...opened.data.event, openLau: true });
+if (lauOpened.status !== 200 || lauOpened.data.event?.openLau !== true) fail("open lau");
+const lauBooked = await book(lauJar, lauBoot.data.uid, "L1A1");
+if (lauBooked.status !== 200 || lauBooked.data.registration?.seatIds?.join() !== "L1A1") fail("lau open " + JSON.stringify(lauBooked.data));
+await call("/api/registrations/" + lauBoot.data.uid, { method: "DELETE" }, lauJar);
+
+// Ảnh và cấu hình trang chủ (nghệ sĩ, logo, đơn vị tổ chức).
+const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
+const guestUpload = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: png }, guest);
+if (guestUpload.status !== 403) fail("guest image upload " + guestUpload.status);
+const notImage = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: "<svg/>" }, staff);
+if (notImage.status === 200) fail("non-image accepted");
+const upload = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: png }, staff);
+if (upload.status !== 200 || !/^[a-f0-9]{24}$/.test(upload.data.id || "")) fail("image upload " + JSON.stringify(upload.data));
+const served = await fetch(base + "/api/images/" + upload.data.id);
+if (served.status !== 200 || served.headers.get("content-type") !== "image/png") fail("image serve " + served.status);
+if (Buffer.compare(Buffer.from(await served.arrayBuffer()), png) !== 0) fail("image bytes");
+const original = opened.data.event;
+const media = await call("/api/event", {
+  method: "PUT",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    ...original,
+    org: "Đơn vị kiểm tra",
+    logo: upload.data.id,
+    poster: "0123456789abcdef01234567",
+    artists: [{ title: "NSND", name: "Nghệ sĩ Kiểm Tra", photo: upload.data.id }, { title: "", name: "  " }]
+  })
+}, staff);
+const saved = media.data.event || {};
+if (media.status !== 200 || saved.org !== "Đơn vị kiểm tra" || saved.logo !== upload.data.id) fail("media save " + JSON.stringify(saved));
+if (saved.poster !== "") fail("unknown image id kept");
+if (saved.artists?.length !== 1 || saved.artists[0].photo !== upload.data.id) fail("artists " + JSON.stringify(saved.artists));
+const restored = await call("/api/event", {
+  method: "PUT",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify(original)
+}, staff);
+if (restored.status !== 200 || restored.data.event?.org !== original.org) fail("media restore");
 
 console.log("api-ok");
