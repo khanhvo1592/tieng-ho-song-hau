@@ -55,7 +55,7 @@ const boot = await call("/api/bootstrap", {}, guest);
 if (boot.status !== 200 || !String(boot.data.uid || "").startsWith("k")) fail("bootstrap");
 if (boot.data.staff || (boot.data.registrations || []).length) fail("guest sees staff data");
 
-const seat = "A2";
+const seat = "1A2";
 const created = await book(guest, boot.data.uid, seat, { code: "VE-TEST1" });
 if (created.status !== 200 || created.data.registration?.seatIds?.join() !== seat) {
   fail("book " + created.status + " " + JSON.stringify(created.data));
@@ -103,11 +103,11 @@ if (!found || found.phone !== "0903123456") fail("staff list");
 const blocked = await call("/api/event", {
   method: "PUT",
   headers: { "content-type": "application/json" },
-  body: JSON.stringify({ ...login.data.event, blocked: ["A1"] })
+  body: JSON.stringify({ ...login.data.event, blocked: ["1A1"] })
 }, staff);
-if (blocked.status !== 200 || !(blocked.data.event?.blocked || []).includes("A1")) fail("block " + JSON.stringify(blocked.data));
-const closed = await book(other, otherBoot.data.uid, "A1");
-if (closed.status !== 409 || closed.data.error !== "blocked:A1") fail("blocked " + JSON.stringify(closed.data));
+if (blocked.status !== 200 || !(blocked.data.event?.blocked || []).includes("1A1")) fail("block " + JSON.stringify(blocked.data));
+const closed = await book(other, otherBoot.data.uid, "1A1");
+if (closed.status !== 409 || closed.data.error !== "blocked:1A1") fail("blocked " + JSON.stringify(closed.data));
 
 const hostId = "btc-VE-HOST1";
 const host = await call("/api/registrations", {
@@ -118,7 +118,7 @@ const host = await call("/api/registrations", {
     name: "Khách được đặt hộ",
     phone: "0987654321",
     show: "s1",
-    seatIds: ["B2"],
+    seatIds: ["1B2"],
     code: "VE-HOST1",
     source: "btc"
   })
@@ -132,7 +132,7 @@ const guestHost = await call("/api/registrations", {
     name: "Khách lạ",
     phone: "0900000001",
     show: "s1",
-    seatIds: ["B3"],
+    seatIds: ["1B3"],
     code: "VE-NOPE1",
     source: "btc"
   })
@@ -142,11 +142,11 @@ if (guestHost.status !== 403) fail("guest host " + guestHost.status);
 const races = await Promise.all([0, 1].map(async (index) => {
   const jar = [];
   const start = await call("/api/bootstrap", {}, jar);
-  const result = await book(jar, start.data.uid, "C4", { name: "Người " + index, phone: "090100000" + index });
+  const result = await book(jar, start.data.uid, "1C4", { name: "Người " + index, phone: "090100000" + index });
   return { jar, uid: start.data.uid, result };
 }));
 const winners = races.filter(item => item.result.status === 200);
-const losers = races.filter(item => item.result.status === 409 && item.result.data.error === "taken:C4");
+const losers = races.filter(item => item.result.status === 409 && item.result.data.error === "taken:1C4");
 if (winners.length !== 1 || losers.length !== 1) fail("race " + JSON.stringify(races.map(item => item.result)));
 
 const opened = await call("/api/event", {
@@ -163,7 +163,7 @@ await call("/api/registrations/" + hostId, { method: "DELETE" }, staff);
 const removed = await call("/api/registrations/" + boot.data.uid, { method: "DELETE" }, guest);
 if (removed.status !== 200 || removed.data.mine) fail("delete");
 const after = await call("/api/bootstrap", {}, other);
-const tracked = new Set(["A2", "A1", "B2", "B3", "C4"]);
+const tracked = new Set(["1A2", "1A1", "1B2", "1B3", "1C4"]);
 const leftover = (after.data.seats || []).filter(item => tracked.has(item.seat) && item.registrationId);
 if (leftover.length) fail("seats left " + JSON.stringify(leftover));
 
@@ -182,7 +182,7 @@ const lookupBook = await call("/api/registrations", {
     org: "",
     msg: "",
     show: "s1",
-    seatIds: ["D5"],
+    seatIds: ["1D5"],
     code: "VE-LOOK1",
     source: "guest"
   })
