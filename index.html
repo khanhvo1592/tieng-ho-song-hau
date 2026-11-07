@@ -232,13 +232,17 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .ticket dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
 .confirm{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:14px}
 
-.admin{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
+.admin{grid-column:1/-1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
 .admin header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:baseline;margin-bottom:14px}
 .totals{display:flex;flex-wrap:wrap;gap:8px}
 .pill{font-size:.85rem;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-variant-numeric:tabular-nums;background:color-mix(in srgb,var(--bg) 50%,white)}
 .tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
 table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:720px}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+td.row-acts{white-space:nowrap}
+td.row-acts>*{padding:4px 10px;font-size:.85rem;min-height:0}
+td.row-acts>*+*{margin-left:6px}
+.danger-text{color:#A33A2B}
 th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--bg) 55%,white)}
 td.n{font-variant-numeric:tabular-nums;text-align:right}
 tr:last-child td{border-bottom:0}
@@ -477,7 +481,9 @@ button.seat:disabled{opacity:1;cursor:not-allowed}
 .cfg-block{display:grid;gap:8px}
 .cfg-line{display:grid;gap:8px;align-items:center;margin-top:8px}
 .cfg-line.shows{grid-template-columns:5.6rem minmax(0,1fr) 5.6rem auto}
-.cfg-line.rows{grid-template-columns:7rem 6.2rem auto}
+.cfg-line.rows{grid-template-columns:7rem 6.2rem max-content max-content;justify-content:start}
+.row-lock{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;white-space:nowrap}
+.row-lock input{width:auto;margin:0}
 .cfg-line button{min-height:46px}
 @media(max-width:640px){.cfg-line.shows,.cfg-line.rows{grid-template-columns:1fr 1fr}}
 #draft-bar{margin:0 0 14px}
@@ -567,6 +573,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
 .foot-org{display:flex;gap:14px;align-items:center;margin:18px 0 6px}
 .org-mark{position:relative;flex:none;width:52px;height:52px;border-radius:50%;overflow:hidden;background:var(--lacquer);box-shadow:0 0 0 2px var(--gold-bright),0 0 0 4px color-mix(in srgb,var(--lacquer) 20%,transparent)}
 .org-mark svg{position:absolute;inset:0;width:100%;height:100%}
+.org-mark[hidden]{display:none}
 .org-mark img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;z-index:1}
 .foot-org p{margin:0}
 
@@ -975,6 +982,11 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
       <fieldset class="cfg-media">
         <legend>Trang chủ và nhận diện</legend>
         <p class="hint">Ảnh được thu nhỏ trên máy trước khi gửi. Bỏ trống ảnh thì trang dùng hình thay thế (chữ lồng, dấu hoa sen). Ảnh chỉ lưu khi bấm “Lưu thông tin sự kiện”.</p>
+        <div class="choices">
+          <label class="choice"><input id="cfg-show-artists" type="checkbox" checked><span>Hiện khối nghệ sĩ và poster ở trang chủ</span></label>
+          <label class="choice"><input id="cfg-show-footlogo" type="checkbox" checked><span>Hiện logo ở chân trang</span></label>
+          <label class="choice"><input id="cfg-show-call" type="checkbox" checked><span>Hiện nút “Gọi Ban tổ chức” ở trang chủ</span></label>
+        </div>
         <label for="cfg-org"><span>Đơn vị tổ chức</span><input id="cfg-org" maxlength="120" placeholder="Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ"></label>
         <div class="cfg-pics">
           <div class="cfg-pic" data-slot="logo">
@@ -1001,7 +1013,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
           </div>
         </div>
         <div class="cfg-block">
-          <span class="hint">Nghệ sĩ. Danh hiệu ví dụ NSND, NSƯT; ảnh dọc 4:5. Xóa hết thì trang chủ ẩn khối nghệ sĩ.</span>
+          <span class="hint">Nghệ sĩ. Danh hiệu ví dụ NSND, NSƯT; ảnh dọc 4:5. Xóa hết (và không có poster) thì trang chủ ẩn khối nghệ sĩ.</span>
           <div id="cfg-artists"></div>
           <div><button class="ghost" type="button" id="cfg-add-artist">Thêm nghệ sĩ</button></div>
         </div>
@@ -1013,7 +1025,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
         <div><button class="ghost" type="button" id="cfg-add-show">Thêm suất</button></div>
       </div>
       <div class="cfg-block">
-        <span class="hint">Sơ đồ ghế. Nhãn hàng ngắn, ví dụ A. Ghế được đánh số A1, A2…</span>
+        <span class="hint">Sơ đồ ghế. Nhãn hàng ngắn, ví dụ A. Ghế được đánh số A1, A2… Đánh dấu “Khóa” để cả hàng không mở cho khách.</span>
         <div id="cfg-rows"></div>
         <div><button class="ghost" type="button" id="cfg-add-row">Thêm hàng</button></div>
       </div>
@@ -1032,7 +1044,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
     <p id="admin-empty" class="note" style="margin-top:14px">Chưa có ai đăng ký. Các lượt đăng ký mới sẽ hiện ở đây ngay khi được gửi.</p>
     <div class="tablebox" id="tablebox" hidden style="margin-top:14px">
       <table>
-        <thead><tr><th>Mã vé</th><th>Họ tên</th><th>Điện thoại</th><th>Email</th><th>Ghế</th><th class="n">Vé</th><th>Đơn vị</th><th>Ghi chú</th><th>Lúc gửi</th></tr></thead>
+        <thead><tr><th>Mã vé</th><th>Họ tên</th><th>Điện thoại</th><th>Email</th><th>Ghế</th><th class="n">Vé</th><th>Đơn vị</th><th>Ghi chú</th><th>Lúc gửi</th><th>Thao tác</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -1111,7 +1123,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
 </footer>
 
 <script>
-const HALL_LAYOUT_ID = "nha-bd-724-v3";
+const HALL_LAYOUT_ID = "nha-bd-724-v4";
 function buildHallRows() {
   const letter = i => String.fromCharCode(65 + i);
   const push = (rows, prefix, counts, zone, block, lockedAt) => {
@@ -1127,7 +1139,8 @@ function buildHallRows() {
   push(rows, "L3", [18, 18, 15, 7, 3], "lau", 3, false);
   // Tầng trệt 508: 167 + 174 + 167 — bàn BGK không đặt; khối giữa A–J
   push(rows, "1", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 1, false);
-  push(rows, "2", [13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, false);
+  // Khối 2 hàng A–D khóa sẵn (dành cho khách mời); mở lại bằng ô "Khóa" ở trang quản trị.
+  push(rows, "2", [13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, (_, i) => i < 4);
   push(rows, "3", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 3, false);
   return rows;
 }
@@ -1161,6 +1174,9 @@ const EVENT_DEFAULT = {
   rows: buildHallRows(),
   hallLayoutId: HALL_LAYOUT_ID,
   openLau: true,
+  showArtists: true,
+  showFootLogo: true,
+  showCallBtn: true,
   org: "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ",
   logo: "",
   poster: "",
@@ -1323,6 +1339,9 @@ function normalizeEvent(raw) {
   if (raw.maxSeats != null) base.maxSeats = Math.min(20, Math.max(1, Number(raw.maxSeats) || base.maxSeats));
   if (typeof raw.aisle === "boolean") base.aisle = raw.aisle;
   if (typeof raw.openLau === "boolean") base.openLau = raw.openLau;
+  if (typeof raw.showArtists === "boolean") base.showArtists = raw.showArtists;
+  if (typeof raw.showFootLogo === "boolean") base.showFootLogo = raw.showFootLogo;
+  if (typeof raw.showCallBtn === "boolean") base.showCallBtn = raw.showCallBtn;
   if (typeof raw.codePrefix === "string") {
     const prefix = raw.codePrefix.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
     if (prefix) base.codePrefix = prefix;
@@ -1369,20 +1388,12 @@ function normalizeEvent(raw) {
     base.rows = buildHallRows();
   }
   base.hallLayoutId = HALL_LAYOUT_ID;
-  for (const row of base.rows) {
-    if (/^2[A-Z]$/i.test(row.label)) {
-      row.zone = "tre";
-      row.block = 2;
-      row.locked = false;
-    }
-  }
   const locked = seatsFromLockedRows(base.rows);
   const merged = [];
   const seen = new Set();
   for (const item of [].concat(Array.isArray(raw.blocked) ? raw.blocked : [], locked)) {
     const seat = String(item || "").replace(/\s/g, "");
-    // Bỏ khóa VIP A–K cũ — bàn BGK không phải ghế đặt
-    if (!seat || seen.has(seat) || /^2[A-K]\d+$/i.test(seat)) continue;
+    if (!seat || seen.has(seat)) continue;
     seen.add(seat);
     merged.push(seat);
     if (merged.length >= 600) break;
@@ -1456,8 +1467,9 @@ function renderHomeMedia() {
       $("artists-wrap").classList.add("has-poster");
     }));
   }
-  $("artists").hidden = !(e.artists || []).length && !e.poster;
+  $("artists").hidden = e.showArtists === false || (!(e.artists || []).length && !e.poster);
   const mark = $("foot-mark");
+  mark.hidden = e.showFootLogo === false;
   const logo = logoSrc();
   if (mark.dataset.src !== logo) {
     mark.dataset.src = logo;
@@ -1633,7 +1645,7 @@ function applyEvent() {
       : "Có. Trên sơ đồ đặt vé, chọn tab Trên lầu hoặc Toàn nhà để xem và bấm ghế trên lầu.";
   }
   $("venue-call").href = "tel:" + tel;
-  $("venue-call").hidden = !tel;
+  $("venue-call").hidden = !tel || e.showCallBtn === false;
   renderHomeMedia();
   $("venue-text").textContent = e.venue || "";
   $("venue-map-link").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(e.venue || "");
@@ -3117,6 +3129,33 @@ function orphanText() {
   if (!bits.length) return "";
   return "Ghế ngoài sơ đồ hoặc suất không còn trong chương trình: " + bits.slice(0, 12).join(", ") + (bits.length > 12 ? "…" : "") + ". Các đăng ký này không bị xóa.";
 }
+// Nút Sửa (mở trang đặt vé ở chế độ sửa đăng ký này) và Xóa trong bảng quản trị.
+function adminActions(d) {
+  const td = document.createElement("td");
+  td.className = "row-acts";
+  if (!d.regId) return td;
+  const edit = document.createElement("a");
+  edit.className = "ghost"; edit.textContent = "Sửa";
+  edit.href = "/dat-ve?" + new URLSearchParams({ ...(d.show ? { suat: d.show } : {}), sua: d.regId });
+  edit.setAttribute("aria-label", "Sửa vé " + (d.code || d.name || ""));
+  const del = document.createElement("button");
+  del.type = "button"; del.className = "ghost danger-text"; del.textContent = "Xóa";
+  del.setAttribute("aria-label", "Xóa vé " + (d.code || d.name || ""));
+  del.addEventListener("click", async () => {
+    const seats = seatsPlain(d);
+    if (!confirm("Xóa vé " + (d.code || "") + " của " + (d.name || "khách") + (seats ? " (ghế " + seats + ")" : "") + "? Ghế sẽ được trả lại, không hoàn tác được.")) return;
+    del.disabled = true;
+    try {
+      await deleteRegistration(d.regId, d);
+      renderAdmin(); mapSig = ""; renderMap();
+    } catch (err) {
+      del.disabled = false;
+      alert(explain(err) || "Chưa xóa được. Thử lại.");
+    }
+  });
+  td.append(edit, del);
+  return td;
+}
 function renderAdmin() {
   const list = adminRows.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
   const tb = $("rows"); tb.textContent = "";
@@ -3131,6 +3170,7 @@ function renderAdmin() {
       if (i === 5) td.className = "n";
       tr.append(td);
     });
+    tr.append(adminActions(d));
     tb.append(tr);
   }
   const t = $("totals"); t.textContent = "";
@@ -3173,7 +3213,7 @@ function readRows() {
       count: Number(row.querySelector('[data-k="count"]').value),
       zone: prev.zone === "lau" ? "lau" : "tre",
       block: block === 2 || block === 3 ? block : 1,
-      locked: !!prev.locked
+      locked: !!row.querySelector('[data-k="locked"]')?.checked
     };
   });
 }
@@ -3231,9 +3271,16 @@ function renderCfgEditors() {
       if (cur.length <= 1) return;
       cur.splice(i, 1); editRows = cur; cfgDirty = true; renderCfgEditors();
     });
+    const lockBox = document.createElement("label");
+    lockBox.className = "row-lock";
+    const lock = document.createElement("input");
+    lock.type = "checkbox"; lock.dataset.k = "locked"; lock.checked = !!r.locked;
+    lock.setAttribute("aria-label", "Khóa hàng " + (r.label || i + 1));
+    lockBox.append(lock, document.createTextNode("Khóa"));
     label.addEventListener("input", markCfg);
     count.addEventListener("input", markCfg);
-    line.append(label, count, del);
+    lock.addEventListener("change", markCfg);
+    line.append(label, count, lockBox, del);
     rows.append(line);
   });
 }
@@ -3374,6 +3421,9 @@ function fillCfgForm() {
   }
   $("cfg-aisle").checked = !!eventCfg.aisle;
   $("cfg-lau").checked = eventCfg.openLau !== false;
+  $("cfg-show-artists").checked = eventCfg.showArtists !== false;
+  $("cfg-show-footlogo").checked = eventCfg.showFootLogo !== false;
+  $("cfg-show-call").checked = eventCfg.showCallBtn !== false;
   editShows = eventCfg.shows.map(s => ({ ...s }));
   editRows = eventCfg.rows.map(r => ({ ...r }));
   renderCfgEditors();
@@ -3399,7 +3449,8 @@ async function saveCfg(e) {
     eyebrow: $("cfg-eyebrow").value, title: $("cfg-title").value, titleEm: $("cfg-em").value,
     description: $("cfg-desc").value, venue: $("cfg-venue").value, phone: $("cfg-phone").value,
     door: $("cfg-door").value, ticketNote: $("cfg-ticket").value, maxSeats: Number($("cfg-max").value),
-    aisle: $("cfg-aisle").checked, openLau: $("cfg-lau").checked, codePrefix: eventCfg.codePrefix, shows, rows,
+    aisle: $("cfg-aisle").checked, openLau: $("cfg-lau").checked,
+    showArtists: $("cfg-show-artists").checked, showFootLogo: $("cfg-show-footlogo").checked, showCallBtn: $("cfg-show-call").checked, codePrefix: eventCfg.codePrefix, shows, rows,
     org: $("cfg-org").value, logo: editLogo, poster: editPoster,
     artists: editArtists.map(a => ({ title: a.title, name: a.name, photo: a.photo })),
     blocked: $("cfg-blocked").value.split(/[\s,;]+/),
@@ -3522,6 +3573,16 @@ function showTrialNote() {
   $("map-warn").hidden = false;
   $("map-warn").textContent = "Bản thử giao diện trên máy này. Bấm ghế trống, rồi bấm Đặt. Ghế đã có người và ghế không mở không đặt được.";
 }
+function openFromQuery() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get("sua");
+  if (!id || currentPage() !== "book") return;
+  params.delete("sua");
+  history.replaceState(null, "", location.pathname + (params.size ? "?" + params : "") + location.hash);
+  if (!canEditUser) { setStatus("Đăng nhập Ban tổ chức để sửa vé này."); return; }
+  if (!regById[id]) { setStatus("Không tìm thấy đăng ký cần sửa. Có thể vé đã bị xóa."); return; }
+  openExisting(id);
+}
 async function start() {
   try {
     const forceTrial = /(?:\?|&)thu=1(?:&|$)/.test(location.search);
@@ -3534,6 +3595,7 @@ async function start() {
         canWrite = true;
         applyRemote(boot);
         if (isTransientStatus()) setStatus("");
+        openFromQuery();
         setInterval(refreshLive, 4000);
         document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshLive(); });
         return;
@@ -3935,6 +3997,9 @@ $("cfg-add-row").onclick = () => {
 $("cfg").addEventListener("submit", saveCfg);
 $("cfg-org").addEventListener("input", markCfg);
 $("cfg-lau").addEventListener("change", markCfg);
+$("cfg-show-artists").addEventListener("change", markCfg);
+$("cfg-show-footlogo").addEventListener("change", markCfg);
+$("cfg-show-call").addEventListener("change", markCfg);
 $("cfg-add-artist").onclick = () => {
   if (editArtists.length >= 12) return;
   editArtists.push({ title: "", name: "", photo: "" });
