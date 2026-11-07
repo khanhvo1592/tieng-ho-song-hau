@@ -154,8 +154,18 @@ const opened = await call("/api/event", {
   headers: { "content-type": "application/json" },
   body: JSON.stringify({ ...blocked.data.event, blocked: [] })
 }, staff);
-if (opened.status !== 200 || (opened.data.event?.blocked || []).length) fail("unblock");
+if (opened.status !== 200 || (opened.data.event?.blocked || []).includes("1A1")) fail("unblock");
 
+// Khối 2 hàng A–D khóa sẵn: khách không đặt được.
+const lockedRows = (opened.data.event?.rows || []).filter(row => row.locked).map(row => row.label).join();
+if (lockedRows !== "2A,2B,2C,2D") fail("locked rows " + lockedRows);
+const vip = await book(other, otherBoot.data.uid, "2A1");
+if (vip.status !== 409 || vip.data.error !== "blocked:2A1") fail("2A locked " + JSON.stringify(vip.data));
+
+// Ban tổ chức xóa được vé của khách.
+const winner = winners[0];
+const staffDel = await call("/api/registrations/" + winner.uid, { method: "DELETE" }, staff);
+if (staffDel.status !== 200 || (staffDel.data.registrations || []).some(row => row.regId === winner.uid)) fail("staff delete " + staffDel.status);
 for (const item of races) {
   await call("/api/registrations/" + item.uid, { method: "DELETE" }, item.jar);
 }
@@ -237,6 +247,12 @@ if (lauOpened.status !== 200 || lauOpened.data.event?.openLau !== true) fail("op
 const lauBooked = await book(lauJar, lauBoot.data.uid, "L1A1");
 if (lauBooked.status !== 200 || lauBooked.data.registration?.seatIds?.join() !== "L1A1") fail("lau open " + JSON.stringify(lauBooked.data));
 await call("/api/registrations/" + lauBoot.data.uid, { method: "DELETE" }, lauJar);
+
+// Công tắc ẩn/hiện khối nghệ sĩ và logo chân trang.
+const hidden = await putEvent({ ...lauOpened.data.event, showArtists: false, showFootLogo: false, showCallBtn: false });
+if (hidden.status !== 200 || hidden.data.event?.showArtists !== false || hidden.data.event?.showFootLogo !== false) fail("hide home blocks");
+const shown = await putEvent({ ...hidden.data.event, showArtists: true, showFootLogo: true });
+if (shown.status !== 200 || shown.data.event?.showArtists !== true || shown.data.event?.showFootLogo !== true) fail("show home blocks");
 
 // Ảnh và cấu hình trang chủ (nghệ sĩ, logo, đơn vị tổ chức).
 const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");

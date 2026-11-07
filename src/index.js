@@ -1,6 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
 
-const HALL_LAYOUT_ID = "nha-bd-724-v3";
+const HALL_LAYOUT_ID = "nha-bd-724-v4";
 
 function buildHallRows() {
   const letter = i => String.fromCharCode(65 + i);
@@ -17,7 +17,8 @@ function buildHallRows() {
   push(rows, "L3", [18, 18, 15, 7, 3], "lau", 3, false);
   // Tầng trệt: 167 + 174 + 167 = 508 — bàn BGK không phải ghế đặt; khối giữa A–J
   push(rows, "1", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 1, false);
-  push(rows, "2", [13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, false);
+  // Khối 2 hàng A–D khóa sẵn (dành cho khách mời); mở lại bằng ô "Khóa" ở trang quản trị.
+  push(rows, "2", [13, 15, 16, 17, 18, 19, 20, 19, 20, 17], "tre", 2, (_, i) => i < 4);
   push(rows, "3", [15, 16, 16, 18, 18, 19, 19, 19, 17, 10], "tre", 3, false);
   return rows;
 }
@@ -55,6 +56,9 @@ const DEFAULT_EVENT = {
   rows: buildHallRows(),
   hallLayoutId: HALL_LAYOUT_ID,
   openLau: true,
+  showArtists: true,
+  showFootLogo: true,
+  showCallBtn: true,
   org: "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ",
   logo: "",
   poster: "",
@@ -100,6 +104,9 @@ function normalizeEvent(raw) {
   if (raw.maxSeats != null) base.maxSeats = Math.min(20, Math.max(1, Number(raw.maxSeats) || base.maxSeats));
   if (typeof raw.aisle === "boolean") base.aisle = raw.aisle;
   if (typeof raw.openLau === "boolean") base.openLau = raw.openLau;
+  if (typeof raw.showArtists === "boolean") base.showArtists = raw.showArtists;
+  if (typeof raw.showFootLogo === "boolean") base.showFootLogo = raw.showFootLogo;
+  if (typeof raw.showCallBtn === "boolean") base.showCallBtn = raw.showCallBtn;
   if (typeof raw.codePrefix === "string") {
     const prefix = raw.codePrefix.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
     if (prefix) base.codePrefix = prefix;
@@ -149,20 +156,12 @@ function normalizeEvent(raw) {
     base.rows = official;
   }
   base.hallLayoutId = HALL_LAYOUT_ID;
-  for (const row of base.rows) {
-    if (/^2[A-Z]$/i.test(row.label)) {
-      row.zone = "tre";
-      row.block = 2;
-      row.locked = false;
-    }
-  }
   const locked = seatsFromLockedRows(base.rows);
   const manual = [];
   if (Array.isArray(raw.blocked)) {
     for (const item of raw.blocked) {
       const seat = String(item || "").replace(/\s/g, "");
-      // Bỏ khóa VIP A–D / E–K cũ — bàn BGK không phải ghế đặt
-      if (!seat || /^2[A-K]\d+$/i.test(seat)) continue;
+      if (!seat) continue;
       manual.push(seat);
     }
   }
@@ -390,7 +389,7 @@ export class Venue extends DurableObject {
     const nextLock = event.rows.filter(r => r.locked).map(r => r.label).sort().join(",");
     const prevBlocked = Array.isArray(parsed?.blocked) ? parsed.blocked.length : -1;
     const layoutChanged = parsed?.hallLayoutId !== event.hallLayoutId || hallSig(parsed?.rows) !== hallSig(event.rows);
-    if (prevLock !== nextLock || prevBlocked !== event.blocked.length || layoutChanged) this.saveEvent(event);
+    if (prevLock !== nextLock || prevBlocked !== event.blocked.length || layoutChanged) this.saveEvent(event, false);
     return event;
   }
 
@@ -423,9 +422,9 @@ export class Venue extends DurableObject {
     };
   }
 
-  saveEvent(event) {
+  saveEvent(event, strict = true) {
     this.ctx.storage.transactionSync(() => {
-      this.syncBlocked(event);
+      this.syncBlocked(event, strict);
       this.ctx.storage.sql.exec(
         "INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
         "event",
@@ -466,7 +465,8 @@ export class Venue extends DurableObject {
     }
   }
 
-  syncBlocked(event) {
+  // strict = false (tự chuyển dữ liệu): ghế đã có người thì để nguyên cho người đó, không báo lỗi.
+  syncBlocked(event, strict = true) {
     const sql = this.ctx.storage.sql;
     const wanted = new Set(event.blocked);
     for (const show of event.shows) {
@@ -480,7 +480,10 @@ export class Venue extends DurableObject {
       for (const seat of wanted) {
         const id = seatId(show.id, seat);
         const current = sql.exec("SELECT registration_id, blocked FROM seats WHERE id = ?", id).toArray()[0];
-        if (current?.registration_id) fail("taken:" + seat);
+        if (current?.registration_id) {
+          if (strict) fail("taken:" + seat);
+          continue;
+        }
         if (!current) {
           sql.exec(
             "INSERT INTO seats (id, show_id, seat, registration_id, owner_uid, blocked) VALUES (?, ?, ?, '', '', 1)",

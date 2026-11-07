@@ -53,6 +53,7 @@ Sau khi đăng nhập, khung **Tùy chỉnh sự kiện** hiện ra. Sửa xong 
 - **Mở đặt ghế trên lầu cho khách**: bỏ chọn thì khách chỉ đặt được tầng trệt. Ban tổ chức vẫn xếp ghế lầu được. Ghế lầu khách đã giữ trước đó không bị mất.
 
 **Trang chủ và nhận diện**
+- Ba ô ẩn/hiện: **khối nghệ sĩ và poster**, **logo ở chân trang**, **nút "Gọi Ban tổ chức"** ở trang chủ. Bỏ chọn rồi Lưu là ẩn.
 - **Đơn vị tổ chức**: hiện ở chân trang và đầu ảnh vé.
 - **Logo**, **Poster**: bấm *Chọn ảnh* → chọn file JPG/PNG/WebP. Ảnh tự thu nhỏ trước khi gửi. *Bỏ ảnh* để quay về hình mặc định.
 - **Nghệ sĩ**: *Thêm nghệ sĩ*, điền danh hiệu (NSND, NSƯT…), tên, chọn ảnh. Nút ↑ để đổi thứ tự, *Xóa* để bỏ. Nghệ sĩ nào chưa có ảnh thì hiện chữ lồng hai chữ cái của tên.
@@ -64,6 +65,7 @@ Sau khi đăng nhập, khung **Tùy chỉnh sự kiện** hiện ra. Sửa xong 
 
 **Sơ đồ ghế**
 - Mỗi hàng có nhãn ngắn (ví dụ `1A`, `L1A`) và số ghế. Ghế được đánh số `1A1`, `1A2`…
+- Ô **Khóa** cạnh mỗi hàng: khóa cả hàng, khách không đặt được (Ban tổ chức vẫn đặt hộ được). Mặc định khối 2 hàng **2A–2D** đang khóa; bỏ chọn rồi Lưu để mở.
 - Sơ đồ hiện tại khớp nhà biểu diễn: tầng trệt 508 ghế, trên lầu 216 ghế. Chỉ sửa khi đổi địa điểm.
 
 ---
@@ -71,6 +73,10 @@ Sau khi đăng nhập, khung **Tùy chỉnh sự kiện** hiện ra. Sửa xong 
 ## 3. Xem và xuất danh sách đăng ký
 
 Dưới form sự kiện là **Danh sách đăng ký**: mã vé, họ tên, điện thoại, email, ghế, số vé, đơn vị, ghi chú, lúc gửi. Có tổng số theo suất ở đầu bảng. Danh sách tự cập nhật khi có người đăng ký.
+
+Cột **Thao tác** mỗi dòng:
+- **Sửa**: mở trang đặt vé với đăng ký đó, sửa tên, số điện thoại, ghi chú hoặc đổi ghế trên sơ đồ, rồi **Xác nhận**.
+- **Xóa**: hỏi lại một lần, rồi xóa vé và trả ghế. Không hoàn tác được.
 
 Bấm **Sao chép bảng (CSV)** rồi dán vào Excel / Google Sheets để in hoặc lưu.
 
