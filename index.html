@@ -320,15 +320,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 }
 .seat-scroll::-webkit-scrollbar{height:10px;width:10px}
 .seat-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
-.hall{display:grid;gap:0;width:max-content;min-width:max-content;margin:0 auto;justify-items:center;padding:8px 20px 4px}
-.hall-level{display:grid;gap:8px;width:max-content;padding:10px 4px}
+.hall{display:grid;gap:0;width:max-content;min-width:max-content;margin:0 auto;justify-items:center;padding:6px 8px 4px}
+.hall-level{display:grid;gap:6px;width:max-content;padding:8px 0}
 .hall-level.lau{padding-bottom:14px}
 .hall-level.tre{padding-top:14px}
 .hall-title{margin:0;font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--gold);text-align:center}
 .hall-divider{width:100%;height:3px;margin:6px 0;border-radius:999px;background:linear-gradient(90deg,transparent,var(--gold-bright) 20%,var(--gold) 50%,var(--gold-bright) 80%,transparent)}
-.hall-blocks{display:grid;grid-template-columns:max-content 48px max-content 48px max-content;column-gap:10px;align-items:end;width:max-content}
-.hall-aisle{box-sizing:border-box;width:48px;min-width:48px;max-width:48px;align-self:stretch;display:flex;align-items:center;justify-content:center;padding:8px 0;border-radius:6px;background:repeating-linear-gradient(-45deg,#F1F6F2,#F1F6F2 4px,#E7EFEA 4px,#E7EFEA 8px);color:var(--muted);font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;writing-mode:vertical-rl;text-orientation:mixed;user-select:none;pointer-events:none;z-index:1}
-.hall-block{display:grid;gap:3px;width:max-content;min-width:max-content;padding:8px 6px 10px;border:0;background:transparent;position:relative}
+.hall-blocks{display:grid;grid-template-columns:max-content 22px max-content 22px max-content;column-gap:4px;align-items:end;width:max-content}
+.hall-aisle{box-sizing:border-box;width:22px;min-width:22px;max-width:22px;align-self:stretch;display:flex;align-items:center;justify-content:center;padding:8px 0;border-radius:6px;background:repeating-linear-gradient(-45deg,#F1F6F2,#F1F6F2 4px,#E7EFEA 4px,#E7EFEA 8px);color:var(--muted);font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;writing-mode:vertical-rl;text-orientation:mixed;user-select:none;pointer-events:none;z-index:1}
+.hall-block{display:grid;gap:3px;width:max-content;min-width:max-content;padding:6px 2px 8px;border:0;background:transparent;position:relative}
 .hall-block-h{display:grid;place-items:center;width:28px;height:28px;margin:0 auto 6px;border-radius:50%;background:var(--lacquer);color:var(--gold-bright);font-family:var(--font-display);font-size:.9rem;font-weight:700;line-height:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--gold-bright) 35%,transparent)}
 .hall-block.side-left .seat-row{margin-left:auto}
 .hall-block.side-right .seat-row{margin-right:auto}
@@ -336,13 +336,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--lacquer);box-shadow:0
 .hall-door,.hall-side-door{background:#FFF8E4;color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);font-weight:700;text-transform:uppercase;pointer-events:none}
 .hall-door{margin:8px auto 0;padding:5px 14px;border-radius:999px;font-size:.66rem;letter-spacing:.1em;width:max-content}
 .hall-bgk{margin:10px auto 2px;padding:7px 18px;border-radius:8px;background:#EEF3F0;color:var(--muted);border:1px dashed var(--field-line);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;width:min(100%,220px);text-align:center}
-.hall-side-door{position:absolute;left:-44px;top:40%;transform:translateY(-50%);writing-mode:vertical-rl;text-orientation:mixed;padding:10px 5px;border-radius:999px;font-size:.6rem;letter-spacing:.12em}
+.hall-side-door{position:absolute;left:-30px;top:40%;transform:translateY(-50%);writing-mode:vertical-rl;text-orientation:mixed;padding:10px 5px;border-radius:999px;font-size:.6rem;letter-spacing:.12em}
 .stage{position:relative;text-align:center;letter-spacing:.32em;text-transform:uppercase;font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--gold-bright);background:linear-gradient(180deg,#1A5740,#0E3727);border-top:3px solid var(--gold-bright);border-radius:50% 50% 10px 10px / 26px 26px 10px 10px;padding:18px 16px 14px;width:100%;max-width:none;margin:14px 0 0;box-shadow:0 14px 28px -18px rgba(10,42,31,.8),inset 0 1px 0 rgba(255,255,255,.08)}
-.seat-row{display:flex;align-items:center;gap:4px;width:max-content;margin:0}
-.seat-row .rl{min-width:1.5rem;text-align:right;font-weight:700;color:var(--muted);font-size:.7rem;flex:none}
+.seat-row{display:flex;align-items:center;gap:2px;width:max-content;margin:0}
+.seat-row .rl{min-width:1.3rem;margin-right:2px;text-align:right;font-weight:700;color:var(--muted);font-size:.7rem;flex:none}
 .seat-row.vip-lock .rl{color:var(--gold)}
 .cluster{display:flex;flex:none;gap:2px;width:max-content;justify-content:center}
-.aisle{width:clamp(18px,2.6vw,40px);flex:none}
+.aisle{width:10px;flex:none}
 button.seat{flex:0 0 auto;width:20px;min-width:20px;max-width:24px;height:20px;min-height:20px;padding:0;border-radius:5px 5px 3px 3px;border:1px solid var(--seat-free-line);background:var(--seat-free);color:var(--seat-free-ink);font-size:.58rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;display:grid;place-items:center;align-content:center;cursor:pointer}
 button.seat .num{font-size:.58rem}
 button.seat:hover:not(:disabled){border-color:var(--lacquer);transform:translateY(-1px);box-shadow:0 3px 6px -3px rgba(16,36,28,.5)}
@@ -423,14 +423,14 @@ button.seat.blocked{background:transparent;color:#A3AFA9;border-style:dashed;bor
   .seat-scroll{padding:10px 8px 16px;max-height:min(70vh,760px)}
   button.seat{width:22px;min-width:22px;max-width:26px;height:22px;min-height:22px;font-size:.62rem}
   button.seat .num{font-size:.62rem}
-  .hall-aisle{width:36px;min-width:36px;max-width:36px;font-size:.55rem}
-  .hall-blocks{grid-template-columns:max-content 36px max-content 36px max-content;column-gap:6px}
+  .hall-aisle{width:18px;min-width:18px;max-width:18px;font-size:.5rem}
+  .hall-blocks{grid-template-columns:max-content 18px max-content 18px max-content;column-gap:3px}
 }
 @media (min-width:1100px){
   button.seat{width:24px;min-width:24px;max-width:28px;height:24px;min-height:24px;font-size:.65rem}
   button.seat .num{font-size:.65rem}
-  .hall-aisle{width:56px;min-width:56px;max-width:56px}
-  .hall-blocks{grid-template-columns:max-content 56px max-content 56px max-content}
+  .hall-aisle{width:26px;min-width:26px;max-width:26px}
+  .hall-blocks{grid-template-columns:max-content 26px max-content 26px max-content}
 }
 @media (min-width:1400px){
   button.seat{width:28px;min-width:28px;max-width:32px;height:28px;min-height:28px;font-size:.72rem}
@@ -1826,6 +1826,7 @@ function setMapZone(zone) {
   const next = zone === "lau" || zone === "tre" ? zone : "all";
   if (mapZone === next) return;
   mapZone = next;
+  mapCentered = false;
   for (const btn of document.querySelectorAll(".zone-tab")) {
     btn.setAttribute("aria-selected", btn.dataset.zone === mapZone ? "true" : "false");
   }
@@ -3704,11 +3705,9 @@ $("open-book").onclick = () => { if (editing && draftSeats.length && !busy) open
 $("modal-x").onclick = () => $("book-modal").close();
 $("pass-x").onclick = () => $("book-modal").close();
 $("book-modal").addEventListener("close", () => setTimeout(syncSteps, 0));
-// Thu phóng sơ đồ: "auto" tự co cho vừa khung khi ghế vẫn đủ lớn để bấm.
-// Chuột bấm chính xác hơn ngón tay, nên trên máy tính co được nhỏ hơn.
+// Thu phóng sơ đồ: mặc định 100%, canh giữa (cửa chính); nút "Vừa khung" để co cả sơ đồ.
 const ZOOM_MIN = 0.4, ZOOM_MAX = 1.6;
-const ZOOM_AUTO_MIN = matchMedia("(pointer: fine)").matches ? 0.5 : 0.62;
-let mapZoom = 1, zoomAuto = true, mapCentered = false;
+let mapZoom = 1, mapCentered = false;
 function hallNaturalWidth() {
   const hall = $("seat-scroll").querySelector(".hall");
   if (!hall) return 0;
@@ -3728,10 +3727,6 @@ function fitScale() {
 }
 function applyZoom() {
   const hall = $("seat-scroll").querySelector(".hall");
-  if (zoomAuto) {
-    const f = fitScale();
-    mapZoom = f >= ZOOM_AUTO_MIN ? f : 1;
-  }
   if (hall) hall.style.zoom = String(mapZoom);
   const scroll = $("seat-scroll");
   if (hall && !mapCentered && scroll.clientWidth) {
@@ -3744,9 +3739,13 @@ function applyZoom() {
   $("zoom-in").disabled = mapZoom >= ZOOM_MAX - 0.001;
 }
 function setZoom(z) {
-  zoomAuto = false;
+  // Giữ nguyên điểm giữa đang xem khi phóng to / thu nhỏ.
+  const scroll = $("seat-scroll");
+  const mid = scroll.scrollWidth > scroll.clientWidth
+    ? (scroll.scrollLeft + scroll.clientWidth / 2) / scroll.scrollWidth : 0.5;
   mapZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(z * 100) / 100));
   applyZoom();
+  scroll.scrollLeft = mid * scroll.scrollWidth - scroll.clientWidth / 2;
 }
 $("zoom-in").onclick = () => setZoom(mapZoom + 0.1);
 $("zoom-out").onclick = () => setZoom(mapZoom - 0.1);
@@ -3758,7 +3757,6 @@ if ("IntersectionObserver" in window) {
     document.body.classList.toggle("nav-on", !entry.isIntersecting);
   }, { rootMargin: "-64px 0px 0px 0px" }).observe(document.querySelector(".hero"));
 }
-window.addEventListener("resize", () => { if (zoomAuto) applyZoom(); });
 $("book-modal").addEventListener("close", () => {
   if (!showingPass) return;
   showingPass = false;
