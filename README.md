@@ -20,19 +20,25 @@ Khi trang đang chạy, kiểm tra giữ ghế, ghế trùng và đăng nhập b
 npm run check
 ```
 
-## Ảnh trên trang
+## Ảnh và thông tin trang chủ
 
-Đặt ảnh vào thư mục `anh/` đúng tên dưới đây rồi deploy. Thiếu ảnh nào thì trang tự dùng hình thay thế, không cần sửa code.
+Vào `/to-chuc`, đăng nhập, mở khu **Trang chủ và nhận diện** trong form sự kiện:
 
-| Đường dẫn | Dùng ở đâu | Khi chưa có ảnh |
-| --- | --- | --- |
-| `anh/poster.jpg` | Trang chủ, cạnh khối nghệ sĩ | Ẩn khung poster |
-| `anh/nghe-si/que-tran.jpg` | Ảnh NSND Quế Trân | Chữ lồng "QT" trên nền xanh |
-| `anh/nghe-si/le-tu.jpg` | Ảnh NSƯT Lê Tứ | Chữ lồng "LT" |
-| `anh/nghe-si/doan-tay-do.jpg` | Ảnh Đoàn Nghệ thuật Cải lương Tây Đô | Chữ lồng "TĐ" |
-| `anh/logo.png` | Chân trang và đầu ảnh vé QR | Dấu hoa sen vàng |
+- **Đơn vị tổ chức**: hiện ở chân trang, đầu ảnh vé QR và dữ liệu SEO.
+- **Logo**, **Poster**: bấm *Chọn ảnh*, rồi *Lưu thông tin sự kiện*.
+- **Nghệ sĩ**: thêm, xóa, đổi thứ tự (↑), sửa danh hiệu, tên và ảnh. Xóa hết thì trang chủ ẩn khối nghệ sĩ.
 
-Ảnh nghệ sĩ nên dọc tỉ lệ 4:5, mặt ở nửa trên; logo nên nền trong suốt hoặc nền trắng. Tên và danh sách nghệ sĩ nằm trong `index.html` (khối `artist-list`), chưa sửa được trên trang quản trị.
+Ảnh được thu nhỏ trên trình duyệt (logo 512 px PNG, ảnh nghệ sĩ 900 px, poster 1400 px JPEG) rồi lưu trong SQLite của Durable Object, phát qua `/api/images/<mã>`. Mã ảnh là băm nội dung nên trình duyệt giữ ảnh trong bộ nhớ đệm lâu dài. Ảnh tải lên quá một ngày mà không dùng trong cấu hình được xóa ở lần lưu cấu hình kế tiếp; kho giữ tối đa 80 ảnh.
+
+Thiếu ảnh nào thì trang tự dùng hình thay thế:
+
+| Thành phần | Khi chưa có ảnh |
+| --- | --- |
+| Ảnh nghệ sĩ | Chữ lồng hai chữ cái cuối của tên (ví dụ "QT") trên nền xanh |
+| Poster | Thử file tĩnh `anh/poster.jpg`, không có thì ẩn khung poster |
+| Logo | Thử file tĩnh `anh/logo.png`, không có thì dùng dấu hoa sen vàng |
+
+Ảnh nghệ sĩ nên dọc tỉ lệ 4:5, mặt ở nửa trên; logo nên vuông, nền trong suốt hoặc trắng.
 
 ## Đưa lên Cloudflare
 

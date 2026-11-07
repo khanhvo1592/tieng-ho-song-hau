@@ -567,6 +567,31 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
 .org-mark svg{position:absolute;inset:0;width:100%;height:100%}
 .org-mark img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;z-index:1}
 .foot-org p{margin:0}
+
+/* ===== Quản trị: ảnh và nghệ sĩ ===== */
+.cfg-media{display:grid;gap:12px;padding:18px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--bg) 35%,var(--surface))}
+.cfg-media legend{padding:0 6px;font-family:var(--font-display);font-size:1.1rem;font-weight:700}
+.cfg-media>.hint{margin:0}
+.cfg-pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.cfg-pic{display:flex;gap:14px;align-items:center;padding:12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.pic-body{display:grid;gap:4px;min-width:0}
+.pic-body .btns{margin-top:4px}
+.pic-body .btns button{min-height:38px;padding:6px 14px}
+.pic-thumb{position:relative;flex:none;overflow:hidden;display:grid;place-items:center;background:linear-gradient(170deg,#1A5740,#0A2A1F);border:1px solid var(--line)}
+.pic-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
+.pic-thumb.round{width:64px;height:64px;border-radius:50%}
+.pic-thumb.round img{object-fit:contain}
+.pic-thumb.tall{width:60px;height:84px;border-radius:8px}
+.pic-thumb.mini{width:44px;height:55px;border-radius:999px 999px 8px 8px}
+.pic-thumb.empty::before{content:"Chưa có";font-size:.62rem;font-weight:600;color:#CFE6D8}
+.pic-thumb[data-mono]::before{content:attr(data-mono);font-family:var(--font-display);font-style:italic;font-weight:700;font-size:1rem;color:var(--gold-bright)}
+.cfg-line.artist-line{grid-template-columns:44px 7rem minmax(0,1fr) auto}
+.line-tools{display:flex;flex-wrap:wrap;gap:6px}
+.line-tools button{min-height:40px;padding:6px 12px}
+@media (max-width:640px){
+  .cfg-line.artist-line{grid-template-columns:44px minmax(0,1fr)}
+  .cfg-line.artist-line>input:nth-of-type(2),.cfg-line.artist-line .line-tools{grid-column:1/-1}
+}
 </style>
 </head>
 <body>
@@ -688,34 +713,15 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
     </aside>
   </section>
 
-  <!-- Ảnh đặt trong thư mục anh/. Thiếu ảnh nào thì khối đó tự dùng hình thay thế. -->
-  <section class="home-sec artists view-home" aria-labelledby="artists-h">
+  <!-- Ảnh do Ban tổ chức tải lên ở trang quản trị. Thiếu ảnh nào thì khối đó tự dùng hình thay thế. -->
+  <section class="home-sec artists view-home" id="artists" aria-labelledby="artists-h">
     <div class="sec-head">
       <span class="eyebrow">Trên sân khấu</span>
       <h2 id="artists-h">Nghệ sĩ biểu diễn</h2>
     </div>
-    <div class="artists-wrap">
-      <figure class="poster" id="poster" hidden>
-        <img src="/anh/poster.jpg" alt="Poster chương trình Tiếng Hò Sông Hậu" decoding="async"
-          onload="this.closest('.poster').hidden=false;this.closest('.artists-wrap').classList.add('has-poster')" onerror="this.closest('.poster').remove()">
-      </figure>
-      <ul class="artist-list">
-        <li class="artist">
-          <div class="portrait" data-mono="QT"><img src="/anh/nghe-si/que-tran.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>
-          <span class="artist-title">NSND</span>
-          <strong>Quế Trân</strong>
-        </li>
-        <li class="artist">
-          <div class="portrait" data-mono="LT"><img src="/anh/nghe-si/le-tu.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>
-          <span class="artist-title">NSƯT</span>
-          <strong>Lê Tứ</strong>
-        </li>
-        <li class="artist">
-          <div class="portrait" data-mono="TĐ"><img src="/anh/nghe-si/doan-tay-do.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>
-          <span class="artist-title">Nghệ sĩ</span>
-          <strong>Đoàn Nghệ thuật Cải lương Tây Đô</strong>
-        </li>
-      </ul>
+    <div class="artists-wrap" id="artists-wrap">
+      <figure class="poster" id="poster" hidden></figure>
+      <ul class="artist-list" id="artist-list"></ul>
     </div>
   </section>
 
@@ -963,6 +969,41 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
       <label for="cfg-ticket"><span>Câu về vé</span><input id="cfg-ticket" maxlength="160"></label>
       <label for="cfg-blocked"><span>Ghế không mở</span><input id="cfg-blocked" maxlength="400" placeholder="A1, A14, B7"></label>
       <label class="choice"><input id="cfg-aisle" type="checkbox" checked><span>Có lối đi giữa mỗi hàng</span></label>
+      <fieldset class="cfg-media">
+        <legend>Trang chủ và nhận diện</legend>
+        <p class="hint">Ảnh được thu nhỏ trên máy trước khi gửi. Bỏ trống ảnh thì trang dùng hình thay thế (chữ lồng, dấu hoa sen). Ảnh chỉ lưu khi bấm “Lưu thông tin sự kiện”.</p>
+        <label for="cfg-org"><span>Đơn vị tổ chức</span><input id="cfg-org" maxlength="120" placeholder="Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ"></label>
+        <div class="cfg-pics">
+          <div class="cfg-pic" data-slot="logo">
+            <div class="pic-thumb round" id="cfg-logo-thumb"></div>
+            <div class="pic-body">
+              <strong>Logo đơn vị</strong>
+              <span class="hint">Vuông, nền trong suốt hoặc trắng. Hiện ở chân trang và đầu vé.</span>
+              <div class="btns">
+                <button class="ghost" type="button" data-pick="logo">Chọn ảnh</button><input type="file" accept="image/png,image/jpeg,image/webp" data-up="logo" hidden>
+                <button class="ghost" type="button" data-clear="logo">Bỏ ảnh</button>
+              </div>
+            </div>
+          </div>
+          <div class="cfg-pic" data-slot="poster">
+            <div class="pic-thumb tall" id="cfg-poster-thumb"></div>
+            <div class="pic-body">
+              <strong>Poster</strong>
+              <span class="hint">Ảnh dọc. Hiện cạnh khối nghệ sĩ ở trang chủ.</span>
+              <div class="btns">
+                <button class="ghost" type="button" data-pick="poster">Chọn ảnh</button><input type="file" accept="image/png,image/jpeg,image/webp" data-up="poster" hidden>
+                <button class="ghost" type="button" data-clear="poster">Bỏ ảnh</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-block">
+          <span class="hint">Nghệ sĩ. Danh hiệu ví dụ NSND, NSƯT; ảnh dọc 4:5. Xóa hết thì trang chủ ẩn khối nghệ sĩ.</span>
+          <div id="cfg-artists"></div>
+          <div><button class="ghost" type="button" id="cfg-add-artist">Thêm nghệ sĩ</button></div>
+        </div>
+        <p class="hint" id="cfg-media-msg" role="status"></p>
+      </fieldset>
       <div class="cfg-block">
         <span class="hint">Suất diễn. Ngày dạng 22/11, nhãn có năm, giờ dạng 19:30. Mã suất giữ nguyên để không mất đăng ký.</span>
         <div id="cfg-shows"></div>
@@ -1053,9 +1094,9 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
 </dialog>
 <footer class="wrap">
   <div class="foot-org">
-    <span class="org-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#E8C56A"><path d="M24 11C28.5 17 28.5 26 24 32C19.5 26 19.5 17 24 11Z"/><path d="M24 32C17.5 30.5 12.5 25 11.5 17.5C17 19.5 21.5 25 24 32Z" opacity=".85"/><path d="M24 32C30.5 30.5 35.5 25 36.5 17.5C31 19.5 26.5 25 24 32Z" opacity=".85"/></g><path d="M12 36.5C16 34.5 20 36.5 24 36.5S32 34.5 36 36.5" fill="none" stroke="#E8C56A" stroke-width="2" stroke-linecap="round"/></svg><img src="/anh/logo.png" alt="" decoding="async" onerror="this.remove()"></span>
+    <span class="org-mark" id="foot-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#E8C56A"><path d="M24 11C28.5 17 28.5 26 24 32C19.5 26 19.5 17 24 11Z"/><path d="M24 32C17.5 30.5 12.5 25 11.5 17.5C17 19.5 21.5 25 24 32Z" opacity=".85"/><path d="M24 32C30.5 30.5 35.5 25 36.5 17.5C31 19.5 26.5 25 24 32Z" opacity=".85"/></g><path d="M12 36.5C16 34.5 20 36.5 24 36.5S32 34.5 36 36.5" fill="none" stroke="#E8C56A" stroke-width="2" stroke-linecap="round"/></svg></span>
     <div>
-      <p style="font-weight:600;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
+      <p style="font-weight:600;color:var(--ink)">Copyright © <span id="foot-org">Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ</span>.</p>
       <p>Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
     </div>
   </div>
@@ -1115,8 +1156,26 @@ const EVENT_DEFAULT = {
     { id: "s2", day: "24/11", label: "Thứ Ba, 24/11/2026 · Ngày Văn hóa Việt Nam", time: "19:00" }
   ],
   rows: buildHallRows(),
-  hallLayoutId: HALL_LAYOUT_ID
+  hallLayoutId: HALL_LAYOUT_ID,
+  org: "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ",
+  logo: "",
+  poster: "",
+  artists: [
+    { title: "NSND", name: "Quế Trân", photo: "" },
+    { title: "NSƯT", name: "Lê Tứ", photo: "" },
+    { title: "Nghệ sĩ", name: "Đoàn Nghệ thuật Cải lương Tây Đô", photo: "" }
+  ]
 };
+const IMAGE_ID = /^[a-f0-9]{24}$/;
+function imageRef(v) { const id = String(v || ""); return IMAGE_ID.test(id) ? id : ""; }
+function imageUrl(id) { return id ? "/api/images/" + id : ""; }
+// Ảnh do BTC tải lên trước; chưa có thì thử file tĩnh trong anh/.
+function logoSrc() { return imageUrl(eventCfg.logo) || "/anh/logo.png"; }
+function posterSrc() { return imageUrl(eventCfg.poster) || "/anh/poster.jpg"; }
+function monogram(name) {
+  const words = String(name || "").trim().split(/\s+/).filter(Boolean);
+  return words.slice(-2).map(w => w.charAt(0)).join("").toLocaleUpperCase("vi") || "?";
+}
 
 // Chỉ dùng khi chưa có kho đăng ký, để sơ đồ cho thấy ghế đã có người và ghế không mở.
 const PREVIEW_BOOKINGS = [
@@ -1240,6 +1299,7 @@ let editing = false, draftKind = null, draftId = null, draftReg = null, draftSea
 let activeShow = null, mapZone = "tre", mapSig = "", cfgDirty = false, cfgSilent = false;
 const HIDE_LAU = true;
 let editShows = [], editRows = [];
+let editArtists = [], editLogo = "", editPoster = "";
 let countdownTimer = null, countdownFor = null, countdownDone = false;
 let trial = false, live = false;
 let showingPass = false, issued = null;
@@ -1259,6 +1319,16 @@ function normalizeEvent(raw) {
   if (typeof raw.codePrefix === "string") {
     const prefix = raw.codePrefix.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
     if (prefix) base.codePrefix = prefix;
+  }
+  if (typeof raw.org === "string" && raw.org.trim()) base.org = raw.org.trim().slice(0, 120);
+  if ("logo" in raw) base.logo = imageRef(raw.logo);
+  if ("poster" in raw) base.poster = imageRef(raw.poster);
+  if (Array.isArray(raw.artists)) {
+    base.artists = raw.artists.slice(0, 12).map(a => ({
+      title: String(a?.title || "").trim().slice(0, 40),
+      name: String(a?.name || "").trim().slice(0, 80),
+      photo: imageRef(a?.photo)
+    })).filter(a => a.name);
   }
   if (Array.isArray(raw.shows) && raw.shows.length) {
     const seen = new Set();
@@ -1343,6 +1413,52 @@ function showInstant(sh) {
   const ms = new Date(`${y[1]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}T${tm[1].padStart(2, "0")}:${tm[2]}:00+07:00`).getTime();
   return Number.isFinite(ms) ? ms : null;
 }
+// Ảnh có thể thiếu: lỗi tải thì gỡ ảnh để lộ hình thay thế phía dưới.
+function fallbackImg(src, alt, onOk) {
+  const img = document.createElement("img");
+  img.alt = alt || "";
+  img.decoding = "async";
+  img.addEventListener("error", () => img.remove());
+  if (onOk) img.addEventListener("load", onOk);
+  img.src = src;
+  return img;
+}
+function renderHomeMedia() {
+  const e = eventCfg;
+  const list = $("artist-list");
+  list.textContent = "";
+  for (const a of e.artists || []) {
+    const li = el("li", "artist");
+    const portrait = el("div", "portrait");
+    portrait.dataset.mono = monogram(a.name);
+    if (a.photo) portrait.append(fallbackImg(imageUrl(a.photo), [a.title, a.name].filter(Boolean).join(" ")));
+    li.append(portrait);
+    if (a.title) li.append(el("span", "artist-title", a.title));
+    li.append(el("strong", "", a.name));
+    list.append(li);
+  }
+  const poster = $("poster");
+  const src = posterSrc();
+  if (poster.dataset.src !== src) {
+    poster.dataset.src = src;
+    poster.hidden = true;
+    poster.textContent = "";
+    $("artists-wrap").classList.remove("has-poster");
+    poster.append(fallbackImg(src, "Poster chương trình " + [e.title, e.titleEm].filter(Boolean).join(" "), () => {
+      poster.hidden = false;
+      $("artists-wrap").classList.add("has-poster");
+    }));
+  }
+  $("artists").hidden = !(e.artists || []).length && !e.poster;
+  const mark = $("foot-mark");
+  const logo = logoSrc();
+  if (mark.dataset.src !== logo) {
+    mark.dataset.src = logo;
+    mark.querySelector("img")?.remove();
+    mark.append(fallbackImg(logo, ""));
+  }
+  $("foot-org").textContent = e.org || "";
+}
 function showWeekday(sh) {
   const ms = showInstant(sh);
   if (!ms) return "";
@@ -1425,6 +1541,10 @@ function syncJsonLd() {
       name,
       startDate: startDate || undefined,
       location: { "@type": "Place", name: e.venue || "Cần Thơ", address: e.venue || "Cần Thơ" },
+      organizer: e.org ? { "@type": "Organization", name: e.org } : undefined,
+      performer: (e.artists || []).length
+        ? e.artists.map(a => ({ "@type": /^(Đoàn|Nhà hát|CLB|Câu lạc bộ)/i.test(a.name) ? "PerformingGroup" : "Person", name: a.name }))
+        : undefined,
       offers: { "@type": "Offer", price: 0, priceCurrency: "VND", url: "https://vemoi.vanhoacantho.vn/dat-ve" }
     };
   });
@@ -1502,6 +1622,7 @@ function applyEvent() {
   for (const n of document.querySelectorAll(".faq-lau")) n.hidden = !HIDE_LAU;
   $("venue-call").href = "tel:" + tel;
   $("venue-call").hidden = !tel;
+  renderHomeMedia();
   $("venue-text").textContent = e.venue || "";
   $("venue-map-link").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(e.venue || "");
   const prev = activeShow;
@@ -2003,7 +2124,6 @@ function qrMatrix(text) {
   return best;
 }
 
-const ORG_NAME = "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ";
 const LOTUS_PATHS = [
   "M24 11C28.5 17 28.5 26 24 32C19.5 26 19.5 17 24 11Z",
   "M24 32C17.5 30.5 12.5 25 11.5 17.5C17 19.5 21.5 25 24 32Z",
@@ -2061,7 +2181,7 @@ async function drawPass(reg) {
       document.fonts.load("italic 500 20px 'Source Serif 4'")
     ]);
   } catch { /* vẫn vẽ bằng phông dự phòng */ }
-  const logo = await loadImageOnce("/anh/logo.png");
+  const logo = await loadImageOnce(logoSrc());
   const pad = 30;
   const W = 460;
   const labelW = 104;
@@ -2158,7 +2278,7 @@ async function drawPass(reg) {
   ctx.fillText("VÉ MỜI  ·  MIỄN PHÍ", pad + 56, 44);
   ctx.fillStyle = "#CFE6D8";
   ctx.font = "500 11px " + font;
-  ctx.fillText(ORG_NAME, pad + 56, 61, W - pad * 2 - 56);
+  ctx.fillText(eventCfg.org || "", pad + 56, 61, W - pad * 2 - 56);
   ctx.fillStyle = "#F3FBF6";
   ctx.font = "700 " + titleSize + "px " + serif;
   ctx.fillText(title, pad, titleY);
@@ -2220,7 +2340,7 @@ async function drawPass(reg) {
 }
 async function renderPassImage(reg, img, link) {
   if (!reg || !img || !link) return;
-  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title, eventCfg.titleEm, eventCfg.venue, eventCfg.door].join("|");
+  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title, eventCfg.titleEm, eventCfg.venue, eventCfg.door, eventCfg.org, eventCfg.logo].join("|");
   const file = "ve-" + (reg.code || "ghe") + ".png";
   if (img.dataset.sig === sig && img.getAttribute("src")) {
     link.href = img.src;
@@ -3093,6 +3213,125 @@ function renderCfgEditors() {
     rows.append(line);
   });
 }
+// ---- Ảnh và nghệ sĩ trong form quản trị ----
+const IMAGE_LIMITS = { logo: 512, poster: 1400, artist: 900 };
+function setMediaMsg(text) { $("cfg-media-msg").textContent = text || ""; }
+function thumbInto(box, id, mono) {
+  box.textContent = "";
+  box.classList.toggle("empty", !id);
+  if (mono) box.dataset.mono = mono; else delete box.dataset.mono;
+  if (id) box.append(fallbackImg(imageUrl(id), ""));
+}
+// Thu nhỏ ảnh trên máy: logo giữ PNG để còn nền trong suốt, ảnh khác nén JPEG.
+async function shrinkImage(file, kind) {
+  const bitmap = await createImageBitmap(file);
+  const max = IMAGE_LIMITS[kind] || 900;
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const ctx = canvas.getContext("2d");
+  const png = kind === "logo" && file.type !== "image/jpeg";
+  if (!png) { ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close?.();
+  const toBlob = (type, q) => new Promise(resolve => canvas.toBlob(resolve, type, q));
+  if (png) return toBlob("image/png");
+  let blob = await toBlob("image/jpeg", .86);
+  if (blob && blob.size > 1200000) blob = await toBlob("image/jpeg", .7);
+  return blob;
+}
+async function uploadImage(file, kind) {
+  if (!live) throw new Error("image-offline");
+  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) throw new Error("image-type");
+  const blob = await shrinkImage(file, kind);
+  if (!blob) throw new Error("image-type");
+  const response = await fetch("/api/images", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "content-type": blob.type },
+    body: blob
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !IMAGE_ID.test(data.id || "")) throw new Error(data.error || "write");
+  return data.id;
+}
+function imageError(err) {
+  const code = String(err?.message || "");
+  if (code === "image-offline") return "Chỉ tải ảnh được khi trang nối với máy chủ.";
+  if (code === "image-type") return "Chỉ nhận ảnh JPG, PNG hoặc WebP.";
+  if (code === "image-size") return "Ảnh quá lớn kể cả sau khi thu nhỏ. Thử ảnh khác.";
+  if (code === "image-full") return "Kho ảnh đã đầy. Lưu cấu hình để dọn ảnh không dùng, rồi thử lại sau.";
+  if (code === "forbidden") return "Phiên ban tổ chức đã hết. Đăng nhập lại rồi tải ảnh.";
+  return "Chưa tải được ảnh. Kiểm tra mạng rồi thử lại.";
+}
+async function pickAndUpload(input, kind, done) {
+  const file = input.files && input.files[0];
+  input.value = "";
+  if (!file) return;
+  setMediaMsg("Đang tải ảnh lên…");
+  try {
+    const id = await uploadImage(file, kind);
+    done(id);
+    cfgDirty = true;
+    setMediaMsg("Đã tải ảnh. Bấm “Lưu thông tin sự kiện” để dùng ảnh này.");
+  } catch (err) { setMediaMsg(imageError(err)); }
+}
+function renderMediaEditors() {
+  thumbInto($("cfg-logo-thumb"), editLogo, "");
+  thumbInto($("cfg-poster-thumb"), editPoster, "");
+  for (const btn of document.querySelectorAll("[data-clear]")) {
+    btn.disabled = !(btn.dataset.clear === "logo" ? editLogo : editPoster);
+  }
+  const box = $("cfg-artists");
+  box.textContent = "";
+  editArtists.forEach((a, i) => {
+    const line = el("div", "cfg-line artist-line");
+    const thumb = el("div", "pic-thumb mini");
+    thumbInto(thumb, a.photo, monogram(a.name));
+    const title = document.createElement("input");
+    title.value = a.title || ""; title.maxLength = 40; title.placeholder = "NSND";
+    title.setAttribute("aria-label", "Danh hiệu nghệ sĩ " + (i + 1));
+    const name = document.createElement("input");
+    name.value = a.name || ""; name.maxLength = 80; name.placeholder = "Họ tên nghệ sĩ";
+    name.setAttribute("aria-label", "Tên nghệ sĩ " + (i + 1));
+    title.addEventListener("input", () => { a.title = title.value; markCfg(); });
+    name.addEventListener("input", () => { a.name = name.value; thumb.dataset.mono = monogram(name.value); markCfg(); });
+    const file = document.createElement("input");
+    file.type = "file"; file.accept = "image/png,image/jpeg,image/webp"; file.hidden = true;
+    file.addEventListener("change", () => pickAndUpload(file, "artist", id => { a.photo = id; renderMediaEditors(); }));
+    const pick = el("button", "ghost", a.photo ? "Đổi ảnh" : "Ảnh");
+    pick.type = "button";
+    pick.setAttribute("aria-label", (a.photo ? "Đổi ảnh " : "Chọn ảnh ") + (a.name || "nghệ sĩ " + (i + 1)));
+    pick.addEventListener("click", () => file.click());
+    const tools = el("div", "line-tools");
+    tools.append(pick, file);
+    if (a.photo) {
+      const clear = el("button", "ghost", "Bỏ ảnh");
+      clear.type = "button";
+      clear.addEventListener("click", () => { a.photo = ""; cfgDirty = true; renderMediaEditors(); });
+      tools.append(clear);
+    }
+    if (i > 0) {
+      const up = el("button", "ghost", "↑");
+      up.type = "button";
+      up.setAttribute("aria-label", "Đưa " + (a.name || "nghệ sĩ") + " lên trước");
+      up.addEventListener("click", () => {
+        [editArtists[i - 1], editArtists[i]] = [editArtists[i], editArtists[i - 1]];
+        cfgDirty = true; renderMediaEditors();
+      });
+      tools.append(up);
+    }
+    const del = el("button", "ghost", "Xóa");
+    del.type = "button";
+    del.setAttribute("aria-label", "Xóa " + (a.name || "nghệ sĩ " + (i + 1)));
+    del.addEventListener("click", () => { editArtists.splice(i, 1); cfgDirty = true; renderMediaEditors(); });
+    tools.append(del);
+    line.append(thumb, title, name, tools);
+    box.append(line);
+  });
+  $("cfg-add-artist").disabled = editArtists.length >= 12;
+}
 function fillCfgForm() {
   if (!$("cfg-title")) return;
   cfgSilent = true;
@@ -3113,6 +3352,11 @@ function fillCfgForm() {
   editShows = eventCfg.shows.map(s => ({ ...s }));
   editRows = eventCfg.rows.map(r => ({ ...r }));
   renderCfgEditors();
+  $("cfg-org").value = eventCfg.org || "";
+  editLogo = eventCfg.logo || "";
+  editPoster = eventCfg.poster || "";
+  editArtists = (eventCfg.artists || []).map(a => ({ ...a }));
+  renderMediaEditors();
   cfgSilent = false;
 }
 async function saveCfg(e) {
@@ -3121,6 +3365,7 @@ async function saveCfg(e) {
   const shows = readShows();
   const rows = readRows();
   if (!$("cfg-title").value.trim()) { setCfgStatus("Cần tên chương trình."); return; }
+  if (editArtists.some(a => !String(a.name || "").trim())) { setCfgStatus("Mỗi nghệ sĩ cần có tên, hoặc bấm Xóa dòng trống."); return; }
   if (!shows.length || shows.some(s => !s.day || !s.label || !s.time)) { setCfgStatus("Mỗi suất cần ngày, nhãn và giờ."); return; }
   if (!rows.length || rows.some(r => !r.label || !(Number(r.count) >= 1))) { setCfgStatus("Mỗi hàng cần nhãn và số ghế từ 1 trở lên."); return; }
   if (new Set(rows.map(r => r.label.toUpperCase())).size !== rows.length) { setCfgStatus("Mỗi hàng một nhãn khác nhau."); return; }
@@ -3130,6 +3375,8 @@ async function saveCfg(e) {
     description: $("cfg-desc").value, venue: $("cfg-venue").value, phone: $("cfg-phone").value,
     door: $("cfg-door").value, ticketNote: $("cfg-ticket").value, maxSeats: Number($("cfg-max").value),
     aisle: $("cfg-aisle").checked, codePrefix: eventCfg.codePrefix, shows, rows,
+    org: $("cfg-org").value, logo: editLogo, poster: editPoster,
+    artists: editArtists.map(a => ({ title: a.title, name: a.name, photo: a.photo })),
     blocked: $("cfg-blocked").value.split(/[\s,;]+/),
     hallLayoutId: HALL_LAYOUT_ID
   });
@@ -3139,6 +3386,7 @@ async function saveCfg(e) {
     if (live) applyRemote(await api("/api/event", { method: "PUT", body: JSON.stringify(payload) }));
     else await db.doc("cauhinh/sukien").set(structuredClone(payload));
     setCfgStatus("Đã lưu. Mọi người đang mở trang sẽ thấy bản mới.", true);
+    setMediaMsg("");
   } catch (err) {
     cfgDirty = true;
     setCfgStatus(explain(err));
@@ -3660,6 +3908,30 @@ $("cfg-add-row").onclick = () => {
   cfgDirty = true; renderCfgEditors();
 };
 $("cfg").addEventListener("submit", saveCfg);
+$("cfg-org").addEventListener("input", markCfg);
+$("cfg-add-artist").onclick = () => {
+  if (editArtists.length >= 12) return;
+  editArtists.push({ title: "", name: "", photo: "" });
+  cfgDirty = true;
+  renderMediaEditors();
+  $("cfg-artists").querySelector(".artist-line:last-child input:nth-of-type(2)")?.focus();
+};
+for (const btn of document.querySelectorAll("[data-pick]")) {
+  btn.addEventListener("click", () => document.querySelector('[data-up="' + btn.dataset.pick + '"]').click());
+}
+for (const input of document.querySelectorAll("[data-up]")) {
+  input.addEventListener("change", () => pickAndUpload(input, input.dataset.up, id => {
+    if (input.dataset.up === "logo") editLogo = id; else editPoster = id;
+    renderMediaEditors();
+  }));
+}
+for (const btn of document.querySelectorAll("[data-clear]")) {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.clear === "logo") editLogo = ""; else editPoster = "";
+    cfgDirty = true;
+    renderMediaEditors();
+  });
+}
 window.addEventListener("hashchange", () => applyPageShell());
 
 applyPageShell();

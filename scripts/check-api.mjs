@@ -222,4 +222,38 @@ const gone = await call("/api/lookup", {
 }, stranger);
 if ((gone.data.registrations || []).length) fail("lookup still there");
 
+// Ảnh và cấu hình trang chủ (nghệ sĩ, logo, đơn vị tổ chức).
+const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
+const guestUpload = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: png }, guest);
+if (guestUpload.status !== 403) fail("guest image upload " + guestUpload.status);
+const notImage = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: "<svg/>" }, staff);
+if (notImage.status === 200) fail("non-image accepted");
+const upload = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: png }, staff);
+if (upload.status !== 200 || !/^[a-f0-9]{24}$/.test(upload.data.id || "")) fail("image upload " + JSON.stringify(upload.data));
+const served = await fetch(base + "/api/images/" + upload.data.id);
+if (served.status !== 200 || served.headers.get("content-type") !== "image/png") fail("image serve " + served.status);
+if (Buffer.compare(Buffer.from(await served.arrayBuffer()), png) !== 0) fail("image bytes");
+const original = opened.data.event;
+const media = await call("/api/event", {
+  method: "PUT",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    ...original,
+    org: "Đơn vị kiểm tra",
+    logo: upload.data.id,
+    poster: "0123456789abcdef01234567",
+    artists: [{ title: "NSND", name: "Nghệ sĩ Kiểm Tra", photo: upload.data.id }, { title: "", name: "  " }]
+  })
+}, staff);
+const saved = media.data.event || {};
+if (media.status !== 200 || saved.org !== "Đơn vị kiểm tra" || saved.logo !== upload.data.id) fail("media save " + JSON.stringify(saved));
+if (saved.poster !== "") fail("unknown image id kept");
+if (saved.artists?.length !== 1 || saved.artists[0].photo !== upload.data.id) fail("artists " + JSON.stringify(saved.artists));
+const restored = await call("/api/event", {
+  method: "PUT",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify(original)
+}, staff);
+if (restored.status !== 200 || restored.data.event?.org !== original.org) fail("media restore");
+
 console.log("api-ok");
