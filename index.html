@@ -108,7 +108,6 @@ h1 em{font-style:italic;font-weight:500;display:block;font-size:.58em;margin-top
 @media (max-width:600px){.hero .wrap,body.page-home .hero .wrap{padding-block:52px 108px}}
 .wave{display:block;width:100%;height:32px;color:var(--lacquer);background:transparent;margin-bottom:-1px}
 
-body.page-home .site-nav{display:none!important}
 .site-nav{
   position:sticky;top:0;z-index:50;
   background:rgba(10,42,31,.92);
@@ -159,11 +158,29 @@ h2{font-family:var(--font-display);font-weight:700;font-size:clamp(1.45rem,2.6vw
 dl.facts{margin:0;display:grid;grid-template-columns:auto 1fr;gap:14px 20px}
 dl.facts dt{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;padding-top:4px}
 dl.facts dd{margin:0;font-size:1.02rem}
-.shows{display:grid;gap:0}
-.show{display:flex;gap:16px;align-items:baseline;border-top:1px solid var(--line);padding:14px 0}
-.show:first-child{border-top:0;padding-top:4px}
-.show .d{font-family:var(--font-display);font-size:1.55rem;font-weight:700;min-width:4.8ch;font-variant-numeric:tabular-nums;color:var(--lacquer)}
-.show strong{font-weight:600;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.shows{display:grid;gap:12px}
+/* Cuống vé suất diễn: phần ngày và phần thân nối bằng đường răng cưa */
+.stub{
+  --notch:9px;position:relative;display:grid;grid-template-columns:auto 1fr;align-items:stretch;
+  text-decoration:none;color:var(--ink);border-radius:14px;
+  background:var(--surface);border:1px solid var(--line);
+  box-shadow:0 12px 26px -22px rgba(16,36,28,.8);
+  transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) ease,border-color var(--dur-fast) ease;
+}
+.stub:hover{transform:translateY(-2px);border-color:var(--lacquer);box-shadow:0 18px 30px -20px rgba(16,36,28,.8)}
+.stub-date{display:grid;align-content:center;justify-items:center;gap:2px;min-width:96px;padding:14px 16px;border-radius:13px 0 0 13px;background:linear-gradient(160deg,#123D2C,var(--lacquer));color:var(--gold-bright);position:relative}
+.stub-date::after{content:"";position:absolute;right:-1px;top:8px;bottom:8px;border-right:2px dashed color-mix(in srgb,var(--gold-bright) 55%,transparent)}
+.stub-date b{font-family:var(--font-display);font-size:1.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.stub-date small{font-size:.72rem;letter-spacing:.06em;color:#CFE6D8;font-weight:600}
+.stub::before,.stub::after{content:"";position:absolute;left:calc(96px - var(--notch));width:calc(var(--notch) * 2);height:calc(var(--notch) * 2);border-radius:50%;background:var(--bg);border:1px solid var(--line);z-index:1}
+.stub::before{top:calc(var(--notch) * -1);clip-path:inset(50% 0 0 0)}
+.stub::after{bottom:calc(var(--notch) * -1);clip-path:inset(0 0 50% 0)}
+.stub-body{display:grid;align-content:center;gap:2px;padding:12px 16px 12px 22px}
+.stub-body strong{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums}
+.stub-tag{font-size:.82rem;color:var(--muted)}
+.stub-go{position:absolute;right:14px;bottom:10px;font-size:.78rem;font-weight:700;color:var(--lacquer);opacity:0;transform:translateX(-4px);transition:opacity var(--dur-fast) ease,transform var(--dur-fast) var(--ease-out)}
+.stub:hover .stub-go,.stub:focus-visible .stub-go{opacity:1;transform:none}
+@media (hover:none){.stub-go{opacity:1;transform:none;position:static;grid-column:2;padding:0 16px 12px 22px}}
 .note{font-size:.9rem;color:var(--muted);border-left:3px solid var(--gold);padding:4px 0 4px 14px;margin:18px 0 0}
 
 .card{background:color-mix(in srgb,var(--surface) 92%,white);border:1px solid color-mix(in srgb,var(--line) 85%,transparent);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
@@ -436,7 +453,7 @@ body:not(.page-checkin) .view-checkin{display:none!important}
 .checkin-divider{display:flex;align-items:center;gap:12px;margin:4px 0;color:var(--muted);font-size:.82rem}
 .checkin-divider::before,.checkin-divider::after{content:"";flex:1;height:1px;background:var(--line)}
 body.page-book main.wrap,body.page-home main.wrap,body.page-staff main.wrap,body.page-checkin main.wrap{grid-template-columns:1fr}
-body.page-home main.wrap{max-width:980px}
+body.page-home main.wrap,body.page-home footer.wrap{max-width:980px}
 body.page-staff main.wrap,body.page-checkin main.wrap{max-width:920px}
 @media (min-width:821px){
   body.page-book .seatband{grid-column:1/-1;grid-row:1}
@@ -471,10 +488,85 @@ button.seat:disabled{opacity:1;cursor:not-allowed}
 .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
 .modal-head h2{margin:0}
 .pass{display:grid;gap:8px;margin:0;justify-items:center}
-.pass img{width:min(100%,300px);max-height:min(70vh,720px);height:auto;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff}
+.pass img{width:min(100%,320px);max-height:min(74vh,760px);height:auto;object-fit:contain;border:0;background:transparent;filter:drop-shadow(0 14px 22px rgba(10,42,31,.28))}
 a.primary{display:inline-flex;justify-content:center;align-items:center;min-height:46px;padding:12px 22px;border-radius:4px;background:var(--lacquer);color:var(--lacquer-ink);font-weight:700;text-decoration:none;text-align:center}
 a.primary:hover{filter:brightness(1.12)}
 @media (max-width:480px){.modal-sheet{padding:16px}}
+
+/* ===== Trang chủ: các khối giới thiệu ===== */
+.home-sec{display:grid;gap:18px;padding-top:8px}
+.sec-head{display:grid;gap:2px}
+.sec-head h2{margin:0}
+/* Nghệ sĩ: ảnh thật nếu có trong anh/nghe-si/, không có thì hiện chữ lồng trên nền sơn then */
+.artists-wrap{display:grid;gap:20px}
+.artists-wrap.has-poster{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:start}
+@media (max-width:720px){.artists-wrap.has-poster{grid-template-columns:1fr}}
+.poster{margin:0;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--line);background:var(--surface)}
+.poster img{display:block;width:100%;height:auto}
+.artist-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px}
+.artist{display:grid;gap:2px;text-align:center;justify-items:center}
+.artist strong{font-family:var(--font-display);font-size:1.15rem;line-height:1.25;text-wrap:balance}
+.artist-title{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--gold);margin-top:10px}
+.portrait{
+  position:relative;width:100%;max-width:200px;aspect-ratio:4/5;border-radius:999px 999px 18px 18px;overflow:hidden;
+  background:
+    radial-gradient(120% 60% at 50% 0%,rgba(232,197,106,.28),transparent 60%),
+    repeating-radial-gradient(circle at 50% 120%,transparent 0 14px,rgba(232,197,106,.08) 14px 15px),
+    linear-gradient(170deg,#1A5740,#0A2A1F);
+  border:2px solid color-mix(in srgb,var(--gold-bright) 60%,transparent);
+  box-shadow:0 18px 34px -24px rgba(10,42,31,.9),inset 0 0 0 5px rgba(10,42,31,.35);
+  display:grid;place-items:center;
+}
+.portrait::before{content:attr(data-mono);font-family:var(--font-display);font-style:italic;font-weight:700;font-size:3rem;color:var(--gold-bright);letter-spacing:.02em;text-shadow:0 2px 14px rgba(0,0,0,.35)}
+.portrait::after{content:"";position:absolute;left:50%;bottom:16%;width:38%;height:2px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--gold-bright),transparent);opacity:.7}
+.portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+@media (max-width:560px){
+  .artist-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .portrait::before{font-size:1.7rem}
+  .artist strong{font-size:.9rem}
+  .artist-title{font-size:.6rem;letter-spacing:.1em;margin-top:6px}
+}
+/* 3 bước */
+.how-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:how}
+@media (max-width:720px){.how-list{grid-template-columns:1fr}}
+.how-list li{counter-increment:how;position:relative;display:grid;gap:6px;align-content:start;padding:20px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.how-list li::before{content:counter(how);position:absolute;top:14px;right:16px;font-family:var(--font-display);font-size:2.4rem;font-weight:700;line-height:1;color:color-mix(in srgb,var(--gold-bright) 55%,transparent)}
+.how-list svg{width:48px;height:48px;fill:color-mix(in srgb,var(--lacquer) 12%,transparent);stroke:var(--lacquer);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.how-list svg .hl{fill:var(--gold-bright);stroke:var(--gold)}
+.how-list svg .ln{fill:none}
+.how-list strong{font-size:1.02rem}
+.how-list p{margin:0;color:var(--muted);font-size:.9rem}
+/* Chỉ đường */
+.venue{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:0;padding:0;border-radius:16px;overflow:hidden;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+@media (max-width:720px){.venue{grid-template-columns:1fr}}
+.venue-map{min-height:200px}
+.venue-map svg{display:block;width:100%;height:100%}
+.venue-body{display:grid;gap:8px;align-content:center;padding:24px}
+.venue-body h2{margin:0}
+.venue-body p{margin:0 0 6px;color:var(--muted)}
+/* Hỏi đáp */
+.faq-list{display:grid;gap:8px}
+.faq-list details{border-radius:12px;background:var(--surface);border:1px solid var(--line);padding:0 18px}
+.faq-list details[open]{border-color:color-mix(in srgb,var(--lacquer) 40%,var(--line))}
+.faq-list summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 0;font-weight:600}
+.faq-list summary::-webkit-details-marker{display:none}
+.faq-list summary::after{content:"+";font-size:1.3rem;line-height:1;color:var(--gold);transition:transform var(--dur-fast) var(--ease-out)}
+.faq-list details[open] summary::after{transform:rotate(45deg)}
+.faq-list summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
+.faq-list details p{margin:0 0 16px;color:var(--muted)}
+.faq-list a{color:var(--lacquer);font-weight:600}
+@media (prefers-reduced-motion:no-preference){.home-sec{animation:rise var(--dur-enter) var(--ease-out) both;animation-delay:.32s}}
+
+/* ===== Thanh điều hướng trang chủ: hiện khi đã cuộn qua phần đầu ===== */
+body.page-home .site-nav{position:fixed;left:0;right:0;top:0;transform:translateY(-100%);visibility:hidden;transition:transform .32s var(--ease-out),visibility 0s linear .32s}
+body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:transform .32s var(--ease-out),visibility 0s}
+
+/* ===== Chân trang có dấu đơn vị ===== */
+.foot-org{display:flex;gap:14px;align-items:center;margin:18px 0 6px}
+.org-mark{position:relative;flex:none;width:52px;height:52px;border-radius:50%;overflow:hidden;background:var(--lacquer);box-shadow:0 0 0 2px var(--gold-bright),0 0 0 4px color-mix(in srgb,var(--lacquer) 20%,transparent)}
+.org-mark svg{position:absolute;inset:0;width:100%;height:100%}
+.org-mark img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;z-index:1}
+.foot-org p{margin:0}
 </style>
 </head>
 <body>
@@ -594,6 +686,99 @@ a.primary:hover{filter:brightness(1.12)}
       <h2 id="shows-h">Thời gian</h2>
       <div class="shows" id="shows"></div>
     </aside>
+  </section>
+
+  <!-- Ảnh đặt trong thư mục anh/. Thiếu ảnh nào thì khối đó tự dùng hình thay thế. -->
+  <section class="home-sec artists view-home" aria-labelledby="artists-h">
+    <div class="sec-head">
+      <span class="eyebrow">Trên sân khấu</span>
+      <h2 id="artists-h">Nghệ sĩ biểu diễn</h2>
+    </div>
+    <div class="artists-wrap">
+      <figure class="poster" id="poster" hidden>
+        <img src="/anh/poster.jpg" alt="Poster chương trình Tiếng Hò Sông Hậu" decoding="async"
+          onload="this.closest('.poster').hidden=false;this.closest('.artists-wrap').classList.add('has-poster')" onerror="this.closest('.poster').remove()">
+      </figure>
+      <ul class="artist-list">
+        <li class="artist">
+          <div class="portrait" data-mono="QT"><img src="/anh/nghe-si/que-tran.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>
+          <span class="artist-title">NSND</span>
+          <strong>Quế Trân</strong>
+        </li>
+        <li class="artist">
+          <div class="portrait" data-mono="LT"><img src="/anh/nghe-si/le-tu.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>
+          <span class="artist-title">NSƯT</span>
+          <strong>Lê Tứ</strong>
+        </li>
+        <li class="artist">
+          <div class="portrait" data-mono="TĐ"><img src="/anh/nghe-si/doan-tay-do.jpg" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>
+          <span class="artist-title">Nghệ sĩ</span>
+          <strong>Đoàn Nghệ thuật Cải lương Tây Đô</strong>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="home-sec how view-home" aria-labelledby="how-h">
+    <div class="sec-head">
+      <span class="eyebrow">Nhận vé trong 3 bước</span>
+      <h2 id="how-h">Cách đăng ký</h2>
+    </div>
+    <ol class="how-list">
+      <li>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="14" width="10" height="9" rx="2.5"/><rect x="19" y="14" width="10" height="9" rx="2.5"/><rect x="30" y="14" width="10" height="9" rx="2.5" class="hl"/><rect x="8" y="26" width="10" height="9" rx="2.5"/><rect x="19" y="26" width="10" height="9" rx="2.5"/><rect x="30" y="26" width="10" height="9" rx="2.5"/><path d="M10 40h28" class="ln"/></svg>
+        <strong>Chọn suất và ghế</strong>
+        <p>Bấm ghế trống trên sơ đồ, tối đa <span class="faq-max">4</span> ghế mỗi lượt.</p>
+      </li>
+      <li>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="7" width="28" height="34" rx="4"/><path d="M16 17h16M16 24h16M16 31h9" class="ln"/></svg>
+        <strong>Điền họ tên, số điện thoại</strong>
+        <p>Ban tổ chức dùng thông tin này để đối chiếu khi bạn vào cửa.</p>
+      </li>
+      <li>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><rect x="27" y="9" width="12" height="12" rx="2"/><rect x="9" y="27" width="12" height="12" rx="2"/><path d="M27 27h5v5h-5zM34 34h5v5h-5zM34 27h5M27 39h5" class="ln"/></svg>
+        <strong>Tải vé QR</strong>
+        <p>Đưa mã vé tại quầy, mở cửa <span class="faq-door">trước giờ diễn 45 phút</span>.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="home-sec venue view-home" aria-labelledby="venue-h">
+    <div class="venue-map" aria-hidden="true">
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice">
+        <rect width="320" height="200" fill="#DCEDE3"/>
+        <path d="M-10 150C60 120 110 170 170 140S270 90 330 110V210H-10Z" fill="#9FCBB4"/>
+        <path d="M-10 160C60 132 110 180 170 150S270 102 330 120" fill="none" stroke="#F4FAF5" stroke-width="2" stroke-dasharray="6 8" opacity=".8"/>
+        <path d="M0 70H320M0 104H230M120 0V140M210 0V120" stroke="#F4FAF5" stroke-width="10" fill="none"/>
+        <path d="M0 70H320M0 104H230M120 0V140M210 0V120" stroke="#C9E0D2" stroke-width="1" fill="none"/>
+        <g transform="translate(165 86)"><path d="M0 0c-14-15-20-24-20-33a20 20 0 0 1 40 0c0 9-6 18-20 33z" fill="#174F39"/><circle cy="-33" r="7" fill="#E8C56A"/></g>
+      </svg>
+    </div>
+    <div class="venue-body">
+      <span class="eyebrow">Địa điểm</span>
+      <h2 id="venue-h">Đường đến nhà biểu diễn</h2>
+      <p id="venue-text"></p>
+      <div class="btns">
+        <a class="primary" id="venue-map-link" href="https://www.google.com/maps" target="_blank" rel="noopener">Mở bản đồ chỉ đường</a>
+        <a class="ghost" id="venue-call" href="tel:">Gọi Ban tổ chức</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-sec faq view-home" aria-labelledby="faq-h">
+    <div class="sec-head">
+      <span class="eyebrow">Hỏi nhanh</span>
+      <h2 id="faq-h">Câu hỏi thường gặp</h2>
+    </div>
+    <div class="faq-list">
+      <details><summary>Vé có mất phí không?</summary><p>Không. Vé mời hoàn toàn miễn phí, chỉ cần đăng ký trước để giữ ghế.</p></details>
+      <details><summary>Một lần đăng ký được bao nhiêu ghế?</summary><p>Tối đa <span class="faq-max">4</span> ghế mỗi lượt. Các ghế trong cùng lượt dùng chung một mã vé.</p></details>
+      <details><summary>Đến nơi cần đưa gì?</summary><p>Đưa ảnh vé có mã QR, hoặc đọc mã vé và số điện thoại đã đăng ký cho nhân viên tại quầy.</p></details>
+      <details><summary>Muốn đổi ghế hoặc hủy vé thì làm sao?</summary><p>Vào <a href="/dat-ve#check">Kiểm tra vé</a>, nhập đúng họ tên và số điện thoại đã đăng ký để sửa hoặc hủy. Ghế đã hủy được trả lại cho người khác.</p></details>
+      <details class="faq-lau"><summary>Có ghế trên lầu không?</summary><p>Hiện chỉ mở đăng ký ghế tầng trệt. Ghế trên lầu chưa mở; khi mở, sơ đồ đặt vé sẽ hiện thêm khu trên lầu.</p></details>
+      <details><summary>Mấy giờ mở cửa?</summary><p>Mở cửa <span class="faq-door">trước giờ diễn 45 phút</span>.</p></details>
+      <details><summary>Cần hỗ trợ thêm?</summary><p>Gọi Ban tổ chức: <a class="faq-phone" href="tel:">—</a>.</p></details>
+    </div>
   </section>
 
   <div class="seatband view-book">
@@ -867,8 +1052,13 @@ a.primary:hover{filter:brightness(1.12)}
   </div>
 </dialog>
 <footer class="wrap">
-  <p style="margin:18px 0 6px">Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
-  <p style="margin:0;font-weight:600;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
+  <div class="foot-org">
+    <span class="org-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#E8C56A"><path d="M24 11C28.5 17 28.5 26 24 32C19.5 26 19.5 17 24 11Z"/><path d="M24 32C17.5 30.5 12.5 25 11.5 17.5C17 19.5 21.5 25 24 32Z" opacity=".85"/><path d="M24 32C30.5 30.5 35.5 25 36.5 17.5C31 19.5 26.5 25 24 32Z" opacity=".85"/></g><path d="M12 36.5C16 34.5 20 36.5 24 36.5S32 34.5 36 36.5" fill="none" stroke="#E8C56A" stroke-width="2" stroke-linecap="round"/></svg><img src="/anh/logo.png" alt="" decoding="async" onerror="this.remove()"></span>
+    <div>
+      <p style="font-weight:600;color:var(--ink)">Copyright © Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ.</p>
+      <p>Thông tin bạn gửi chỉ Ban tổ chức xem được và chỉ dùng để sắp xếp chỗ ngồi cho đêm diễn.</p>
+    </div>
+  </div>
   <p class="foot-links">
     <a href="/">Trang chủ</a>
     <a href="/dat-ve">Đặt vé</a>
@@ -1153,6 +1343,12 @@ function showInstant(sh) {
   const ms = new Date(`${y[1]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}T${tm[1].padStart(2, "0")}:${tm[2]}:00+07:00`).getTime();
   return Number.isFinite(ms) ? ms : null;
 }
+function showWeekday(sh) {
+  const ms = showInstant(sh);
+  if (!ms) return "";
+  const w = new Date(ms).toLocaleDateString("vi-VN", { weekday: "long", timeZone: "Asia/Ho_Chi_Minh" });
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}
 function readHostMode() {
   const c = document.querySelector('input[name="bookmode"]:checked');
   return !!(canEditUser && c && c.value === "host");
@@ -1282,10 +1478,32 @@ function applyEvent() {
   const shows = $("shows");
   shows.textContent = "";
   for (const s of e.shows) {
-    const row = el("div", "show");
-    row.append(el("span", "d", s.day), el("strong", "", s.time));
-    shows.append(row);
+    // Cuống vé: ngày bên trái, giờ + số ghế còn bên phải, bấm vào là sang chọn ghế đúng suất.
+    const stub = el("a", "stub");
+    stub.href = "/dat-ve?suat=" + encodeURIComponent(s.id);
+    const date = el("span", "stub-date");
+    date.append(el("b", "", s.day || s.id));
+    const week = showWeekday(s);
+    if (week) date.append(el("small", "", week));
+    const body = el("span", "stub-body");
+    body.append(el("strong", "", s.time || ""));
+    const tag = String(s.label || "").split("·").slice(1).join("·").trim();
+    if (tag) body.append(el("span", "stub-tag", tag));
+    const left = el("span", "sc-left", "");
+    left.dataset.show = s.id;
+    body.append(left);
+    stub.append(date, body, el("span", "stub-go", "Chọn ghế →"));
+    shows.append(stub);
   }
+  for (const n of document.querySelectorAll(".faq-max")) n.textContent = String(e.maxSeats || 4);
+  for (const n of document.querySelectorAll(".faq-door")) n.textContent = (e.door || "Trước giờ diễn 45 phút").replace(/^./, c => c.toLowerCase());
+  const tel = String(e.phone || "").replace(/[^\d+]/g, "");
+  for (const n of document.querySelectorAll(".faq-phone")) { n.textContent = e.phone || "—"; n.href = "tel:" + tel; }
+  for (const n of document.querySelectorAll(".faq-lau")) n.hidden = !HIDE_LAU;
+  $("venue-call").href = "tel:" + tel;
+  $("venue-call").hidden = !tel;
+  $("venue-text").textContent = e.venue || "";
+  $("venue-map-link").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(e.venue || "");
   const prev = activeShow;
   const choices = $("show-choices");
   choices.textContent = "";
@@ -1297,12 +1515,11 @@ function applyEvent() {
     input.id = "show-" + s.id;
     input.value = s.id;
     lab.classList.add("show-card");
-    const ms = showInstant(s);
-    const week = ms ? new Date(ms).toLocaleDateString("vi-VN", { weekday: "long", timeZone: "Asia/Ho_Chi_Minh" }) : "";
+    const week = showWeekday(s);
     const body = el("span", "sc-body");
     body.append(el("span", "sc-day", s.day || s.label || s.id));
     const meta = el("span", "sc-meta");
-    if (week) meta.append(el("span", "sc-week", week.charAt(0).toUpperCase() + week.slice(1)));
+    if (week) meta.append(el("span", "sc-week", week));
     if (s.time) meta.append(el("span", "sc-time", s.time));
     body.append(meta);
     const left = el("span", "sc-left", "");
@@ -1311,7 +1528,9 @@ function applyEvent() {
     lab.append(input, body);
     choices.append(lab);
   }
-  activeShow = e.shows.some(s => s.id === prev) ? prev : (e.shows[0]?.id || null);
+  const wanted = new URLSearchParams(location.search).get("suat");
+  activeShow = e.shows.some(s => s.id === prev) ? prev
+    : (e.shows.some(s => s.id === wanted) ? wanted : (e.shows[0]?.id || null));
   checkShow(activeShow);
   $("show-field").hidden = e.shows.length <= 1;
   $("shows-h").textContent = e.shows.length > 1 ? "Các suất diễn" : "Thời gian";
@@ -1784,96 +2003,224 @@ function qrMatrix(text) {
   return best;
 }
 
+const ORG_NAME = "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ";
+const LOTUS_PATHS = [
+  "M24 11C28.5 17 28.5 26 24 32C19.5 26 19.5 17 24 11Z",
+  "M24 32C17.5 30.5 12.5 25 11.5 17.5C17 19.5 21.5 25 24 32Z",
+  "M24 32C30.5 30.5 35.5 25 36.5 17.5C31 19.5 26.5 25 24 32Z"
+];
+const imageCache = {};
+function loadImageOnce(src) {
+  // Ảnh không có thì trả null để vé dùng hình thay thế.
+  if (!imageCache[src]) {
+    imageCache[src] = new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve(img.naturalWidth ? img : null);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+  return imageCache[src];
+}
+function drawEmblem(ctx, logo, cx, cy, r) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = logo ? "#FFFFFF" : "#0E3727";
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#E8C56A";
+  ctx.stroke();
+  ctx.clip();
+  if (logo) {
+    const s = Math.min((r * 2 - 6) / logo.naturalWidth, (r * 2 - 6) / logo.naturalHeight);
+    const w = logo.naturalWidth * s, h = logo.naturalHeight * s;
+    ctx.drawImage(logo, cx - w / 2, cy - h / 2, w, h);
+  } else if (typeof Path2D === "function") {
+    const k = (r * 2) / 48;
+    ctx.translate(cx - r, cy - r);
+    ctx.scale(k, k);
+    ctx.fillStyle = "#E8C56A";
+    LOTUS_PATHS.forEach((d, i) => { ctx.globalAlpha = i ? .85 : 1; ctx.fill(new Path2D(d)); });
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "#E8C56A";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.stroke(new Path2D("M12 36.5C16 34.5 20 36.5 24 36.5S32 34.5 36 36.5"));
+  }
+  ctx.restore();
+}
 async function drawPass(reg) {
   const font = "Be Vietnam Pro, Segoe UI, sans-serif";
+  const serif = "'Source Serif 4', Georgia, serif";
   try {
-    await document.fonts.load("700 32px Be Vietnam Pro");
-    await document.fonts.load("600 14px Be Vietnam Pro");
+    await Promise.all([
+      document.fonts.load("700 32px Be Vietnam Pro"),
+      document.fonts.load("600 14px Be Vietnam Pro"),
+      document.fonts.load("700 30px 'Source Serif 4'"),
+      document.fonts.load("italic 500 20px 'Source Serif 4'")
+    ]);
   } catch { /* vẫn vẽ bằng phông dự phòng */ }
-  const pad = 28;
+  const logo = await loadImageOnce("/anh/logo.png");
+  const pad = 30;
   const W = 460;
-  const labelW = 112;
+  const labelW = 104;
   const valueX = pad + labelW;
   const valueW = W - valueX - pad;
   const seats = sortSeats(reg.seatIds || []);
   const info = [
-    ["Mã vé", reg.code || ""],
     ["Họ tên", reg.name || ""],
     ["Điện thoại", maskPhone(reg.phone)],
-    ["Suất", showText(reg.show)],
-    ["Ghế", seats.join(", ") || ""],
-    ["Địa điểm", eventCfg.venue || ""]
+    ["Suất", [showWeekday(showById(reg.show) || {}), showText(reg.show)].filter(Boolean).join(", ")],
+    ["Ghế", seats.join(", ") || ""]
   ];
   const matrix = qrMatrix(reg.code || "");
-  const mod = 6, quiet = 4;
+  const mod = 5, quiet = 3;
   const qrSize = (matrix.length + quiet * 2) * mod;
   const canvas = document.createElement("canvas");
   const dpr = 2;
   const ctx = canvas.getContext("2d");
-  const title = [eventCfg.title, eventCfg.titleEm].filter(Boolean).join(" ");
-  let size = 30;
-  do { ctx.font = "700 " + size + "px " + font; size -= 2; }
-  while (size >= 18 && ctx.measureText(title).width > W - pad * 2);
-  const titleSize = Math.max(18, size + 2);
-  ctx.font = "500 13px " + font;
-  const venueLines = wrapLines(ctx, eventCfg.venue || "", W - pad * 2).slice(0, 5);
-  const band = 72 + venueLines.length * 17;
+
+  // Đo trước để biết chiều cao vé.
+  const title = eventCfg.title || "";
+  const titleEm = eventCfg.titleEm || "";
+  let titleSize = 40;
+  ctx.font = "700 " + titleSize + "px " + serif;
+  while (titleSize > 22 && ctx.measureText(title).width > W - pad * 2) {
+    titleSize -= 2;
+    ctx.font = "700 " + titleSize + "px " + serif;
+  }
+  let emSize = Math.round(titleSize * .62);
+  ctx.font = "italic 500 " + emSize + "px " + serif;
+  while (emSize > 14 && ctx.measureText(titleEm).width > W - pad * 2) {
+    emSize -= 1;
+    ctx.font = "italic 500 " + emSize + "px " + serif;
+  }
+  ctx.font = "500 12.5px " + font;
+  const venueLines = wrapLines(ctx, eventCfg.venue || "", W - pad * 2).slice(0, 4);
+  const titleY = 100 + titleSize * .55;
+  const emY = titleY + (titleEm ? emSize + 8 : 0);
+  const band = emY + 14 + venueLines.length * 17 + 16;
   let infoH = 0;
   const infoLines = info.map(pair => {
     ctx.font = "700 15px " + font;
     const lines = wrapLines(ctx, pair[1], valueW);
-    const block = Math.max(26, 4 + lines.length * 19);
+    const block = Math.max(28, 9 + lines.length * 19);
     infoH += block;
     return { label: pair[0], lines, block };
   });
-  const H = band + 24 + infoH + 16 + qrSize + 44;
+  const perf = band + 22 + infoH + 6;
+  const stubTop = perf + 24;
+  const qrBox = qrSize + 16;
+  const H = stubTop + qrBox + 84;
   canvas.width = Math.ceil(W * dpr);
   canvas.height = Math.ceil(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = "#F4FAF5";
+
+  // Thân vé bo góc.
+  ctx.save();
+  roundPath(ctx, 0, 0, W, H, 18);
+  ctx.clip();
+  const paper = ctx.createLinearGradient(0, band, 0, H);
+  paper.addColorStop(0, "#F6FBF7");
+  paper.addColorStop(1, "#E7F1EA");
+  ctx.fillStyle = paper;
   ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "#174F39";
+  const head = ctx.createLinearGradient(0, 0, W, band);
+  head.addColorStop(0, "#0A2A1F");
+  head.addColorStop(.55, "#123D2C");
+  head.addColorStop(1, "#1A5740");
+  ctx.fillStyle = head;
   ctx.fillRect(0, 0, W, band);
-  ctx.fillStyle = "#E8C56A";
-  ctx.font = "600 12px " + font;
-  ctx.fillText("VÉ MỜI", pad, 28);
-  ctx.fillStyle = "#F1FAF4";
-  ctx.font = "700 " + titleSize + "px " + font;
-  ctx.fillText(title, pad, 56);
-  ctx.font = "500 13px " + font;
-  ctx.fillStyle = "#CFE6D8";
-  let vy = 76;
-  for (const line of venueLines) {
-    ctx.fillText(line, pad, vy);
-    vy += 17;
+  // Trăng và sóng nhẹ ở góc phải phần đầu vé.
+  ctx.fillStyle = "#F1C977";
+  ctx.globalAlpha = .18;
+  ctx.beginPath(); ctx.arc(W - 64, 58, 32, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = .07;
+  ctx.beginPath(); ctx.arc(W - 64, 58, 54, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = "rgba(207,235,221,.22)";
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 3; i++) {
+    const wy = band - 16 - i * 9, wx = W - 150 + i * 22;
+    ctx.beginPath();
+    ctx.moveTo(wx, wy);
+    ctx.quadraticCurveTo(wx + 15, wy - 5, wx + 30, wy);
+    ctx.quadraticCurveTo(wx + 45, wy + 5, wx + 60, wy);
+    ctx.stroke();
   }
-  let y = band + 28;
+  ctx.fillStyle = "#E8C56A";
+  ctx.fillRect(0, band - 3, W, 3);
+
+  drawEmblem(ctx, logo, pad + 22, 48, 22);
+  ctx.fillStyle = "#E8C56A";
+  ctx.font = "700 11px " + font;
+  ctx.fillText("VÉ MỜI  ·  MIỄN PHÍ", pad + 56, 44);
+  ctx.fillStyle = "#CFE6D8";
+  ctx.font = "500 11px " + font;
+  ctx.fillText(ORG_NAME, pad + 56, 61, W - pad * 2 - 56);
+  ctx.fillStyle = "#F3FBF6";
+  ctx.font = "700 " + titleSize + "px " + serif;
+  ctx.fillText(title, pad, titleY);
+  if (titleEm) {
+    ctx.fillStyle = "#F1C977";
+    ctx.font = "italic 500 " + emSize + "px " + serif;
+    ctx.fillText(titleEm, pad, emY);
+  }
+  ctx.font = "500 12.5px " + font;
+  ctx.fillStyle = "#CFE6D8";
+  let vy = emY + 22;
+  for (const line of venueLines) { ctx.fillText(line, pad, vy); vy += 17; }
+
+  let y = band + 30;
   for (const row of infoLines) {
-    ctx.font = "600 12px " + font;
-    ctx.fillStyle = "#4A6358";
-    ctx.fillText(row.label, pad, y);
+    ctx.font = "700 10.5px " + font;
+    ctx.fillStyle = "#8A6A14";
+    ctx.fillText(row.label.toUpperCase(), pad, y);
     ctx.font = "700 15px " + font;
     ctx.fillStyle = "#10241C";
-    let ly = y;
-    for (const line of row.lines) {
-      ctx.fillText(line, valueX, ly);
-      ly += 19;
-    }
+    let ly = y + 1;
+    for (const line of row.lines) { ctx.fillText(line, valueX, ly); ly += 19; }
     y += row.block;
   }
-  const qx = Math.round((W - qrSize) / 2);
-  const qy = y + 6;
-  drawQr(ctx, matrix, qx, qy, mod, quiet);
-  ctx.fillStyle = "#4A6358";
-  ctx.font = "500 13px " + font;
+
+  // Đường xé.
+  ctx.setLineDash([6, 6]);
+  ctx.strokeStyle = "#9CC0AC";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(22, perf); ctx.lineTo(W - 22, perf); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Cuống vé: QR trên nền trắng, mã vé bằng phông tiêu đề.
+  const qx = Math.round((W - qrBox) / 2);
+  ctx.fillStyle = "#FFFFFF";
+  roundPath(ctx, qx, stubTop, qrBox, qrBox, 12);
+  ctx.fill();
+  ctx.strokeStyle = "#B7CFC1";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  drawQr(ctx, matrix, qx + 8, stubTop + 8, mod, quiet);
   ctx.textAlign = "center";
-  ctx.fillText("Quét mã QR để đọc mã vé.", W / 2, qy + qrSize + 24);
+  ctx.fillStyle = "#174F39";
+  ctx.font = "700 28px " + serif;
+  ctx.fillText(reg.code || "", W / 2, stubTop + qrBox + 38);
+  ctx.fillStyle = "#4A6358";
+  ctx.font = "500 12.5px " + font;
+  const door = eventCfg.door ? "Mở cửa " + eventCfg.door.replace(/^./, c => c.toLowerCase()) : "";
+  ctx.fillText(["Đưa mã này tại quầy", door].filter(Boolean).join(" · "), W / 2, stubTop + qrBox + 62, W - pad * 2);
   ctx.textAlign = "left";
+  ctx.restore();
+
+  // Khoét hai nửa vòng tròn ở hai đầu đường xé.
+  ctx.save();
+  ctx.globalCompositeOperation = "destination-out";
+  for (const cx of [0, W]) { ctx.beginPath(); ctx.arc(cx, perf, 13, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
   return canvas;
 }
 async function renderPassImage(reg, img, link) {
   if (!reg || !img || !link) return;
-  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title, eventCfg.venue].join("|");
+  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title, eventCfg.titleEm, eventCfg.venue, eventCfg.door].join("|");
   const file = "ve-" + (reg.code || "ghe") + ".png";
   if (img.dataset.sig === sig && img.getAttribute("src")) {
     link.href = img.src;
@@ -1986,7 +2333,7 @@ function render() {
     const row = (eventCfg.rows || []).find(r => s.startsWith(r.label) && s.slice(r.label.length).match(/^\d+$/));
     return !row || row.zone !== "lau";
   });
-  $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt. Đang mở ${openIds.length} ghế.`;
+  $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt. Đang mở ${openIds.length} ghế` + (HIDE_LAU ? " ở tầng trệt; ghế trên lầu chưa mở." : ".");
   for (const node of document.querySelectorAll(".sc-left[data-show]")) {
     const free = openIds.filter(s => !seatHolds[seatDocId(node.dataset.show, s)]).length;
     node.textContent = free ? `Còn ${free} ghế` : "Hết ghế";
@@ -3070,6 +3417,12 @@ $("zoom-in").onclick = () => setZoom(mapZoom + 0.1);
 $("zoom-out").onclick = () => setZoom(mapZoom - 0.1);
 $("zoom-fit").onclick = () => setZoom(Math.max(ZOOM_MIN, fitScale()));
 new MutationObserver(applyZoom).observe($("seat-scroll"), { childList: true });
+// Trang chủ: thanh điều hướng trượt xuống khi phần đầu trang đã khuất.
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(([entry]) => {
+    document.body.classList.toggle("nav-on", !entry.isIntersecting);
+  }, { rootMargin: "-64px 0px 0px 0px" }).observe(document.querySelector(".hero"));
+}
 window.addEventListener("resize", () => { if (zoomAuto) applyZoom(); });
 $("book-modal").addEventListener("close", () => {
   if (!showingPass) return;
