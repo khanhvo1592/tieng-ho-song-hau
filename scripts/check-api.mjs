@@ -222,6 +222,22 @@ const gone = await call("/api/lookup", {
 }, stranger);
 if ((gone.data.registrations || []).length) fail("lookup still there");
 
+// Công tắc ghế trên lầu: đóng thì khách không giữ được, mở thì giữ được.
+const putEvent = body => call("/api/event", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }, staff);
+const lauJar = [];
+const lauBoot = await call("/api/bootstrap", {}, lauJar);
+const lauClosed = await putEvent({ ...opened.data.event, openLau: false });
+if (lauClosed.status !== 200 || lauClosed.data.event?.openLau !== false) fail("close lau");
+const lauDenied = await book(lauJar, lauBoot.data.uid, "L1A1");
+if (lauDenied.status !== 409 || lauDenied.data.error !== "closed:L1A1") fail("lau closed " + JSON.stringify(lauDenied.data));
+const lauGround = await book(lauJar, lauBoot.data.uid, "1E6");
+if (lauGround.status !== 200) fail("ground while lau closed " + JSON.stringify(lauGround.data));
+const lauOpened = await putEvent({ ...opened.data.event, openLau: true });
+if (lauOpened.status !== 200 || lauOpened.data.event?.openLau !== true) fail("open lau");
+const lauBooked = await book(lauJar, lauBoot.data.uid, "L1A1");
+if (lauBooked.status !== 200 || lauBooked.data.registration?.seatIds?.join() !== "L1A1") fail("lau open " + JSON.stringify(lauBooked.data));
+await call("/api/registrations/" + lauBoot.data.uid, { method: "DELETE" }, lauJar);
+
 // Ảnh và cấu hình trang chủ (nghệ sĩ, logo, đơn vị tổ chức).
 const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
 const guestUpload = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: png }, guest);

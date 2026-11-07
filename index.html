@@ -74,6 +74,8 @@ body{
   background-attachment:fixed;
   min-height:100vh;
 }
+/* Dải sơ đồ rộng 100vw tính cả thanh cuộn dọc; cắt phần dư để trang không cuộn ngang. */
+body.page-book main.wrap{overflow-x:clip}
 .wrap{max-width:1180px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 
 .hero{position:relative;overflow:hidden;color:var(--lacquer-ink);background:linear-gradient(165deg,#0A2A1F 0%,#123D2C 38%,#1A5740 72%,var(--lacquer) 100%)}
@@ -969,6 +971,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
       <label for="cfg-ticket"><span>Câu về vé</span><input id="cfg-ticket" maxlength="160"></label>
       <label for="cfg-blocked"><span>Ghế không mở</span><input id="cfg-blocked" maxlength="400" placeholder="A1, A14, B7"></label>
       <label class="choice"><input id="cfg-aisle" type="checkbox" checked><span>Có lối đi giữa mỗi hàng</span></label>
+      <label class="choice"><input id="cfg-lau" type="checkbox" checked><span>Mở đặt ghế trên lầu cho khách</span></label>
       <fieldset class="cfg-media">
         <legend>Trang chủ và nhận diện</legend>
         <p class="hint">Ảnh được thu nhỏ trên máy trước khi gửi. Bỏ trống ảnh thì trang dùng hình thay thế (chữ lồng, dấu hoa sen). Ảnh chỉ lưu khi bấm “Lưu thông tin sự kiện”.</p>
@@ -1157,6 +1160,7 @@ const EVENT_DEFAULT = {
   ],
   rows: buildHallRows(),
   hallLayoutId: HALL_LAYOUT_ID,
+  openLau: true,
   org: "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ",
   logo: "",
   poster: "",
@@ -1297,7 +1301,9 @@ let canEditUser = false, canWrite = false, viewOnly = false, ready = false, busy
 let seatHolds = {}, adminRows = [], regById = {};
 let editing = false, draftKind = null, draftId = null, draftReg = null, draftSeats = [];
 let activeShow = null, mapZone = "tre", mapSig = "", cfgDirty = false, cfgSilent = false;
-const HIDE_LAU = true;
+// Ghế trên lầu mở hay chưa do Ban tổ chức bật ở trang quản trị (eventCfg.openLau).
+function lauHidden() { return eventCfg.openLau === false && !canEditUser; }
+function hasLau() { return (eventCfg.rows || []).some(r => r.zone === "lau"); }
 let editShows = [], editRows = [];
 let editArtists = [], editLogo = "", editPoster = "";
 let countdownTimer = null, countdownFor = null, countdownDone = false;
@@ -1316,6 +1322,7 @@ function normalizeEvent(raw) {
   base.description = base.description.slice(0, 800);
   if (raw.maxSeats != null) base.maxSeats = Math.min(20, Math.max(1, Number(raw.maxSeats) || base.maxSeats));
   if (typeof raw.aisle === "boolean") base.aisle = raw.aisle;
+  if (typeof raw.openLau === "boolean") base.openLau = raw.openLau;
   if (typeof raw.codePrefix === "string") {
     const prefix = raw.codePrefix.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
     if (prefix) base.codePrefix = prefix;
@@ -1619,7 +1626,12 @@ function applyEvent() {
   for (const n of document.querySelectorAll(".faq-door")) n.textContent = (e.door || "Trước giờ diễn 45 phút").replace(/^./, c => c.toLowerCase());
   const tel = String(e.phone || "").replace(/[^\d+]/g, "");
   for (const n of document.querySelectorAll(".faq-phone")) { n.textContent = e.phone || "—"; n.href = "tel:" + tel; }
-  for (const n of document.querySelectorAll(".faq-lau")) n.hidden = !HIDE_LAU;
+  for (const n of document.querySelectorAll(".faq-lau")) {
+    n.hidden = !hasLau();
+    n.querySelector("p").textContent = e.openLau === false
+      ? "Hiện chỉ mở đăng ký ghế tầng trệt. Ghế trên lầu chưa mở; khi mở, sơ đồ đặt vé sẽ có thêm tab Trên lầu."
+      : "Có. Trên sơ đồ đặt vé, chọn tab Trên lầu hoặc Toàn nhà để xem và bấm ghế trên lầu.";
+  }
   $("venue-call").href = "tel:" + tel;
   $("venue-call").hidden = !tel;
   renderHomeMedia();
@@ -1798,7 +1810,7 @@ function appendLevel(hall, zoneId) {
   hall.append(level);
 }
 function setMapZone(zone) {
-  if (HIDE_LAU) zone = "tre";
+  if (lauHidden()) zone = "tre";
   const next = zone === "lau" || zone === "tre" ? zone : "all";
   if (mapZone === next) return;
   mapZone = next;
@@ -1817,7 +1829,7 @@ function renderMap() {
   const keep = active && active.dataset ? (active.dataset.seat || "") : "";
   scroll.textContent = "";
   const hall = el("div", "hall");
-  const zone = HIDE_LAU ? "tre" : mapZone;
+  const zone = lauHidden() ? "tre" : mapZone;
   if (zone === "lau") appendLevel(hall, "lau");
   else if (zone === "tre") appendLevel(hall, "tre");
   else {
@@ -2449,11 +2461,22 @@ function render() {
   $("map-h").textContent = multi && activeShow ? "Sơ đồ chỗ ngồi · " + showText(activeShow) : "Sơ đồ chỗ ngồi";
   const openIds = [...layoutSeatSet(eventCfg)].filter(s => {
     if ((eventCfg.blocked || []).includes(s)) return false;
-    if (!HIDE_LAU) return true;
+    if (!lauHidden()) return true;
     const row = (eventCfg.rows || []).find(r => s.startsWith(r.label) && s.slice(r.label.length).match(/^\d+$/));
     return !row || row.zone !== "lau";
   });
-  $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt. Đang mở ${openIds.length} ghế` + (HIDE_LAU ? " ở tầng trệt; ghế trên lầu chưa mở." : ".");
+  const lauRows = new Set((eventCfg.rows || []).filter(r => r.zone === "lau").map(r => r.label));
+  const lauCount = openIds.filter(s => lauRows.has(s.replace(/\d+$/, ""))).length;
+  const closedNote = eventCfg.openLau === false && hasLau()
+    ? (canEditUser ? " Ghế trên lầu đang đóng với khách; Ban tổ chức vẫn xếp được." : " Ghế trên lầu chưa mở.")
+    : "";
+  $("seat-cap").textContent = `Tối đa ${eventCfg.maxSeats} ghế mỗi lượt. Đang mở ${openIds.length} ghế`
+    + (lauCount && !lauHidden() ? ` (tầng trệt ${openIds.length - lauCount}, trên lầu ${lauCount}).` : ".")
+    + closedNote;
+  const tabs = document.querySelector(".zone-tabs");
+  tabs.hidden = lauHidden() || !hasLau();
+  if (tabs.hidden && mapZone !== "tre") { mapZone = "tre"; mapSig = ""; }
+  for (const btn of document.querySelectorAll(".zone-tab")) btn.setAttribute("aria-selected", btn.dataset.zone === mapZone ? "true" : "false");
   for (const node of document.querySelectorAll(".sc-left[data-show]")) {
     const free = openIds.filter(s => !seatHolds[seatDocId(node.dataset.show, s)]).length;
     node.textContent = free ? `Còn ${free} ghế` : "Hết ghế";
@@ -2760,6 +2783,7 @@ function explain(err) {
   const msg = String(err && err.message || "");
   if (msg.startsWith("taken:")) return "Ghế " + msg.slice(6) + " vừa có người giữ. Chọn ghế khác.";
   if (msg.startsWith("blocked:")) return "Ghế " + msg.slice(8) + " không mở để đặt.";
+  if (msg.startsWith("closed:")) return "Ghế trên lầu (" + msg.slice(7) + ") chưa mở đăng ký. Chọn ghế tầng trệt.";
   if (msg === "forbidden") return "Bạn không sửa được đăng ký này.";
   if (msg === "notfound") return "Không tìm thấy vé khớp họ tên và số điện thoại.";
   if (msg === "full") return `Mỗi lượt giữ tối đa ${eventCfg.maxSeats} ghế.`;
@@ -3349,6 +3373,7 @@ function fillCfgForm() {
     $("cfg-blocked").value = (eventCfg.blocked || []).filter(s => !locked.has(s)).join(", ");
   }
   $("cfg-aisle").checked = !!eventCfg.aisle;
+  $("cfg-lau").checked = eventCfg.openLau !== false;
   editShows = eventCfg.shows.map(s => ({ ...s }));
   editRows = eventCfg.rows.map(r => ({ ...r }));
   renderCfgEditors();
@@ -3374,7 +3399,7 @@ async function saveCfg(e) {
     eyebrow: $("cfg-eyebrow").value, title: $("cfg-title").value, titleEm: $("cfg-em").value,
     description: $("cfg-desc").value, venue: $("cfg-venue").value, phone: $("cfg-phone").value,
     door: $("cfg-door").value, ticketNote: $("cfg-ticket").value, maxSeats: Number($("cfg-max").value),
-    aisle: $("cfg-aisle").checked, codePrefix: eventCfg.codePrefix, shows, rows,
+    aisle: $("cfg-aisle").checked, openLau: $("cfg-lau").checked, codePrefix: eventCfg.codePrefix, shows, rows,
     org: $("cfg-org").value, logo: editLogo, poster: editPoster,
     artists: editArtists.map(a => ({ title: a.title, name: a.name, photo: a.photo })),
     blocked: $("cfg-blocked").value.split(/[\s,;]+/),
@@ -3909,6 +3934,7 @@ $("cfg-add-row").onclick = () => {
 };
 $("cfg").addEventListener("submit", saveCfg);
 $("cfg-org").addEventListener("input", markCfg);
+$("cfg-lau").addEventListener("change", markCfg);
 $("cfg-add-artist").onclick = () => {
   if (editArtists.length >= 12) return;
   editArtists.push({ title: "", name: "", photo: "" });

@@ -54,6 +54,7 @@ const DEFAULT_EVENT = {
   ],
   rows: buildHallRows(),
   hallLayoutId: HALL_LAYOUT_ID,
+  openLau: true,
   org: "Sở Văn hoá, Thể thao và Du lịch TP. Cần Thơ",
   logo: "",
   poster: "",
@@ -98,6 +99,7 @@ function normalizeEvent(raw) {
   base.description = base.description.slice(0, 800);
   if (raw.maxSeats != null) base.maxSeats = Math.min(20, Math.max(1, Number(raw.maxSeats) || base.maxSeats));
   if (typeof raw.aisle === "boolean") base.aisle = raw.aisle;
+  if (typeof raw.openLau === "boolean") base.openLau = raw.openLau;
   if (typeof raw.codePrefix === "string") {
     const prefix = raw.codePrefix.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
     if (prefix) base.codePrefix = prefix;
@@ -507,6 +509,15 @@ export class Venue extends DurableObject {
       if (!seatIds.length || seatIds.length > event.maxSeats) fail(seatIds.length ? "full" : "invalid");
       for (const seat of seatIds) {
         if (!layout.has(seat)) fail("invalid");
+      }
+      if (!event.openLau && !staff) {
+        // Lầu đóng: khách không giữ thêm ghế trên lầu; ghế lầu đã có trong đăng ký cũ vẫn giữ được.
+        const lau = new Set(event.rows.filter(row => row.zone === "lau").map(row => row.label));
+        const held = new Set(current && current.show_id === show ? JSON.parse(current.seat_ids) : []);
+        for (const seat of seatIds) {
+          const row = event.rows.find(r => seat.startsWith(r.label) && /^\d+$/.test(seat.slice(r.label.length)));
+          if (row && lau.has(row.label) && !held.has(seat)) fail("closed:" + seat);
+        }
       }
       const name = String(body.name || "").trim().slice(0, 80);
       const phone = String(body.phone || "").trim().slice(0, 16);
