@@ -303,22 +303,23 @@ export class Venue extends DurableObject {
     const url = new URL(request.url);
     const actor = request.headers.get("x-actor") || "";
     const staff = request.headers.get("x-staff") === "1";
+    const checker = staff || request.headers.get("x-checkin") === "1";
     try {
       if (request.method === "GET" && url.pathname === "/api/health") {
         return Response.json({ ok: true });
       }
       if (request.method === "GET" && url.pathname === "/api/bootstrap") {
-        return Response.json(this.snapshot(actor, staff));
+        return Response.json(this.snapshot(actor, staff, checker));
       }
       if (request.method === "PUT" && url.pathname === "/api/registrations") {
         const body = await request.json();
         const registration = this.saveRegistration(actor, staff, body);
-        return Response.json({ ...this.snapshot(actor, staff), registration });
+        return Response.json({ ...this.snapshot(actor, staff, checker), registration });
       }
       const removal = url.pathname.match(/^\/api\/registrations\/([^/]+)$/);
       if (request.method === "DELETE" && removal) {
         this.deleteRegistration(actor, staff, decodeURIComponent(removal[1]));
-        return Response.json(this.snapshot(actor, staff));
+        return Response.json(this.snapshot(actor, staff, checker));
       }
       if (request.method === "PUT" && url.pathname === "/api/event") {
         if (!staff) fail("forbidden");
@@ -326,7 +327,7 @@ export class Venue extends DurableObject {
         this.dropMissingImages(event);
         this.saveEvent(event);
         this.pruneImages(event);
-        return Response.json(this.snapshot(actor, staff));
+        return Response.json(this.snapshot(actor, staff, checker));
       }
       if (request.method === "POST" && url.pathname === "/api/images") {
         if (!staff) fail("forbidden");
@@ -357,15 +358,15 @@ export class Venue extends DurableObject {
         const id = String(body?.regId || "");
         if (!/^[A-Za-z0-9-]{4,48}$/.test(id)) fail("invalid");
         this.deleteByIdentity(identity, id);
-        return Response.json({ ...this.snapshot(actor, staff), cancelled: id });
+        return Response.json({ ...this.snapshot(actor, staff, checker), cancelled: id });
       }
       if (request.method === "POST" && url.pathname === "/api/checkin/lookup") {
-        if (!staff) fail("forbidden");
+        if (!checker) fail("forbidden");
         const body = await request.json();
         return Response.json({ registrations: this.lookupForCheckin(body) });
       }
       if (request.method === "POST" && url.pathname === "/api/checkin") {
-        if (!staff) fail("forbidden");
+        if (!checker) fail("forbidden");
         const body = await request.json();
         const registration = this.markCheckin(body);
         return Response.json({ registration, registrations: this.lookupForCheckin({ code: registration.code }) });
@@ -393,7 +394,7 @@ export class Venue extends DurableObject {
     return event;
   }
 
-  snapshot(actor, staff) {
+  snapshot(actor, staff, checker = staff) {
     const event = this.event();
     const seats = this.ctx.storage.sql.exec("SELECT * FROM seats").toArray().map(row => {
       const own = row.registration_id && (staff || row.registration_id === actor);
@@ -415,6 +416,7 @@ export class Venue extends DurableObject {
     return {
       uid: actor,
       staff,
+      checkin: !!checker,
       event,
       seats,
       mine: mineRow ? regFromRow(mineRow) : null,
@@ -748,21 +750,32 @@ function withCookies(response, cookies) {
   return new Response(response.body, { status: response.status, headers });
 }
 
-async function callVenue(request, env, actor, staff, path) {
+// role: "admin" (ban tổ chức, toàn quyền) | "checkin" (chỉ tra cứu và xác nhận vào cửa) | "" (khách).
+async function callVenue(request, env, actor, role, path) {
   const url = new URL(path || new URL(request.url).pathname, request.url);
   const headers = new Headers();
   headers.set("x-actor", actor);
-  headers.set("x-staff", staff ? "1" : "0");
+  headers.set("x-staff", role === "admin" ? "1" : "0");
+  headers.set("x-checkin", role === "admin" || role === "checkin" ? "1" : "0");
   const init = { method: request.method, headers };
   if (!path && (request.method === "PUT" || request.method === "POST")) init.body = await request.text();
   return env.VENUE.getByName("mac-dinh").fetch(new Request(url, init));
 }
 
+// Cookie ve_staff là HMAC của vai trò + mật khẩu hiện tại: đổi mật khẩu nào thì phiên của vai trò đó hết hạn.
+async function roleToken(env, role) {
+  if (role === "admin") return hmac(env.STAFF_SECRET, "staff:" + env.STAFF_PASSWORD);
+  if (role === "checkin" && env.CHECKIN_PASSWORD) return hmac(env.STAFF_SECRET, "checkin:" + env.CHECKIN_PASSWORD);
+  return "";
+}
+async function roleFromCookie(env, value) {
+  if (!env.STAFF_PASSWORD || !env.STAFF_SECRET || !value) return "";
+  if (safeEqual(value, await roleToken(env, "admin"))) return "admin";
+  if (env.CHECKIN_PASSWORD && safeEqual(value, await roleToken(env, "checkin"))) return "checkin";
+  return "";
+}
 async function isStaff(request, env) {
-  const cookies = cookieMap(request);
-  if (!env.STAFF_PASSWORD || !env.STAFF_SECRET || !cookies.ve_staff) return false;
-  const expected = await hmac(env.STAFF_SECRET, "staff:" + env.STAFF_PASSWORD);
-  return safeEqual(cookies.ve_staff, expected);
+  return (await roleFromCookie(env, cookieMap(request).ve_staff)) === "admin";
 }
 
 // Ảnh đi đường riêng: thân là byte ảnh, không qua giới hạn 20 KB của JSON.
@@ -802,26 +815,24 @@ export default {
     const fresh = !uid;
     if (!uid) uid = newUid();
     const session = fresh ? [cookie("ve", uid, secure, 31536000)] : [];
-    let staff = false;
-    if (env.STAFF_PASSWORD && env.STAFF_SECRET && cookies.ve_staff) {
-      const expected = await hmac(env.STAFF_SECRET, "staff:" + env.STAFF_PASSWORD);
-      staff = safeEqual(cookies.ve_staff, expected);
-    }
+    const role = await roleFromCookie(env, cookies.ve_staff);
     if (url.pathname === "/api/staff/login" && request.method === "POST") {
       if (!env.STAFF_PASSWORD || !env.STAFF_SECRET) return Response.json({ error: "forbidden" }, { status: 403 });
       let password = "";
       try { password = String((await request.json()).password || ""); }
       catch { password = ""; }
-      const expected = await hmac(env.STAFF_SECRET, "staff:" + env.STAFF_PASSWORD);
-      const given = await hmac(env.STAFF_SECRET, "staff:" + password);
-      if (!safeEqual(given, expected)) return withCookies(Response.json({ error: "forbidden" }, { status: 403 }), session);
-      const snapshot = await callVenue(new Request(new URL("/api/bootstrap", request.url)), env, uid, true, "/api/bootstrap");
-      return withCookies(snapshot, session.concat(cookie("ve_staff", expected, secure, 60 * 60 * 12)));
+      // Mật khẩu ban tổ chức = toàn quyền; mật khẩu check-in (CHECKIN_PASSWORD, tùy chọn) = chỉ check-in.
+      let next = "";
+      if (safeEqual(await hmac(env.STAFF_SECRET, "staff:" + password), await roleToken(env, "admin"))) next = "admin";
+      else if (env.CHECKIN_PASSWORD && safeEqual(await hmac(env.STAFF_SECRET, "checkin:" + password), await roleToken(env, "checkin"))) next = "checkin";
+      if (!next) return withCookies(Response.json({ error: "forbidden" }, { status: 403 }), session);
+      const snapshot = await callVenue(new Request(new URL("/api/bootstrap", request.url)), env, uid, next, "/api/bootstrap");
+      return withCookies(snapshot, session.concat(cookie("ve_staff", await roleToken(env, next), secure, 60 * 60 * 12)));
     }
     if (url.pathname === "/api/staff/logout" && request.method === "POST") {
-      const snapshot = await callVenue(new Request(new URL("/api/bootstrap", request.url)), env, uid, false, "/api/bootstrap");
+      const snapshot = await callVenue(new Request(new URL("/api/bootstrap", request.url)), env, uid, "", "/api/bootstrap");
       return withCookies(snapshot, session.concat(cookie("ve_staff", "", secure, 0)));
     }
-    return withCookies(await callVenue(request, env, uid, staff), session);
+    return withCookies(await callVenue(request, env, uid, role), session);
   }
 };

@@ -709,7 +709,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
     </form>
     <div id="staff-session" hidden>
       <div class="session-bar">
-        <p class="hint" style="margin:0">Bạn đang đăng nhập khu vực ban tổ chức.</p>
+        <p class="hint" style="margin:0" id="staff-session-note">Bạn đang đăng nhập khu vực ban tổ chức.</p>
         <div class="btns">
           <a class="ghost" href="/check-in">Check-in</a>
           <button class="ghost" type="button" id="staff-logout">Thoát</button>
@@ -933,7 +933,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
     <p class="hint" style="margin:-2px 0 14px">Quét QR trên vé, hoặc tra mã vé / họ tên + số điện thoại, rồi xác nhận khán giả vào cửa.</p>
     <div id="checkin-need-login">
       <form id="checkin-login" novalidate>
-        <label for="checkin-pass"><span>Mật khẩu ban tổ chức</span>
+        <label for="checkin-pass"><span>Mật khẩu check-in hoặc mật khẩu ban tổ chức</span>
           <input id="checkin-pass" type="password" autocomplete="current-password" maxlength="80">
         </label>
         <div class="btns">
@@ -946,7 +946,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
     <div id="checkin-session" hidden>
       <div class="session-bar">
         <p class="hint" style="margin:0">Đã đăng nhập — sẵn sàng check-in.</p>
-        <span class="session-links"><a class="ghost" href="/to-chuc">Quản trị</a><button class="ghost" type="button" id="checkin-logout">Thoát</button></span>
+        <span class="session-links"><a class="ghost" href="/to-chuc" id="checkin-admin-link">Quản trị</a><button class="ghost" type="button" id="checkin-logout">Thoát</button></span>
       </div>
       <div class="scan-box">
         <button class="primary scan-btn" type="button" id="scan-start">Quét QR bằng camera</button>
@@ -1332,23 +1332,29 @@ function syncStaffShell() {
   const session = $("staff-session");
   const admin = $("admin");
   if (login) login.hidden = !!canEditUser;
-  if (session) session.hidden = !canEditUser;
+  if (session) session.hidden = !canCheckin;
   if (admin) admin.hidden = !canEditUser;
+  // Đăng nhập bằng mật khẩu check-in: không có quyền quản trị, chỉ chỉ sang trang check-in.
+  const note = $("staff-session-note");
+  if (note) note.textContent = canEditUser ? "Bạn đang đăng nhập khu vực ban tổ chức."
+    : "Bạn đang đăng nhập bằng mật khẩu check-in: chỉ dùng được trang Check-in. Muốn quản trị, nhập mật khẩu ban tổ chức ở trên.";
 }
 function syncCheckinShell() {
   if (currentPage() !== "checkin") return;
   const need = $("checkin-need-login");
   const session = $("checkin-session");
-  if (need) need.hidden = !!canEditUser;
-  if (session) session.hidden = !canEditUser;
-  if (!canEditUser && typeof scan !== "undefined" && scan.on) stopScan();
+  if (need) need.hidden = !!canCheckin;
+  if (session) session.hidden = !canCheckin;
+  const admin = $("checkin-admin-link");
+  if (admin) admin.hidden = !canEditUser;
+  if (!canCheckin && typeof scan !== "undefined" && scan.on) stopScan();
 }
 
 let eventCfg = normalizeEvent(null);
 let db = null, uid = null, myRef = null, mine = null;
 let lookedUp = [];
 let checkBusy = false;
-let canEditUser = false, canWrite = false, viewOnly = false, ready = false, busy = false;
+let canEditUser = false, canCheckin = false, canWrite = false, viewOnly = false, ready = false, busy = false;
 let seatHolds = {}, adminRows = [], regById = {};
 let editing = false, draftKind = null, draftId = null, draftReg = null, draftSeats = [];
 let activeShow = null, mapZone = "tre", mapSig = "", cfgDirty = false, cfgSilent = false;
@@ -2790,6 +2796,7 @@ function applyRemote(data) {
   if (data.uid) uid = data.uid;
   if (typeof data.staff === "boolean") {
     canEditUser = data.staff;
+    canCheckin = typeof data.checkin === "boolean" ? data.checkin : data.staff;
     syncStaffShell();
     syncCheckinShell();
   }
@@ -4086,7 +4093,7 @@ for (const id of ["cfg-eyebrow", "cfg-phone", "cfg-title", "cfg-em", "cfg-desc",
 }
 async function staffLogout() {
   if (!live) {
-    canEditUser = false;
+    canEditUser = false; canCheckin = false;
     syncStaffShell();
     syncCheckinShell();
     render();
@@ -4094,7 +4101,7 @@ async function staffLogout() {
   }
   try { applyRemote(await api("/api/staff/logout", { method: "POST", body: "{}" })); }
   catch {
-    canEditUser = false;
+    canEditUser = false; canCheckin = false;
     syncStaffShell();
     syncCheckinShell();
   }
@@ -4391,12 +4398,12 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && sca
 $("checkin-login").addEventListener("submit", async e => {
   e.preventDefault();
   await staffLoginWith($("checkin-pass").value, $("checkin-login-msg"));
-  if (canEditUser) $("checkin-pass").value = "";
+  if (canCheckin) $("checkin-pass").value = "";
 });
 $("checkin-form").addEventListener("submit", async e => {
   e.preventDefault();
-  if (!canEditUser) {
-    setCheckinStatus("Cần đăng nhập ban tổ chức trước.");
+  if (!canCheckin) {
+    setCheckinStatus("Cần đăng nhập trước.");
     return;
   }
   const code = ($("checkin-code").value || "").trim().toUpperCase();

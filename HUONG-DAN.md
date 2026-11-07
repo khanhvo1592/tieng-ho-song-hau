@@ -19,6 +19,23 @@ Trang có 4 địa chỉ (thay `ten-mien` bằng địa chỉ thật, ví dụ `
 
 Trang `/check-in` dùng cùng mật khẩu. Đã đăng nhập ở một trang thì sang trang kia không phải nhập lại.
 
+### Hai loại mật khẩu (vai trò)
+
+| Mật khẩu | Bí mật trên Cloudflare | Được làm gì |
+| --- | --- | --- |
+| Ban tổ chức | `STAFF_PASSWORD` | Mọi thứ: sửa sự kiện, xem/xuất/sửa/xóa danh sách, đặt hộ, check-in |
+| Check-in | `CHECKIN_PASSWORD` | **Chỉ** trang `/check-in`: quét QR, tra vé, xác nhận vào cửa. Không xem được danh sách, không sửa gì khác |
+
+Đưa mật khẩu check-in cho tình nguyện viên đứng cửa. Đăng nhập bằng mật khẩu này ở `/to-chuc` sẽ chỉ thấy thông báo "chỉ dùng được trang Check-in".
+
+Đặt hoặc đổi mật khẩu check-in (có hiệu lực ngay, các máy đang dùng mật khẩu check-in cũ tự bị đăng xuất):
+
+```sh
+npx wrangler secret put CHECKIN_PASSWORD
+```
+
+Mật khẩu check-in phải khác mật khẩu ban tổ chức.
+
 ### Quên mật khẩu hoặc muốn đổi mật khẩu
 
 Mật khẩu không nằm trong code mà là "bí mật" lưu trên Cloudflare (`STAFF_PASSWORD`). Không xem lại được mật khẩu cũ, chỉ đặt mật khẩu mới. Trên máy có kho code, mở terminal tại thư mục dự án:
@@ -100,7 +117,7 @@ Ban tổ chức đặt được cả ghế trên lầu khi lầu đang đóng v�
 
 Trang này chỉ có công cụ check-in (không có ảnh bìa), mở bằng điện thoại hoặc máy tính bảng ở cửa.
 
-1. Đăng nhập bằng mật khẩu ban tổ chức (nếu chưa).
+1. Đăng nhập bằng mật khẩu check-in (hoặc mật khẩu ban tổ chức).
 2. **Quét QR**: bấm **Quét QR bằng camera** (lần đầu trình duyệt hỏi quyền camera → Cho phép). Đưa mã QR trên vé của khách vào khung.
    - Đọc được mã: máy bíp, hiện thẻ vé ngay dưới camera → kiểm tra suất, ghế → **Xác nhận vào cửa**. Camera tự quét vé kế tiếp.
    - Bật ô **Tự xác nhận vào cửa khi quét được vé hợp lệ** để khỏi bấm: quét xong là check-in luôn (thẻ xanh "mời vào").
@@ -133,6 +150,8 @@ npm install
 npx wrangler login
 npm run deploy
 ```
+
+Ba bí mật `STAFF_PASSWORD`, `STAFF_SECRET`, `CHECKIN_PASSWORD` phải được đặt trên Cloudflare (mục 1) trước khi deploy.
 
 Nếu kho đã nối với **Workers Builds** của Cloudflare, chỉ cần đẩy code lên nhánh chính là Cloudflare tự đăng bản mới.
 

@@ -21,7 +21,7 @@
     "run_worker_first": ["/api/*"]
   },
   "secrets": {
-    "required": ["STAFF_PASSWORD", "STAFF_SECRET"]
+    "required": ["STAFF_PASSWORD", "STAFF_SECRET", "CHECKIN_PASSWORD"]
   },
   "durable_objects": {
     "bindings": [

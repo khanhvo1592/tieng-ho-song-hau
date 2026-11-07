@@ -1,5 +1,6 @@
 const base = process.env.API_BASE || "http://127.0.0.1:8787";
 const staffPassword = process.env.STAFF_PASSWORD || "doi-mat-khau-nay";
+const checkinPassword = process.env.CHECKIN_PASSWORD || "checkin-thu";
 
 function fail(message) {
   throw new Error(message);
@@ -99,6 +100,32 @@ const login = await call("/api/staff/login", {
 if (login.status !== 200 || !login.data.staff) fail("login " + login.status);
 const found = (login.data.registrations || []).find(row => row.code === "VE-TEST1");
 if (!found || found.phone !== "0903123456") fail("staff list");
+
+// Vai trò chỉ check-in: tra cứu và xác nhận vào cửa được, không xem danh sách, không sửa sự kiện, không đặt hộ.
+const door = [];
+const doorLogin = await call("/api/staff/login", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ password: checkinPassword })
+}, door);
+if (doorLogin.status !== 200 || doorLogin.data.staff !== false || doorLogin.data.checkin !== true) fail("checkin login " + doorLogin.status + " " + JSON.stringify({ staff: doorLogin.data.staff, checkin: doorLogin.data.checkin }));
+if ((doorLogin.data.registrations || []).length) fail("checkin role sees registrations");
+const doorBoot = await call("/api/bootstrap", {}, door);
+if (doorBoot.data.staff !== false || doorBoot.data.checkin !== true || (doorBoot.data.registrations || []).length) fail("checkin bootstrap");
+if ((doorBoot.data.seats || []).some(s => s.registrationId && s.registrationId !== "khac")) fail("checkin role sees seat owners");
+const doorEvent = await call("/api/event", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: "Khong duoc" }) }, door);
+if (doorEvent.status !== 403) fail("checkin role edits event " + doorEvent.status);
+const doorImage = await call("/api/images", { method: "POST", headers: { "content-type": "image/png" }, body: new Uint8Array([137, 80, 78, 71]) }, door);
+if (doorImage.status !== 403) fail("checkin role uploads image " + doorImage.status);
+const doorHost = await call("/api/registrations", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ regId: "btc-VE-DOOR1", name: "Không được", phone: "0900000009", show: "s1", seatIds: ["1C3"], code: "VE-DOOR1", source: "btc" }) }, door);
+if (doorHost.status !== 403) fail("checkin role host-books " + doorHost.status);
+const doorFind = await call("/api/checkin/lookup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: "VE-TEST1" }) }, door);
+if (doorFind.status !== 200 || !(doorFind.data.registrations || []).some(r => r.code === "VE-TEST1")) fail("checkin role lookup " + doorFind.status);
+const guestFind = await call("/api/checkin/lookup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: "VE-TEST1" }) }, []);
+if (guestFind.status !== 403) fail("guest checkin lookup " + guestFind.status);
+await call("/api/staff/logout", { method: "POST", body: "{}" }, door);
+const doorOut = await call("/api/checkin/lookup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: "VE-TEST1" }) }, door);
+if (doorOut.status !== 403) fail("checkin after logout " + doorOut.status);
 
 const blocked = await call("/api/event", {
   method: "PUT",
