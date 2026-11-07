@@ -78,7 +78,10 @@ Cột **Thao tác** mỗi dòng:
 - **Sửa**: mở trang đặt vé với đăng ký đó, sửa tên, số điện thoại, ghi chú hoặc đổi ghế trên sơ đồ, rồi **Xác nhận**.
 - **Xóa**: hỏi lại một lần, rồi xóa vé và trả ghế. Không hoàn tác được.
 
-Bấm **Sao chép bảng (CSV)** rồi dán vào Excel / Google Sheets để in hoặc lưu.
+Xuất danh sách (file tạo ngay trên máy, tên dạng `danh-sach-ve-2026-11-07.xlsx`):
+- **Tải Excel**: mỗi suất một trang tính (có thêm trang *Tất cả* khi có nhiều suất), xếp theo ghế. Số điện thoại giữ nguyên số 0 đầu, có dòng tiêu đề cố định, bộ lọc và dòng tổng số vé. Mở được bằng Excel, Google Sheets, LibreOffice.
+- **Tải Word**: khổ A4 nằm ngang, mỗi suất một trang có tiêu đề và bảng, kèm cột **Ký nhận** để in cho quầy đón khách.
+- **Sao chép bảng**: chép dạng văn bản để dán nhanh vào nơi khác.
 
 ---
 
