@@ -2190,52 +2190,6 @@ function qrMatrix(text) {
   return best;
 }
 
-const LOTUS_PATHS = [
-  "M24 11C28.5 17 28.5 26 24 32C19.5 26 19.5 17 24 11Z",
-  "M24 32C17.5 30.5 12.5 25 11.5 17.5C17 19.5 21.5 25 24 32Z",
-  "M24 32C30.5 30.5 35.5 25 36.5 17.5C31 19.5 26.5 25 24 32Z"
-];
-const imageCache = {};
-function loadImageOnce(src) {
-  // Ảnh không có thì trả null để vé dùng hình thay thế.
-  if (!imageCache[src]) {
-    imageCache[src] = new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => resolve(img.naturalWidth ? img : null);
-      img.onerror = () => resolve(null);
-      img.src = src;
-    });
-  }
-  return imageCache[src];
-}
-function drawEmblem(ctx, logo, cx, cy, r) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = logo ? "#FFFFFF" : "#0E3727";
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#E8C56A";
-  ctx.stroke();
-  ctx.clip();
-  if (logo) {
-    const s = Math.min((r * 2 - 6) / logo.naturalWidth, (r * 2 - 6) / logo.naturalHeight);
-    const w = logo.naturalWidth * s, h = logo.naturalHeight * s;
-    ctx.drawImage(logo, cx - w / 2, cy - h / 2, w, h);
-  } else if (typeof Path2D === "function") {
-    const k = (r * 2) / 48;
-    ctx.translate(cx - r, cy - r);
-    ctx.scale(k, k);
-    ctx.fillStyle = "#E8C56A";
-    LOTUS_PATHS.forEach((d, i) => { ctx.globalAlpha = i ? .85 : 1; ctx.fill(new Path2D(d)); });
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#E8C56A";
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.stroke(new Path2D("M12 36.5C16 34.5 20 36.5 24 36.5S32 34.5 36 36.5"));
-  }
-  ctx.restore();
-}
 async function drawPass(reg) {
   const font = "Be Vietnam Pro, Segoe UI, sans-serif";
   const serif = "'Source Serif 4', Georgia, serif";
@@ -2247,7 +2201,6 @@ async function drawPass(reg) {
       document.fonts.load("italic 500 20px 'Source Serif 4'")
     ]);
   } catch { /* vẫn vẽ bằng phông dự phòng */ }
-  const logo = await loadImageOnce(logoSrc());
   const pad = 30;
   const W = 460;
   const labelW = 104;
@@ -2338,13 +2291,12 @@ async function drawPass(reg) {
   ctx.fillStyle = "#E8C56A";
   ctx.fillRect(0, band - 3, W, 3);
 
-  drawEmblem(ctx, logo, pad + 22, 48, 22);
   ctx.fillStyle = "#E8C56A";
   ctx.font = "700 11px " + font;
-  ctx.fillText("VÉ MỜI  ·  MIỄN PHÍ", pad + 56, 44);
+  ctx.fillText("VÉ MỜI  ·  MIỄN PHÍ", pad, 44);
   ctx.fillStyle = "#CFE6D8";
   ctx.font = "500 11px " + font;
-  ctx.fillText(eventCfg.org || "", pad + 56, 61, W - pad * 2 - 56);
+  ctx.fillText(eventCfg.org || "", pad, 61, W - pad * 2 - 100);
   ctx.fillStyle = "#F3FBF6";
   ctx.font = "700 " + titleSize + "px " + serif;
   ctx.fillText(title, pad, titleY);
@@ -2406,7 +2358,7 @@ async function drawPass(reg) {
 }
 async function renderPassImage(reg, img, link) {
   if (!reg || !img || !link) return;
-  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title, eventCfg.titleEm, eventCfg.venue, eventCfg.door, eventCfg.org, eventCfg.logo].join("|");
+  const sig = [reg.code, (reg.seatIds || []).join(","), reg.show, reg.name, reg.phone, eventCfg.title, eventCfg.titleEm, eventCfg.venue, eventCfg.door, eventCfg.org].join("|");
   const file = "ve-" + (reg.code || "ghe") + ".png";
   if (img.dataset.sig === sig && img.getAttribute("src")) {
     link.href = img.src;
