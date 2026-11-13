@@ -807,7 +807,7 @@ export default {
     if (url.pathname.startsWith("/api/images")) return handleImages(request, env, url);
     if (request.method === "PUT" || request.method === "POST") {
       const text = await request.text();
-      if (text.length > 20000) return Response.json({ error: "invalid" }, { status: 400 });
+      if (text.length > 60000) return Response.json({ error: "invalid" }, { status: 400 });
       request = new Request(request, { body: text });
     }
     const cookies = cookieMap(request);
