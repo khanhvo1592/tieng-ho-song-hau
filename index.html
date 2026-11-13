@@ -1006,7 +1006,7 @@ body.page-home.nav-on .site-nav{transform:none;visibility:visible;transition:tra
         <label for="cfg-max"><span>Số ghế tối đa mỗi lượt</span><input id="cfg-max" type="number" min="1" max="20" step="1"></label>
       </div>
       <label for="cfg-ticket"><span>Câu về vé</span><input id="cfg-ticket" maxlength="160"></label>
-      <label for="cfg-blocked"><span>Ghế không mở</span><input id="cfg-blocked" maxlength="400" placeholder="A1, A14, B7"></label>
+      <label for="cfg-blocked"><span>Ghế không mở</span><textarea id="cfg-blocked" rows="2" placeholder="A1, A14, B7 hoặc dải A1-A10"></textarea></label>
       <label class="choice"><input id="cfg-aisle" type="checkbox" checked><span>Có lối đi giữa mỗi hàng</span></label>
       <label class="choice"><input id="cfg-lau" type="checkbox" checked><span>Mở đặt ghế trên lầu cho khách</span></label>
       <fieldset class="cfg-media">
@@ -1441,6 +1441,20 @@ function normalizeEvent(raw) {
   }
   base.blocked = merged;
   return base;
+}
+
+// "A1, B7" hoặc dải "A1-A14" / "A1-14" → danh sách ghế.
+function expandSeatList(text) {
+  const out = [];
+  for (const part of String(text || "").split(/[\s,;]+/)) {
+    const m = part.match(/^([^\d\-]+)(\d+)-([^\d\-]+)?(\d+)$/);
+    if (m && (!m[3] || m[3].toUpperCase() === m[1].toUpperCase())) {
+      let a = Number(m[2]), b = Number(m[4]);
+      if (a > b) [a, b] = [b, a];
+      for (let n = a; n <= Math.min(b, a + 99); n++) out.push(m[1] + n);
+    } else if (part) out.push(part);
+  }
+  return out;
 }
 
 function showById(id) { return eventCfg.shows.find(s => s.id === id); }
@@ -3673,7 +3687,7 @@ async function saveCfg(e) {
     showArtists: $("cfg-show-artists").checked, showFootLogo: $("cfg-show-footlogo").checked, showCallBtn: $("cfg-show-call").checked, codePrefix: eventCfg.codePrefix, shows, rows,
     org: $("cfg-org").value, logo: editLogo, poster: editPoster,
     artists: editArtists.map(a => ({ title: a.title, name: a.name, photo: a.photo })),
-    blocked: $("cfg-blocked").value.split(/[\s,;]+/),
+    blocked: expandSeatList($("cfg-blocked").value),
     hallLayoutId: HALL_LAYOUT_ID
   });
   $("cfg-save").disabled = true;
